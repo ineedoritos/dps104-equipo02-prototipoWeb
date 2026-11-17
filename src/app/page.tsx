@@ -1,69 +1,104 @@
-import Image from "next/image";
+// app/page.tsx
+import ActivityCard, { Activity } from '@/components/ActivityCard';
+
+const mockActivities: Activity[] = [
+  {
+    id: 1,
+    title: 'Jornada de Reforestación Parque Bicentenario',
+    description:
+      'Siembra de árboles nativos en la zona norte del parque y mantenimiento de senderos ecológicos.',
+    date: '2026-11-17',
+    startTime: '08:30 AM',
+    location: 'Parque Bicentenario, Sector Norte',
+    participants: 34,
+    evidenceCount: 12,
+    status: 'current',
+  },
+  {
+    id: 2,
+    title: 'Taller de Primeros Auxilios Comunitarios',
+    description:
+      'Capacitación práctica sobre atención prehospitalaria básica y manejo de emergencias.',
+    date: '2026-11-17',
+    startTime: '10:00 AM',
+    location: 'Casa Comunal Ciudad Delgado',
+    participants: 18,
+    evidenceCount: 4,
+    status: 'current',
+  },
+  {
+    id: 3,
+    title: 'Limpieza de Quebrada y Clasificación de Residuos',
+    description:
+      'Recolección de plásticos y desechos sólidos junto a voluntarios locales y cuadrillas municipales.',
+    date: '2026-11-21',
+    startTime: '07:30 AM',
+    location: 'Colonia San Sebastián, Punto de Encuentro Cancha #2',
+    participants: 45,
+    evidenceCount: 0,
+    status: 'upcoming',
+  },
+  {
+    id: 4,
+    title: 'Entrega de Kits Escolares y Útiles',
+    description:
+      'Distribución de paquetes escolares para niños de primaria antes del inicio del próximo ciclo.',
+    date: '2026-11-28',
+    startTime: '09:00 AM',
+    location: 'Centro Escolar República de Honduras',
+    participants: 12,
+    evidenceCount: 0,
+    status: 'upcoming',
+  },
+  {
+    id: 5,
+    title: 'Campaña de Vacunación y Desparasitación Canina',
+    description:
+      'Atención veterinaria gratuita para mascotas de la comunidad en coordinación con brigadas móviles.',
+    date: '2026-11-10',
+    startTime: '08:00 AM',
+    location: 'Parque Central de Delgado',
+    participants: 62,
+    evidenceCount: 29,
+    status: 'completed',
+  },
+  {
+    id: 6,
+    title: 'Pintura y Restauración de Cancha Deportiva',
+    description:
+      'Renovación de pintura en graderíos, marcaje de líneas de juego y reparación de tableros de baloncesto.',
+    date: '2026-11-02',
+    startTime: '07:00 AM',
+    location: 'Complejo Deportivo El Pepeto',
+    participants: 27,
+    evidenceCount: 19,
+    status: 'completed',
+  },
+];
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
+    <main className="min-h-screen bg-slate-50 py-12 px-6">
+      <div className="max-w-6xl mx-auto">
+        <header className="mb-8">
+          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+            Actividades Comunitarias
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="mt-1 text-base text-slate-500">
+            Listado general de jornadas registradas
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
+        </header>
+
+        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {mockActivities.map((activity) => (
+            <ActivityCard
+              key={activity.id}
+              activity={activity}
+              variant={activity.status}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+          ))}
+        </section>
+      </div>
+    </main>
   );
 }
