@@ -1,91 +1,95 @@
 // app/page.tsx
-import ActivityCard, { Activity } from '@/components/ActivityCard';
+import { Activity } from "./components/activities/ActivityCard";
+import MyActivityDashboard from "./components/activities/MyActivityDashboard";
 
-const mockActivities: Activity[] = [
+export interface User {
+  name: string;
+}
+const activities: Activity[] = [
   {
     id: 1,
-    title: 'Jornada de Reforestación Parque Bicentenario',
+    title: "Jornada de Reforestación Parque Bicentenario",
     description:
-      'Siembra de árboles nativos en la zona norte del parque y mantenimiento de senderos ecológicos.',
-    date: '2026-11-17',
-    startTime: '08:30 AM',
-    location: 'Parque Bicentenario, Sector Norte',
+      "Siembra de árboles nativos en la zona norte del parque y mantenimiento de senderos ecológicos.",
+    date: "2026-11-17",
+    startTime: "08:30 AM",
+    location: "Parque Bicentenario, Sector Norte",
     participants: 34,
     evidenceCount: 12,
-    status: 'current',
+    status: "current",
   },
   {
     id: 2,
-    title: 'Taller de Primeros Auxilios Comunitarios',
+    title: "Taller de Primeros Auxilios Comunitarios",
     description:
-      'Capacitación práctica sobre atención prehospitalaria básica y manejo de emergencias.',
-    date: '2026-11-17',
-    startTime: '10:00 AM',
-    location: 'Casa Comunal Ciudad Delgado',
+      "Capacitación práctica sobre atención prehospitalaria básica y manejo de emergencias.",
+    date: "2026-11-17",
+    startTime: "10:00 AM",
+    location: "Casa Comunal Ciudad Delgado",
     participants: 18,
     evidenceCount: 4,
-    status: 'current',
+    status: "current",
   },
   {
     id: 3,
-    title: 'Limpieza de Quebrada y Clasificación de Residuos',
+    title: "Limpieza de Quebrada y Clasificación de Residuos",
     description:
-      'Recolección de plásticos y desechos sólidos junto a voluntarios locales y cuadrillas municipales.',
-    date: '2026-11-21',
-    startTime: '07:30 AM',
-    location: 'Colonia San Sebastián, Punto de Encuentro Cancha #2',
+      "Recolección de plásticos y desechos sólidos junto a voluntarios locales y cuadrillas municipales.",
+    date: "2026-11-21",
+    startTime: "07:30 AM",
+    location: "Colonia San Sebastián, Punto de Encuentro Cancha #2",
     participants: 45,
     evidenceCount: 0,
-    status: 'upcoming',
+    status: "upcoming",
   },
   {
     id: 4,
-    title: 'Entrega de Kits Escolares y Útiles',
+    title: "Entrega de Kits Escolares y Útiles",
     description:
-      'Distribución de paquetes escolares para niños de primaria antes del inicio del próximo ciclo.',
-    date: '2026-11-28',
-    startTime: '09:00 AM',
-    location: 'Centro Escolar República de Honduras',
+      "Distribución de paquetes escolares para niños de primaria antes del inicio del próximo ciclo.",
+    date: "2026-11-28",
+    startTime: "09:00 AM",
+    location: "Centro Escolar República de Honduras",
     participants: 12,
     evidenceCount: 0,
-    status: 'upcoming',
+    status: "upcoming",
   },
   {
     id: 5,
-    title: 'Campaña de Vacunación y Desparasitación Canina',
+    title: "Campaña de Vacunación y Desparasitación Canina",
     description:
-      'Atención veterinaria gratuita para mascotas de la comunidad en coordinación con brigadas móviles.',
-    date: '2026-11-10',
-    startTime: '08:00 AM',
-    location: 'Parque Central de Delgado',
+      "Atención veterinaria gratuita para mascotas de la comunidad en coordinación con brigadas móviles.",
+    date: "2026-11-10",
+    startTime: "08:00 AM",
+    location: "Parque Central de Delgado",
     participants: 62,
     evidenceCount: 29,
-    status: 'completed',
+    status: "completed",
   },
   {
     id: 6,
-    title: 'Pintura y Restauración de Cancha Deportiva',
+    title: "Pintura y Restauración de Cancha Deportiva",
     description:
-      'Renovación de pintura en graderíos, marcaje de líneas de juego y reparación de tableros de baloncesto.',
-    date: '2026-11-02',
-    startTime: '07:00 AM',
-    location: 'Complejo Deportivo El Pepeto',
+      "Renovación de pintura en graderíos, marcaje de líneas de juego y reparación de tableros de baloncesto.",
+    date: "2026-11-02",
+    startTime: "07:00 AM",
+    location: "Complejo Deportivo El Pepeto",
     participants: 27,
     evidenceCount: 19,
-    status: 'completed',
+    status: "completed",
   },
 ];
+
+const user: User = {
+  name: "Carlos"
+};
 
 export default function Home() {
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
-
       <div className="container mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-
- {/* <MyActivityDashboard user={user} activities={activities} /> */}
-
+        <MyActivityDashboard user={user} activities={activities} />
       </div>
-
     </main>
   );
 }
