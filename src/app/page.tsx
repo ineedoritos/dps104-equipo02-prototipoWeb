@@ -81,7 +81,7 @@ const activities: Activity[] = [
 ];
 
 const user: User = {
-  name: "Carlos"
+  name: "juan"
 };
 
 export default function Home() {
