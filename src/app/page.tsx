@@ -1,14 +1,79 @@
+// app/page.tsx
+import ActivityCard, { Activity } from '@/components/ActivityCard';
 
-import MyActivityDashboard, { Activity, User } from "./components/activities/MyActivityDashboard";
-
-const user: User = {
-  name: "Carlos"
-};
-
-const activities: Activity[] = [
-  { dummy: "Reforestación comunitaria" },
-  { dummy: "Jornada de limpieza" },
-  { dummy: "Entrega de alimentos" }
+const mockActivities: Activity[] = [
+  {
+    id: 1,
+    title: 'Jornada de Reforestación Parque Bicentenario',
+    description:
+      'Siembra de árboles nativos en la zona norte del parque y mantenimiento de senderos ecológicos.',
+    date: '2026-11-17',
+    startTime: '08:30 AM',
+    location: 'Parque Bicentenario, Sector Norte',
+    participants: 34,
+    evidenceCount: 12,
+    status: 'current',
+  },
+  {
+    id: 2,
+    title: 'Taller de Primeros Auxilios Comunitarios',
+    description:
+      'Capacitación práctica sobre atención prehospitalaria básica y manejo de emergencias.',
+    date: '2026-11-17',
+    startTime: '10:00 AM',
+    location: 'Casa Comunal Ciudad Delgado',
+    participants: 18,
+    evidenceCount: 4,
+    status: 'current',
+  },
+  {
+    id: 3,
+    title: 'Limpieza de Quebrada y Clasificación de Residuos',
+    description:
+      'Recolección de plásticos y desechos sólidos junto a voluntarios locales y cuadrillas municipales.',
+    date: '2026-11-21',
+    startTime: '07:30 AM',
+    location: 'Colonia San Sebastián, Punto de Encuentro Cancha #2',
+    participants: 45,
+    evidenceCount: 0,
+    status: 'upcoming',
+  },
+  {
+    id: 4,
+    title: 'Entrega de Kits Escolares y Útiles',
+    description:
+      'Distribución de paquetes escolares para niños de primaria antes del inicio del próximo ciclo.',
+    date: '2026-11-28',
+    startTime: '09:00 AM',
+    location: 'Centro Escolar República de Honduras',
+    participants: 12,
+    evidenceCount: 0,
+    status: 'upcoming',
+  },
+  {
+    id: 5,
+    title: 'Campaña de Vacunación y Desparasitación Canina',
+    description:
+      'Atención veterinaria gratuita para mascotas de la comunidad en coordinación con brigadas móviles.',
+    date: '2026-11-10',
+    startTime: '08:00 AM',
+    location: 'Parque Central de Delgado',
+    participants: 62,
+    evidenceCount: 29,
+    status: 'completed',
+  },
+  {
+    id: 6,
+    title: 'Pintura y Restauración de Cancha Deportiva',
+    description:
+      'Renovación de pintura en graderíos, marcaje de líneas de juego y reparación de tableros de baloncesto.',
+    date: '2026-11-02',
+    startTime: '07:00 AM',
+    location: 'Complejo Deportivo El Pepeto',
+    participants: 27,
+    evidenceCount: 19,
+    status: 'completed',
+  },
 ];
 
 export default function Home() {
@@ -17,7 +82,7 @@ export default function Home() {
 
       <div className="container mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
 
-        <MyActivityDashboard user={user} activities={activities} />
+ {/* <MyActivityDashboard user={user} activities={activities} /> */}
 
       </div>
 
