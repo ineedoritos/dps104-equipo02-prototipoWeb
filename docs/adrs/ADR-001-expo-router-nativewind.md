@@ -13,6 +13,7 @@ La app debe ejecutarse en React Native con Expo, tener al menos 4 pantallas, com
 4. **Objetivo de pruebas en Android:**
    - Para UI inicial (`Fase 2`), cámara QR y GPS puede usarse Expo Go o Development Build.
    - Para notificaciones push remotas (`HU16`), usar **Android Development Build (`expo-dev-client`)** compilado vía `npx expo run:android` (Android SDK local) o EAS Build (tier gratuito en la nube).
+5. **Redux Toolkit + React Redux** para el estado compartido de la app. `[SETUP-01]` instala las dependencias. La primera historia que necesite estado compartido configura el store, el `Provider` y los slices que use.
 
 ## Consecuencias
 - **Positivas:** rutas deterministas para agentes, recarga rápida, sin costo de licencia iOS para push.
