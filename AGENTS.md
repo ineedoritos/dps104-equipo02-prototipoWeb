@@ -28,4 +28,19 @@ Nunca adivines reglas de negocio, nombres de tablas ni rutas de pantallas. Antes
 ## 4. Git Flow y cambios a specs
 - Flujo de ramas: `main` (cortes `"Fase N"` de cada laboratorio) ← `develop` (integración diaria) ← rama de trabajo del integrante.
 - Si una implementación requiere ajustar una regla de negocio, tabla o pantalla, actualiza el archivo correspondiente en `docs/` **en el mismo PR**.
-- Nunca copies los Criterios de Aceptación completos en las issues: usa enlaces relativos (`docs/specs/...#huXX`).
+- Nunca copies los Criterios de Aceptación completos en las issues: enlaza a los docs. Dentro de una issue usa URL absoluta a `develop` (`https://github.com/pgap22/registro-actividades-udb/blob/develop/docs/specs/...#huXX`); los enlaces relativos solo funcionan dentro de archivos del repo.
+
+## 5. Leer issues con GitHub CLI (`gh`)
+- **Recomendado:** antes de empezar una issue, el desarrollador o el agente debe tener instalada y autenticada la [GitHub CLI](https://cli.github.com/). Así la issue se lee desde la terminal, sin copiar y pegar desde el navegador.
+  - Instalar: `winget install --id GitHub.cli` (Windows) · `brew install gh` (macOS) · ver https://cli.github.com/ para Linux.
+  - Autenticar una sola vez: `gh auth login`.
+- Si el agente detecta que `gh` no está instalado o autenticado, **debe recomendar instalarlo** al desarrollador antes de continuar, en lugar de adivinar el contenido de la issue.
+- Comandos útiles:
+  ```bash
+  gh issue list --milestone "MVP · Alta"            # issues de un milestone
+  gh issue list --search "[HU07]" --state all       # buscar por clave de historia
+  gh issue view 12                                  # leer una issue (alcance, plan, E2E, DoD)
+  gh issue view 12 --comments                       # incluir comentarios
+  gh issue develop 12 --base develop --checkout     # crear rama de trabajo desde develop ligada a la issue
+  gh pr create --base develop                       # abrir PR hacia develop
+  ```
