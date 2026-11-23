@@ -1,6 +1,6 @@
 # Guía de prueba manual End-to-End (Human-in-the-loop · Android)
 
-Este proyecto **no usa tests automatizados** (`ADR-005`). Toda issue y cada corte `develop → main` se valida a mano en un teléfono Android real siguiendo esta guía.
+Este proyecto **no usa tests automatizados** (`ADR-005`). Toda issue y cada corte de fase se validan a mano en un teléfono Android real siguiendo esta guía.
 
 ---
 
@@ -13,7 +13,7 @@ Mantén siempre estas 3 cuentas en el proyecto Supabase de desarrollo para poder
 ---
 
 ## 2. Protocolo estándar al revisar cualquier PR (3–5 min)
-Antes de aprobar un PR hacia `develop`, el desarrollador humano verifica:
+Antes de aprobar un PR de integración, el desarrollador humano verifica:
 1. El agente reporta `typecheck` y `lint` en verde.
 2. En Android, ejecutar el **Guion E2E específico de la issue** (camino feliz + casos borde).
 3. Verificar los **3 estados obligatorios de `RNF04`** en las pantallas tocadas:
@@ -23,7 +23,7 @@ Antes de aprobar un PR hacia `develop`, el desarrollador humano verifica:
 
 ---
 
-## 3. Los 4 Flujos Maestros (obligatorios antes de cada corte `develop → main` y para la prueba del 2–4 dic)
+## 3. Los 4 Flujos Maestros (obligatorios antes de cada corte de fase y para la prueba del 2–4 dic)
 
 Estos son exactamente los 4 *Task Flows* definidos en la Tabla 3 del T1 y en `docs/artifacts/Flujo de Registro de actividades.html`.
 

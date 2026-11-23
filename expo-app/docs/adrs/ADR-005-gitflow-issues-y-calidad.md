@@ -8,10 +8,10 @@ Equipo de 2 desarrolladores (Gerardo y Christian) con plazo de 4 semanas, entreg
 
 ## Decisión
 1. **Git Flow ligero:**
-   - `main`: rama protegida de entregas. Solo recibe merges desde `develop` al cierre de cada laboratorio con commit `"Fase N"`.
-   - `develop`: rama de integración diaria entre los 2 integrantes.
-   - Ramas de trabajo: cada integrante trabaja en su rama (o rama corta `feat/huXX-...` desde `develop`) y abre PR pequeño hacia `develop` al terminar cada issue, sincronizando con `develop` a diario.
-   - *Nota GitHub:* `Closes #N` auto-cierra issues solo al mergear en la rama por defecto del repo; si `main` es default, las issues se cierran manualmente (o vía `gh`) cuando su PR pasa la prueba E2E en `develop`.
+   - `main` es la rama predeterminada y recibe los PR de integración y los cortes de laboratorio `"Fase N"`.
+   - Cada integrante crea su rama de trabajo desde `main`, abre un PR pequeño hacia `main` y sincroniza su rama de trabajo a diario.
+   - Si el equipo habilita `develop` como rama de integración, los PR de trabajo apuntarán a `develop` y los cortes de fase se integrarán en `main`.
+   - `Closes #N` cierra la issue al integrar el PR en la rama predeterminada. Si la rama de integración es otra, la issue se cierra manualmente tras aprobar su prueba E2E.
 2. **Trazabilidad unidireccional (link, no copia):**
    - `PR / Commit` → referencia `#issue` → enlaza a `docs/specs/...#huXX`, `docs/database.md` y `docs/screens/SCREEN-XX.md`.
    - Los archivos en `docs/` **nunca** mantienen tablas inversas con números de issue; se consulta con `gh issue list --search "[HU07]" --state all`.
@@ -27,5 +27,5 @@ Equipo de 2 desarrolladores (Gerardo y Christian) con plazo de 4 semanas, entreg
      4. Revisión rápida del otro integrante + captura de pantalla si hay cambios de UI.
 
 ## Consecuencias
-- **Positivas:** cero tiempo quemado en mantener boards o mocks de tests; integración diaria en `develop` evita *merge hell* antes de cada entrega `"Fase N"`.
-- **Riesgo y mitigación:** sin tests automatizados pueden colarse regresiones al tocar lógica de horas o reportes; se mitiga corriendo los **4 flujos maestros** de `docs/e2e-manual-guide.md` antes de cada corte `develop → main`.
+- **Positivas:** la integración diaria reduce los conflictos antes de cada entrega `"Fase N"`.
+- **Riesgo y mitigación:** la lógica de horas o reportes puede sufrir regresiones. Ejecutar los **4 flujos maestros** de `docs/e2e-manual-guide.md` antes de cada corte de fase.

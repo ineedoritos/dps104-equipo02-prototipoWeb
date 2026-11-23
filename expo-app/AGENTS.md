@@ -26,9 +26,9 @@ Nunca adivines reglas de negocio, nombres de tablas ni rutas de pantallas. Antes
 - Al terminar tu cambio, entrega al desarrollador humano el **guion de prueba manual E2E en Android** correspondiente para que valide de punta a punta antes de aprobar el PR.
 
 ## 4. Git Flow y cambios a specs
-- Flujo de ramas: `main` (cortes `"Fase N"` de cada laboratorio) ← `develop` (integración diaria) ← rama de trabajo del integrante.
+- `main` es la rama de integración y de los cortes `"Fase N"`. Cada integrante abre su PR desde una rama de trabajo según `docs/adrs/ADR-005-gitflow-issues-y-calidad.md`.
 - Si una implementación requiere ajustar una regla de negocio, tabla o pantalla, actualiza el archivo correspondiente en `docs/` **en el mismo PR**.
-- Nunca copies los Criterios de Aceptación completos en las issues. Enlaza a los documentos de `expo-app/docs/` con una URL absoluta de `develop`, por ejemplo `https://github.com/ineedoritos/dps104-equipo02-registro-actividades/blob/develop/expo-app/docs/specs/...#huXX`.
+- Nunca copies los Criterios de Aceptación completos en las issues. Enlaza a los documentos de `expo-app/docs/` con una URL absoluta de `main`, por ejemplo `https://github.com/ineedoritos/dps104-equipo02-prototipoWeb/blob/main/expo-app/docs/specs/...#huXX`.
 
 ## 5. Leer issues con GitHub CLI (`gh`)
 - **Recomendado:** antes de empezar una issue, el desarrollador o el agente debe tener instalada y autenticada la [GitHub CLI](https://cli.github.com/). Así la issue se lee desde la terminal, sin copiar y pegar desde el navegador.
@@ -41,8 +41,8 @@ Nunca adivines reglas de negocio, nombres de tablas ni rutas de pantallas. Antes
   gh issue list --search "[HU07]" --state all       # buscar por clave de historia
   gh issue view 12                                  # leer una issue (alcance, plan, E2E, DoD)
   gh issue view 12 --comments                       # incluir comentarios
-  gh issue develop 12 --base develop --checkout     # crear rama de trabajo desde develop ligada a la issue
-  gh pr create --base develop                       # abrir PR hacia develop
+  gh issue develop 12 --base main --checkout        # crear rama de trabajo desde main ligada a la issue
+  gh pr create --base main                          # abrir PR hacia main
   ```
 
 ## 6. Skills de agentes
