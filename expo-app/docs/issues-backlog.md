@@ -2,7 +2,7 @@
 
 Catálogo listo para crear las issues en GitHub (`gh api` o MCP).
 > **Regla:** nunca copies los Criterios de Aceptación completos en el cuerpo de una issue; enlaza siempre a `docs/specs/...#huXX`.
-> **En GitHub:** usa URLs absolutas a los documentos de `expo-app/docs/` en `develop`, por ejemplo `https://github.com/ineedoritos/dps104-equipo02-registro-actividades/blob/develop/expo-app/docs/...#huXX`. Las anclas `#huXX`, `#rpc-...`, `#rls` y `#tablas-alta` existen como `<a id>` en los docs.
+> **En GitHub:** usa URLs absolutas a los documentos de `expo-app/docs/` en `main`, por ejemplo `https://github.com/ineedoritos/dps104-equipo02-prototipoWeb/blob/main/expo-app/docs/...#huXX`. Las anclas `#huXX`, `#rpc-...`, `#rls` y `#tablas-alta` existen como `<a id>` en los docs.
 
 ---
 
@@ -49,7 +49,7 @@ Catálogo listo para crear las issues en GitHub (`gh api` o MCP).
 - [ ] Cumple los CA referenciados sin romper otras HUs.
 - [ ] `typecheck` y `lint` pasan sin errores (sin agregar tests automatizados).
 - [ ] Sin llaves privadas (`service_role`) en el cliente; autorización en servidor (RNF03).
-- [ ] PR pequeño hacia `develop` + captura en Android + prueba manual E2E aprobada.
+- [ ] PR pequeño hacia `main` + captura en Android + prueba manual E2E aprobada.
 ```
 
 ---
