@@ -54,7 +54,7 @@ Catálogo listo para crear las issues en GitHub (`gh api` o MCP).
 
 ---
 
-## 3. Catálogo de 24 Issues Verticales
+## 3. Catálogo de 25 Issues Verticales
 Las dependencias se expresan por **clave** (no por número de issue); al crearlas en GitHub se enlazan con `blocked by`.
 
 ### Milestone 1 · `Fase 2 · UI` (meta 24-nov)
@@ -91,7 +91,8 @@ Las dependencias se expresan por **clave** (no por número de issue); al crearla
 | Clave | Título | Depende de | Docs clave | Alcance y guion E2E rápido |
 |---|---|---|---|---|
 | `HU11` | `[HU11] GPS puntual de referencia y comprobación 100 m en QR` | `HU05`, `HU08b` | `04-funciones-media.md#hu11`, `ADR-003`, `SCREEN-07`, `SCREEN-14` | Capturar `ref_latitud/ref_longitud` + validar `precision <= 50 m` y Haversine `<= 100 m` en `registrar_asistencia_qr` (sin mapas). **E2E:** aprobar en sitio, rechazar fuera de radio o sin permiso GPS. |
-| `HU16` | `[HU16] Notificaciones in-app + Push Android (Dev Build + FCM v1)` | `HU07b`, `HU09b` | `04-funciones-media.md#hu16`, `ADR-004`, `SCREEN-18` | `tokens_push`, bandeja `notificaciones` (leída/no leída, `clave_unica`), Edge Function a Expo Push para `asistencia_modificada` y `horas_actualizadas`. *(El evento `solicitud_revision` se conecta en `HU13`.)* **E2E:** con permiso push (Android + bandeja) y sin permiso (solo bandeja). |
+| `SETUP-03` | `[SETUP-03] Push Android: Firebase FCM v1 + Development Build + Edge Function` | `SETUP-02` | `05-setup-tecnico.md#setup-03`, `ADR-001`, `ADR-004` | Proyecto Firebase Spark (solo FCM v1), credenciales en EAS, Development Build Android, Edge Function `enviar-push` + webhook en `notificaciones`. **E2E:** push de prueba desde expo.dev y desde un INSERT en `notificaciones` llega al teléfono. |
+| `HU16` | `[HU16] Notificaciones in-app + Push Android (Dev Build + FCM v1)` | `SETUP-03`, `HU07b`, `HU09b` | `04-funciones-media.md#hu16`, `ADR-004`, `SCREEN-18` | Registro de `tokens_push` por usuario, bandeja `notificaciones` (leída/no leída, `clave_unica`) y generación de eventos (la infraestructura push viene de `SETUP-03`) para `asistencia_modificada` y `horas_actualizadas`. *(El evento `solicitud_revision` se conecta en `HU13`.)* **E2E:** con permiso push (Android + bandeja) y sin permiso (solo bandeja). |
 | `HU13` | `[HU13] Solicitudes de revisión de asistencia` | `HU14`, `HU16` | `04-funciones-media.md#hu13`, `SCREEN-17` | Solicitar revisión con motivo (máx. 1 pendiente por jornada), resolver con motivo, corregir por `HU07`/`HU09` y emitir notificación `solicitud_revision` a responsables. **E2E:** crear solicitud, duplicar pendiente (bloqueado), resolver y ver estado. |
 | `HU10` | `[HU10] Evidencia fotográfica opcional por jornada` | `HU05` | `04-funciones-media.md#hu10`, `SCREEN-08` | Captura/subida opcional a Storage, galería con autor/fecha y retiro por responsable. **E2E:** subir y retirar foto sin borrar asistencia; permiso de cámara denegado no bloquea. |
 | `HU12` | `[HU12] Validación previa de participación` | `HU07b`, `HU09b` | `04-funciones-media.md#hu12`, `SCREEN-09` | Aprobar / volver a `pendiente` al editar, sin auto-aprobación y sin aprobar horas incompletas. **E2E:** aprobar registro y comprobar vuelta a pendiente al editarlo. |

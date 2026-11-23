@@ -20,7 +20,8 @@ Spec de soporte para las issues `[SETUP-01]` y `[SETUP-02]`. Las decisiones est�
 | Cliente BD | `@supabase/supabase-js` v2 + `@react-native-async-storage/async-storage` + `react-native-url-polyfill` | *(anotar)* | Sesión persistente y llamadas RPC. |
 | Migraciones | Supabase CLI (vía `npx supabase`) | *(anotar)* | SQL versionado en `supabase/migrations/`. |
 | Calidad | `tsc --noEmit` + `expo lint` (ESLint) | — | `typecheck` y `lint` (`ADR-005`). **Sin tests automatizados.** |
-| Hardware *(según issue)* | `expo-camera` (`HU08b`), `expo-location` (`HU11`), `expo-notifications` + `expo-dev-client` (`HU16`) | la del SDK | Instalar **solo** en la issue que lo usa, con `npx expo install`. |
+| Hardware *(según issue)* | `expo-camera` (`HU08b`), `expo-location` (`HU11`), `expo-notifications` + `expo-device` + `expo-dev-client` (`SETUP-03`) | la del SDK | Instalar **solo** en la issue que lo usa, con `npx expo install`. |
+| Push *(Media)* | Firebase (plan **Spark**, gratis) solo para FCM v1 + EAS (Expo) + Supabase Edge Functions | — | `ADR-004`, `[SETUP-03]`. |
 
 ---
 
@@ -44,7 +45,12 @@ Spec de soporte para las issues `[SETUP-01]` y `[SETUP-02]`. Las decisiones est�
 | Supabase CLI | https://supabase.com/docs/guides/local-development/cli/getting-started |
 | Migraciones de BD | https://supabase.com/docs/guides/deployment/database-migrations |
 | Límites del plan Free | https://supabase.com/pricing |
-| Development builds (para `HU16`) | https://docs.expo.dev/develop/development-builds/introduction/ |
+| Development builds | https://docs.expo.dev/develop/development-builds/introduction/ |
+| Push notifications en Expo (setup) | https://docs.expo.dev/push-notifications/push-notifications-setup/ |
+| Credenciales FCM v1 en Expo | https://docs.expo.dev/push-notifications/fcm-credentials/ |
+| EAS Build (setup) | https://docs.expo.dev/build/setup/ |
+| Supabase Edge Functions + push (ejemplo oficial) | https://supabase.com/docs/guides/functions/examples/push-notifications |
+| Planes de Firebase (Spark gratis) | https://firebase.google.com/pricing |
 | `expo-camera` / `expo-location` / `expo-notifications` | https://docs.expo.dev/versions/latest/ |
 
 ---
@@ -90,6 +96,7 @@ supabase/
    - **No** usar `--supabase` ni plantillas de auth: el cliente se escribe en `[SETUP-02]` según §5.3.
    - Verificar en `package.json` que `nativewind` quedó en **v4** (`ADR-001`). Si el generador instala otra versión mayor, anotarlo en el PR y actualizar `ADR-001` antes de seguir.
 2. Activar `"strict": true` en `tsconfig.json` y comprobar que una pantalla real renderiza clases NativeWind.
+   - Fijar en `app.json` el identificador Android **definitivo**: `"android": { "package": "sv.udb.registroactividades" }`. Firebase (`[SETUP-03]`) queda atado a este valor; cambiarlo después obliga a rehacer credenciales.
 3. Crear el esqueleto de rutas: `(auth)/login`, `(tabs)` con 4 pestañas (`Mis grupos`, `Mi historial`, `Notificaciones`, `Cuenta`) y una ruta interna `grupos/[grupoId]`.
 4. Crear `lib/fecha.ts` (`ADR-006`) y añadir los scripts `typecheck` y `lint`.
 5. Anotar versiones en §1.
@@ -156,3 +163,38 @@ La migración inicial incluye, en este orden:
 - `SETUP02-CA03`: Registrarse en Auth crea automáticamente la fila en `public.usuarios`; crear un grupo agrega al creador como `responsable`.
 - `SETUP02-CA04`: Desde Android con la `anon key`, un usuario sin membresía **no** ve grupos ajenos (RLS comprobada).
 - `SETUP02-CA05`: El repo contiene `supabase/migrations/`, `supabase/seed.sql` y `.env.example`, y **no** contiene `.env` ni `service_role`.
+
+---
+
+<a id="setup-03"></a>
+
+## 6. `[SETUP-03]` · Push Android: Firebase FCM v1 + Development Build *(Media · antes de `HU16`)*
+
+Se hace **al entrar a `MVP · Media`**, no antes (`ADR-004`). Deja la infraestructura lista y probada con un push de prueba; la lógica de eventos, la bandeja y el registro de tokens por usuario son de `[HU16]`.
+
+### 6.1 Firebase (solo credenciales, sin usar otros servicios)
+1. https://console.firebase.google.com → **Crear proyecto** `registro-actividades-udb` (plan **Spark**, sin tarjeta; Analytics desactivado).
+2. **Agregar app Android** con el paquete exacto de `app.json` (`sv.udb.registroactividades`) → descargar `google-services.json`.
+3. *Configuración del proyecto → Cuentas de servicio → Generar nueva clave privada* → archivo JSON de la **cuenta de servicio** (es secreto: **nunca** al repo).
+
+### 6.2 Expo / EAS
+1. Crear cuenta gratuita en https://expo.dev, `npm i -g eas-cli`, `eas login` y `eas init` (agrega `extra.eas.projectId` a la config; lo usa `getExpoPushTokenAsync`).
+2. Subir la clave de cuenta de servicio a Expo: `eas credentials` → *Android* → *Google Service Account* → **FCM V1**.
+3. `google-services.json` sigue ignorado por git: se pasa a EAS como variable de tipo archivo (`eas env:create --name GOOGLE_SERVICES_JSON --type file`) y `app.config.ts` usa `android.googleServicesFile: process.env.GOOGLE_SERVICES_JSON ?? './google-services.json'`.
+4. `npx expo install expo-dev-client expo-notifications expo-device` y configurar el plugin `expo-notifications` (canal Android por defecto).
+5. Compilar el **Development Build**: `eas build --profile development --platform android` (cola gratuita en la nube) o `npx expo run:android` con Android SDK local. Instalar el APK en los teléfonos del equipo.
+
+### 6.3 Supabase (envío desde el servidor)
+1. Crear la Edge Function `enviar-push` (`npx supabase functions new enviar-push`): recibe la fila insertada en `notificaciones`, busca los `tokens_push` activos de `usuario_id` y llama a `https://exp.host/--/api/v2/push/send`.
+2. La función corre **dentro de Supabase**: ahí sí puede usar la llave de servidor que Supabase le inyecta (nunca en la app, `RNF03`).
+3. `npx supabase functions deploy enviar-push` y crear el **Database Webhook** *INSERT en `notificaciones` → `enviar-push`* (*Database → Webhooks*).
+
+### 6.4 Límites y riesgos
+- La cola gratuita de EAS Build puede tardar; compilar el Dev Build **el primer día de Media**.
+- El push **no funciona en Expo Go**; la bandeja in-app sí (`ADR-004`).
+
+**Criterios de aceptación:**
+- `SETUP03-CA01`: El Development Build se instala en Android y abre la app con el paquete `sv.udb.registroactividades`.
+- `SETUP03-CA02`: La app obtiene un `ExponentPushToken[...]` tras conceder permiso, y un push de prueba enviado desde https://expo.dev/notifications llega al teléfono.
+- `SETUP03-CA03`: Insertar manualmente una fila en `notificaciones` (SQL Editor) para un usuario con token dispara `enviar-push` y llega el push.
+- `SETUP03-CA04`: El repo no contiene `google-services.json`, la clave de la cuenta de servicio ni llaves de servidor de Supabase.
