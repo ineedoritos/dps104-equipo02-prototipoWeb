@@ -1,6 +1,6 @@
 # Spec 00 · Visión general, alcance y reglas transversales
 
-Fuente académica base: `DPS104_Equipo02_T1_corregido (1).pdf` (Equipo 02 · Ciclo 03-2026).
+Fuente académica base: `docs/artifacts/DPS104_Equipo02_T1_corregido (1).pdf` (Equipo 02 · Ciclo 03-2026).
 
 ## 1. Problema e hipótesis del MVP
 - **Problema:** ¿Cómo lograr que responsables y participantes vean el mismo registro de asistencia y horas **el mismo día de la jornada**, para detectar inconsistencias antes de que nadie las olvide?

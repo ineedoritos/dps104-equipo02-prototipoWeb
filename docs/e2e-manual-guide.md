@@ -25,7 +25,7 @@ Antes de aprobar un PR hacia `develop`, el desarrollador humano verifica:
 
 ## 3. Los 4 Flujos Maestros (obligatorios antes de cada corte `develop → main` y para la prueba del 2–4 dic)
 
-Estos son exactamente los 4 *Task Flows* definidos en la Tabla 3 del T1 y en `Flujo de Registro de actividades.html`.
+Estos son exactamente los 4 *Task Flows* definidos en la Tabla 3 del T1 y en `docs/artifacts/Flujo de Registro de actividades.html`.
 
 ### Flujo 1 · Encargado de iglesia (Responsable · Manual + Control de horas)
 - **Objetivo:** registrar asistencia, horas y un ajuste con motivo; luego verificarlo en el reporte.

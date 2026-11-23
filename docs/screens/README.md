@@ -1,6 +1,6 @@
 # Inventario de pantallas y mapa de navegación (`RNF01`)
 
-Basado 1 a 1 en las 17 pantallas de `Wireflow de Registro de actividades (1).html` más la pantalla 18 de Notificaciones (`HU16` · Media).
+Basado 1 a 1 en las 17 pantallas de `docs/artifacts/Wireflow de Registro de actividades (1).html` más la pantalla 18 de Notificaciones (`HU16` · Media).
 Navegación con **Expo Router** combinando **pila (Stack) + pestañas (Tabs)** según `ADR-001`.
 
 ## Árbol de rutas sugerido (Expo Router)

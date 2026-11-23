@@ -1,6 +1,6 @@
 # Contrato de base de datos · Supabase (PostgreSQL en español)
 
-Diagrama visual interactivo aprobado: `ER de Registro de actividades.html`.
+Diagrama visual interactivo aprobado: `docs/artifacts/ER de Registro de actividades.html`.
 Zona horaria de referencia para jornadas de un solo día: **`America/El_Salvador`** (UTC-6). Ver `docs/adrs/ADR-006-zona-horaria.md`.
 
 ---
