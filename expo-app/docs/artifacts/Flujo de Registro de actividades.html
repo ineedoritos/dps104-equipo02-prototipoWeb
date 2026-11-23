@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flujo de Registro de actividades</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Pizarra tipo FigJam: lienzo punteado, carriles por rol, la línea punteada marca lo que es prioridad Media */
+  --bg:#ECEFF2; --surface:#FFFFFF; --ink:#17212B; --muted:#5D6A77; --line:#C8D0D8;
+  --resp:#0D7A72; --part:#B85409; --accent:#3346D3;
+  --font-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body:"IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono:"IBM Plex Mono", ui-monospace, Menlo, monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F141A; --surface:#18212B; --ink:#E5EAF0; --muted:#94A2B0; --line:#2F3B48;
+    --resp:#3EC1B4; --part:#F08D3E; --accent:#8C9BFF; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F141A; --surface:#18212B; --ink:#E5EAF0; --muted:#94A2B0; --line:#2F3B48;
+  --resp:#3EC1B4; --part:#F08D3E; --accent:#8C9BFF; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.5}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+header{padding:22px 24px 6px;display:flex;flex-wrap:wrap;gap:14px 28px;align-items:flex-end;justify-content:space-between}
+.eyebrow{font-family:var(--font-mono);font-size:12px;color:var(--muted);letter-spacing:.02em}
+h1{font-family:var(--font-display);font-weight:700;font-size:clamp(24px,3.2vw,34px);line-height:1.1;margin:4px 0 0;text-wrap:balance}
+.tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:4px}
+.tabs button{border:0;background:transparent;padding:7px 14px;border-radius:7px;cursor:pointer;font-weight:500;color:var(--muted)}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+
+.kinds{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:12px 24px 4px}
+.kind{border-top:2px solid var(--line);padding:8px 2px 0}
+.kind.on{border-top-color:var(--accent)}
+.kind b{font-family:var(--font-display);font-weight:600;font-size:16px}
+.kind .tag{font-family:var(--font-mono);font-size:11px;margin-left:6px;color:var(--accent)}
+.kind p{margin:2px 0 0;font-size:13.5px;color:var(--muted);max-width:46ch}
+
+.view{display:none;padding:14px 24px 28px}
+.view.active{display:block}
+
+.toolbar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin-bottom:10px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:transparent;padding:6px 12px;cursor:pointer;font-size:14px;color:var(--muted)}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:color-mix(in srgb,var(--accent) 14%,var(--surface));color:var(--ink);font-weight:600}
+.check{display:inline-flex;gap:8px;align-items:center;font-size:14px;cursor:pointer}
+.check input{accent-color:var(--accent);width:16px;height:16px}
+.zoom{margin-left:auto;display:inline-flex;gap:4px}
+.zoom button{border:1px solid var(--line);background:var(--surface);border-radius:7px;min-width:34px;height:32px;cursor:pointer;padding:0 10px;font-size:14px}
+
+.board{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:14px;align-items:start}
+.canvas{position:relative;border:1px solid var(--line);border-radius:14px;overflow:auto;max-height:min(74vh,780px);
+  background-color:var(--bg);background-image:radial-gradient(color-mix(in srgb,var(--muted) 38%,transparent) 1px,transparent 1.2px);background-size:22px 22px;cursor:grab}
+.canvas.drag{cursor:grabbing}
+.canvas svg{display:block;user-select:none}
+
+/* Diagrama */
+.lane-band{stroke:none}
+.lane-label{font-family:var(--font-mono);font-size:11px;letter-spacing:.12em;fill:var(--muted)}
+.edge path.e{fill:none;stroke:color-mix(in srgb,var(--ink) 55%,transparent);stroke-width:1.6}
+.edge.media path.e{stroke-dasharray:6 5}
+.edge text{font-size:11.5px;fill:var(--muted);font-family:var(--font-body)}
+.edge rect.lb{fill:var(--bg)}
+.arrowhead{fill:color-mix(in srgb,var(--ink) 55%,transparent)}
+.arrowhead.hl{fill:var(--accent)}
+.edge.hl path.e{stroke:var(--accent);stroke-width:2.4}
+.edge.hl text{fill:var(--accent);font-weight:600}
+
+.node{cursor:pointer}
+.node .box{fill:var(--surface);stroke:var(--line);stroke-width:1.2}
+.node.media .box{stroke-dasharray:5 4;stroke:color-mix(in srgb,var(--muted) 70%,transparent)}
+.node .stripe.resp{fill:var(--resp)} .node .stripe.part{fill:var(--part)} .node .stripe.entry{fill:var(--muted)}
+.node.action .box.resp{fill:color-mix(in srgb,var(--resp) 13%,var(--surface));stroke:var(--resp)}
+.node.action .box.part{fill:color-mix(in srgb,var(--part) 13%,var(--surface));stroke:var(--part)}
+.node.decision .box{fill:var(--surface);stroke:var(--ink);stroke-width:1.4}
+.node.start .box,.node.end .box{fill:var(--ink);stroke:none}
+.node.start text.l,.node.end text.l{fill:var(--bg);font-weight:600}
+.node.conn .box{fill:var(--surface);stroke:var(--ink);stroke-width:1.6}
+.node.conn text.l{font-family:var(--font-display);font-weight:700;font-size:15px}
+.node text.l{font-size:12.5px;fill:var(--ink);font-family:var(--font-body);font-weight:500}
+.node text.id{font-family:var(--font-mono);font-size:10px;fill:var(--muted)}
+.node .mtag rect{fill:color-mix(in srgb,var(--muted) 18%,var(--surface))}
+.node .mtag text{font-family:var(--font-mono);font-size:9px;fill:var(--muted)}
+.node:hover .box{stroke:var(--accent)}
+.node.sel .box{stroke:var(--accent);stroke-width:2.6}
+.node:focus{outline:none}
+.node:focus-visible .box{stroke:var(--accent);stroke-width:2.6}
+.dim{opacity:.16}
+.hide{display:none}
+
+/* Panel */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 18px 16px;position:sticky;top:12px;max-height:min(72vh,760px);overflow:auto}
+.panel h2{font-family:var(--font-display);font-weight:700;font-size:21px;line-height:1.15;margin:4px 0 8px;text-wrap:balance}
+.panel h3{font-size:12px;font-family:var(--font-mono);font-weight:500;color:var(--muted);letter-spacing:.06em;margin:16px 0 6px;text-transform:uppercase}
+.panel p{margin:0 0 8px}
+.panel ul{margin:0;padding-left:18px}
+.panel li{margin:3px 0}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
+.chip{font-family:var(--font-mono);font-size:11.5px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);background:var(--bg)}
+.chip.resp{border-color:var(--resp);color:var(--resp)}
+.chip.part{border-color:var(--part);color:var(--part)}
+.chip.alta{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip.media{border-style:dashed}
+.legend{display:grid;grid-template-columns:44px 1fr;gap:8px 10px;align-items:center;font-size:13.5px}
+.legend svg{width:44px;height:28px}
+.muted{color:var(--muted)}
+.linkbtn{text-align:left;align-self:flex-start;border:0;background:none;color:var(--accent);padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:2px;font-size:14px}
+.nextlist{display:flex;flex-direction:column;gap:4px}
+
+/* Task flows */
+.flows{display:grid;gap:14px}
+.flow{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;border-left:5px solid var(--line)}
+.flow.resp{border-left-color:var(--resp)} .flow.part{border-left-color:var(--part)} .flow.err{border-left-color:var(--accent)}
+.flow-head{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:baseline;justify-content:space-between}
+.flow h2{font-family:var(--font-display);font-weight:700;font-size:19px;margin:0}
+.flow .who{font-size:13.5px;color:var(--muted)}
+.steps{display:flex;flex-wrap:wrap;gap:8px 4px;align-items:center;margin:12px 0 8px;list-style:none;padding:0}
+.steps li{display:flex;align-items:center;gap:4px}
+.steps li+li::before{content:"";width:18px;height:2px;background:color-mix(in srgb,var(--ink) 45%,transparent);display:inline-block;margin-right:2px}
+.step{border:1px solid var(--line);background:var(--bg);border-radius:9px;padding:6px 10px;font-size:13.5px;cursor:pointer;text-align:left;line-height:1.25}
+.step small{display:block;font-family:var(--font-mono);font-size:10px;color:var(--muted)}
+.step:hover{border-color:var(--accent)}
+.step.dec{border-color:var(--ink);border-style:solid;transform:none;background:var(--surface)}
+.step.end{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.step.end small{color:color-mix(in srgb,var(--bg) 70%,transparent)}
+.flow .meta{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13.5px;color:var(--muted)}
+.flow .meta b{color:var(--ink);font-weight:600}
+.note{font-size:13.5px;color:var(--muted);margin:14px 2px 0;max-width:80ch}
+
+@media (max-width:900px){
+  .board{grid-template-columns:1fr}
+  .panel{position:static;max-height:none}
+  .kinds{grid-template-columns:1fr}
+  .zoom{margin-left:0}
+  header,.view,.kinds{padding-left:16px;padding-right:16px}
+}
+@media (prefers-reduced-motion:no-preference){
+  .node .box,.edge path.e{transition:stroke .15s,stroke-width .15s}
+  .dim{transition:opacity .2s}
+}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="eyebrow">DPS104 · Equipo 02 · Registro de actividades · según la Fase 1 corregida</div>
+    <h1>Cómo se mueve cada usuario por la app</h1>
+  </div>
+  <div class="tabs" role="tablist" aria-label="Vistas">
+    <button role="tab" id="tab-uf" aria-selected="true" aria-controls="user-flow" data-view="user-flow">User flow</button>
+    <button role="tab" id="tab-tf" aria-selected="false" aria-controls="task-flows" data-view="task-flows">Task flows de la prueba</button>
+  </div>
+</header>
+
+<section class="kinds" aria-label="Diferencia entre tipos de flujo">
+  <div class="kind on" id="k-uf"><b>User flow</b><span class="tag">esta vista</span>
+    <p>Todas las rutas que puede tomar un tipo de usuario, con sus decisiones. Son los cuadritos y flechas del whiteboard de Figma.</p></div>
+  <div class="kind" id="k-tf"><b>Task flow</b><span class="tag" id="tf-tag" hidden>esta vista</span>
+    <p>Un solo camino, sin ramas, para completar una tarea concreta. Sirve para guiar la prueba con usuarios.</p></div>
+  <div class="kind"><b>Wireflow</b><span class="tag">siguiente paso</span>
+    <p>El mismo flujo, pero cada cuadro es la pantalla dibujada. Se hace cuando ya diseñen las pantallas.</p></div>
+</section>
+
+<section class="view active" id="user-flow" role="tabpanel" aria-labelledby="tab-uf">
+  <div class="toolbar">
+    <div class="seg" role="group" aria-label="Resaltar rol">
+      <button aria-pressed="true" data-role="all">Todo</button>
+      <button aria-pressed="false" data-role="resp">Responsable</button>
+      <button aria-pressed="false" data-role="part">Participante</button>
+    </div>
+    <label class="check" for="show-media"><input type="checkbox" id="show-media" checked> Mostrar funciones Media</label>
+    <div class="zoom" role="group" aria-label="Zoom">
+      <button id="z-out" aria-label="Alejar">−</button>
+      <button id="z-fit">Ajustar</button>
+      <button id="z-in" aria-label="Acercar">+</button>
+    </div>
+  </div>
+  <div class="board">
+    <figure class="canvas" id="canvas" style="margin:0">
+      <svg id="diagram" role="img" aria-label="User flow de la app: desde Mis grupos, la ruta se divide según el rol en el grupo. El responsable configura, crea actividades, pasa lista o muestra el QR y consulta reportes. El participante escanea el QR, revisa su historial y, si algo no cuadra, lo reporta para que el responsable lo corrija."></svg>
+    </figure>
+    <aside class="panel" id="panel" aria-live="polite"></aside>
+  </div>
+</section>
+
+<section class="view" id="task-flows" role="tabpanel" aria-labelledby="tab-tf">
+  <div class="flows" id="flows"></div>
+  <p class="note">Son las tareas de la Tabla 3. Cada tarea es correcta si lo que el usuario ve en la app coincide con lo que registró. Toca cualquier paso para verlo en el user flow.</p>
+</section>
+
+<script>
+(function(){
+const CW=204, RH=96, X0=140, Y0=64, NW=144, NH=60, DW=124, DH=76, PH=44, CR=17;
+const cx=c=>X0+c*CW, cy=r=>Y0+r*RH;
+
+const N=[
+ {id:'start',c:0,r:4,type:'start',lane:'entry',t:['Abre la app'],title:'Abre la app',desc:'Punto de entrada. Si ya inició sesión antes, pasa directo a Mis grupos.'},
+ {id:'login',c:1,r:4,type:'screen',lane:'entry',hu:'HU01',rf:'RF01',t:['Iniciar sesión','o crear cuenta'],title:'Iniciar sesión o crear cuenta',desc:'Crea su cuenta con nombre, correo y contraseña, o entra con una existente. Hay un solo tipo de cuenta: el rol depende de cada grupo.',crit:['El correo no se puede repetir.','Credenciales inválidas muestran un error.','Al cerrar sesión se bloquea la información privada.']},
+ {id:'grupos',c:2,r:4,type:'screen',lane:'entry',hu:'HU02',rf:'RF02',t:['Mis grupos'],title:'Mis grupos',desc:'Muestra solo los grupos a los que pertenece. Desde aquí crea un grupo nuevo o entra a uno existente.',crit:['Puede pertenecer a varios grupos, con un rol en cada uno.']},
+ {id:'rol',c:3,r:4,type:'decision',lane:'entry',t:['¿Rol en','este grupo?'],title:'¿Qué rol tiene en este grupo?',desc:'La app muestra una vista distinta según el rol en el grupo que abrió. Mariana ve la vista de responsable en la iglesia y la de participante en su otro grupo.'},
+ {id:'crear',c:2,r:2,type:'action',lane:'resp',hu:'HU02',rf:'RF02',t:['Crear grupo'],title:'Crear grupo',desc:'Cualquier cuenta puede crear un grupo con nombre y una descripción opcional. Quien lo crea queda como responsable.'},
+
+ {id:'r_hub',c:4,r:1,type:'screen',lane:'resp',t:['Grupo','vista responsable'],title:'Grupo · vista del responsable',desc:'Inicio del grupo para quien lo administra. Tiene cuatro secciones: Configuración, Actividades, Integrantes y Reportes.'},
+ {id:'r_config',c:5,r:0,type:'screen',lane:'resp',hu:'HU04',rf:'RF04',t:['Configuración'],title:'Configuración del grupo',desc:'Elige cómo se registra la asistencia (manual o por QR) y si se controlan horas.',crit:['Solo los responsables la modifican.','Los cambios aplican a actividades nuevas; los registros anteriores se conservan.','La comprobación GPS solo existe con QR y es Media.']},
+ {id:'r_act',c:5,r:1,type:'screen',lane:'resp',hu:'HU06',rf:'RF06',t:['Actividades'],title:'Actividades',desc:'Lista de actividades del grupo con su estado: programada, en curso, finalizada o cancelada.'},
+ {id:'r_int',c:5,r:2,type:'screen',lane:'resp',hu:'HU03',rf:'RF03',t:['Integrantes'],title:'Integrantes',desc:'Agrega cuentas existentes por correo y asigna un rol: responsable o participante, nunca ambos.',crit:['El último responsable no puede salir ni ser retirado.','Al retirar a alguien se conserva su historial.']},
+ {id:'r_rep',c:5,r:3,type:'screen',lane:'resp',hu:'HU15',rf:'RF15',t:['Reportes'],title:'Reportes de participación',desc:'Tabla por integrante con presentes, ausencias y tasa de asistencia en el período elegido. Es lo que el entrenador usa para decidir convocatorias.',crit:['Tasa = presentes ÷ (presentes + ausencias) × 100.','Las ausencias justificadas cuentan como ausencia, pero se ve su motivo.','Solo lectura, sin exportar.']},
+ {id:'r_crearact',c:6,r:0,type:'action',lane:'resp',hu:'HU05',rf:'RF05',t:['Crear actividad'],title:'Crear actividad',desc:'Título, descripción, inicio y fin. Después se puede editar o cancelar.',crit:['El fin debe ser posterior al inicio.','Si ya hay registros, el horario queda fijo.','Cancelar conserva los registros pero los saca de los totales.']},
+ {id:'r_det',c:6,r:1,type:'screen',lane:'resp',hu:'HU05 · HU06',rf:'RF05 · RF06',t:['Detalle de','actividad'],title:'Detalle de la actividad',desc:'Muestra la actividad y solo las acciones que permiten el rol y la configuración del grupo.'},
+ {id:'r_fotos',c:6,r:2,type:'screen',lane:'resp',media:1,hu:'HU10',rf:'RF10',t:['Fotos de la','actividad'],title:'Fotos de la actividad',desc:'Si el grupo lo activa, los integrantes toman fotos con la cámara como evidencia.',crit:['Nunca es obligatoria.','El responsable puede retirar una foto no autorizada.']},
+ {id:'r_mod',c:7,r:1,type:'decision',lane:'resp',t:['¿Modalidad','del grupo?'],title:'¿Qué modalidad usa el grupo?',desc:'Depende de la Configuración. Manual: el responsable pasa lista. QR: cada participante escanea un código.'},
+ {id:'r_qr',c:7,r:2,type:'screen',lane:'resp',hu:'HU08',rf:'RF08',t:['Mostrar QR'],title:'Mostrar QR',desc:'El responsable muestra en su celular un código para la actividad en curso. Vence a los 15 minutos o al terminar la actividad, y se puede regenerar.'},
+ {id:'connA_in',c:8,r:0,type:'conn',lane:'resp',t:['A'],title:'Conector A · llegan las correcciones',desc:'Cuando un participante reporta un error, el responsable lo corrige en Pasar lista. Los conectores evitan cruzar flechas largas por todo el diagrama.'},
+ {id:'r_lista',c:8,r:1,type:'screen',lane:'resp',hu:'HU07',rf:'RF07',t:['Pasar lista'],title:'Pasar lista',desc:'Marca a cada participante como presente, ausente o justificada (con motivo). También sirve para corregir un registro.',crit:['Un solo registro por participante y actividad: corregir actualiza ese registro.','Si cambia a ausencia, deja de generar horas.','En modo QR, el responsable puede corregir de forma excepcional.']},
+ {id:'r_horas_d',c:9,r:1,type:'decision',lane:'resp',t:['¿Control de','horas activo?'],title:'¿El grupo controla horas?',desc:'Se activa en Configuración y no depende de la modalidad. Un equipo de fútbol puede no usarlo; la iglesia sí.'},
+ {id:'r_horas',c:10,r:1,type:'screen',lane:'resp',hu:'HU09',rf:'RF09',t:['Entrada, salida','y ajuste'],title:'Entrada, salida y ajuste de horas',desc:'Registra la hora de entrada y de salida, y la app calcula la duración. Si el tiempo reconocido es menor, exige un motivo que el participante podrá ver.',crit:['Se rechazan marcas futuras, fuera del horario o solapadas.','Las ausencias no generan horas.']},
+ {id:'r_fin',c:11,r:1,type:'end',lane:'resp',t:['Visible al','instante'],title:'Guardado y visible al instante',desc:'El registro queda en la nube y el participante lo puede consultar ese mismo día. Es el centro de la hipótesis.'},
+ {id:'r_valid',c:11,r:2,type:'screen',lane:'resp',media:1,hu:'HU12',rf:'RF12',t:['Validar','registros'],title:'Validar registros',desc:'Solo si el grupo exige validación: el registro queda pendiente hasta que un responsable lo aprueba.',crit:['Un registro aprobado que se modifica vuelve a pendiente.','Nadie aprueba sus propios registros.']},
+ {id:'connC_in',c:9,r:3,type:'conn',lane:'resp',media:1,t:['C'],title:'Conector C · llegan las solicitudes',desc:'Aquí entran las solicitudes de revisión que el participante crea desde la app.'},
+ {id:'r_resolver',c:10,r:3,type:'screen',lane:'resp',media:1,hu:'HU13',rf:'RF13',t:['Resolver','solicitud'],title:'Resolver solicitud de revisión',desc:'El responsable revisa la solicitud, responde con un motivo y, si procede, corrige en Pasar lista (conector A).'},
+ {id:'connA_out2',c:11,r:3,type:'conn',lane:'resp',media:1,t:['A'],title:'Ir al conector A',desc:'La corrección se hace en Pasar lista.'},
+
+ {id:'p_hub',c:4,r:6,type:'screen',lane:'part',t:['Grupo','vista participante'],title:'Grupo · vista del participante',desc:'Inicio del grupo para quien participa: actividades, su historial y avisos.'},
+ {id:'p_act',c:5,r:5,type:'screen',lane:'part',hu:'HU06',rf:'RF06',t:['Actividades'],title:'Actividades',desc:'Las actividades del grupo con su estado. Las canceladas se distinguen con claridad.'},
+ {id:'p_curso',c:6,r:5,type:'screen',lane:'part',hu:'HU06',rf:'RF06',t:['Actividad','en curso'],title:'Actividad en curso',desc:'Solo una actividad en curso permite registrar presencia.'},
+ {id:'p_scan',c:7,r:5,type:'screen',lane:'part',hu:'HU08',rf:'RF08',t:['Escanear QR'],title:'Escanear QR',desc:'Abre la cámara y escanea el código que muestra el responsable. Si el grupo controla horas, elige entrada o salida.',crit:['El servidor verifica la cuenta, el rol y que el código siga vigente.','Escanear dos veces no duplica el registro.']},
+ {id:'p_gps',c:8,r:5,type:'screen',lane:'part',media:1,hu:'HU11',rf:'RF11',t:['Comprobar','cercanía GPS'],title:'Comprobar cercanía por GPS',desc:'Si el grupo lo activa, pide la ubicación y confirma que está a menos de 100 m de la actividad.',crit:['Sin permiso o fuera del radio no se confirma; el responsable puede registrarlo a mano.']},
+ {id:'p_ok',c:9,r:5,type:'end',lane:'part',t:['Presencia','registrada'],title:'Presencia registrada',desc:'La asistencia aparece de inmediato en su historial.'},
+ {id:'p_hist',c:5,r:6,type:'screen',lane:'part',hu:'HU14',rf:'RF14',t:['Mi historial'],title:'Mi historial',desc:'Muestra sus registros con fecha y estado, su tasa de asistencia y sus horas: registradas, reconocidas y el motivo de cualquier ajuste.',crit:['Incluye grupos anteriores.','Nadie ve registros ajenos sin autorización.']},
+ {id:'p_cuadra',c:6,r:6,type:'decision',lane:'part',t:['¿Todo','cuadra?'],title:'¿Todo cuadra?',desc:'Aquí ocurre lo que mide la prueba: si hay una diferencia, el participante la detecta el mismo día y no semanas después.'},
+ {id:'p_listo',c:7,r:6,type:'end',lane:'part',t:['Listo, sin','preguntar'],title:'Listo, sin preguntarle a nadie',desc:'Es justo lo que pedía la estudiante: ver cuántas horas le cuentan realmente.'},
+ {id:'p_avisa',c:6,r:7,type:'screen',lane:'part',t:['Reporta','el error'],title:'Reporta el error',desc:'En el MVP, el participante le avisa directamente al responsable, que corrige en Pasar lista (conector A). La versión dentro de la app es Media.'},
+ {id:'connA_out1',c:7,r:7,type:'conn',lane:'part',t:['A'],title:'Ir al conector A',desc:'El responsable corrige en Pasar lista y el historial se actualiza ese mismo día.'},
+ {id:'p_solic',c:6,r:8,type:'screen',lane:'part',media:1,hu:'HU13',rf:'RF13',t:['Solicitar','revisión'],title:'Solicitar revisión',desc:'Versión dentro de la app: elige la actividad y escribe el motivo. Llega al responsable por el conector C.',crit:['Una sola solicitud pendiente por actividad.','Crearla no cambia horas ni asistencia.']},
+ {id:'connC_out',c:7,r:8,type:'conn',lane:'part',media:1,t:['C'],title:'Ir al conector C',desc:'La solicitud llega al responsable.'},
+ {id:'p_notif',c:4,r:7,type:'screen',lane:'part',media:1,hu:'HU16',rf:'RF16',t:['Notificaciones'],title:'Notificaciones',desc:'Avisos en la app y push cuando cambia su asistencia o sus horas. Al responsable le llega uno cuando hay una solicitud de revisión.'}
+];
+const byId={}; N.forEach(n=>{n.x=cx(n.c);n.y=cy(n.r);byId[n.id]=n;});
+
+function size(n){
+  if(n.type==='decision')return[DW,DH];
+  if(n.type==='conn')return[CR*2,CR*2];
+  if(n.type==='start'||n.type==='end')return[NW-8,PH];
+  return[NW,NH];
+}
+function anchor(n,side){
+  const[w,h]=size(n);
+  return {left:[n.x-w/2,n.y],right:[n.x+w/2,n.y],top:[n.x,n.y-h/2],bottom:[n.x,n.y+h/2]}[side];
+}
+// m: h (derecha→izquierda con codo), v (sale vertical y entra por la izquierda), d (vertical directo), p (puntos propios)
+const E=[
+ ['start','login'],['login','grupos'],['grupos','rol'],
+ ['grupos','crear',{m:'d',l:'nuevo grupo'}],
+ ['crear','r_hub',{m:'v',l:'quedas como responsable'}],
+ ['rol','r_hub',{m:'v',l:'Responsable'}],
+ ['rol','p_hub',{m:'v',l:'Participante'}],
+ ['r_hub','r_config'],['r_hub','r_act'],['r_hub','r_int'],['r_hub','r_rep'],
+ ['r_act','r_det'],['r_act','r_crearact'],['r_crearact','r_det',{m:'d'}],
+ ['r_det','r_fotos',{m:'d'}],['r_det','r_mod'],
+ ['r_mod','r_lista',{l:'Manual'}],['r_mod','r_qr',{m:'d',l:'QR'}],
+ ['r_qr','p_scan',{m:'d',l:'el participante escanea'}],
+ ['connA_in','r_lista',{m:'d'}],
+ ['r_lista','r_horas_d'],['r_horas_d','r_horas',{l:'Sí'}],['r_horas','r_fin'],
+ ['r_horas_d','r_fin',{m:'p',pts:n=>[anchor(byId.r_horas_d,'top'),[cx(9),cy(0)],[cx(11),cy(0)],anchor(byId.r_fin,'top')],l:'No'}],
+ ['r_fin','r_valid',{m:'d',l:'si exige validación'}],
+ ['connC_in','r_resolver'],['r_resolver','connA_out2',{l:'corrige'}],
+ ['p_hub','p_act'],['p_hub','p_hist'],['p_hub','p_notif',{m:'d'}],
+ ['p_act','p_curso'],['p_curso','p_scan'],
+ ['p_scan','p_gps',{l:'con GPS'}],['p_gps','p_ok'],
+ ['p_scan','p_ok',{m:'p',pts:()=>[anchor(byId.p_scan,'bottom'),[cx(7),cy(5)+48],[cx(9),cy(5)+48],anchor(byId.p_ok,'bottom')],l:'sin GPS'}],
+ ['p_hist','p_cuadra'],['p_cuadra','p_listo',{l:'Sí'}],['p_cuadra','p_avisa',{m:'d',l:'No'}],
+ ['p_avisa','connA_out1',{l:'avisa'}],['p_avisa','p_solic',{m:'d',l:'desde la app'}],['p_solic','connC_out']
+].map(([f,t,o])=>Object.assign({f,t},o||{}));
+E.forEach(e=>{e.media=!!(byId[e.f].media||byId[e.t].media)});
+
+function pointsFor(e){
+  const a=byId[e.f],b=byId[e.t];
+  if(e.m==='p')return e.pts();
+  if(e.m==='d'){const down=b.y>a.y;return[anchor(a,down?'bottom':'top'),anchor(b,down?'top':'bottom')];}
+  if(e.m==='v'){const up=b.y<a.y;const s=anchor(a,up?'top':'bottom');const t=anchor(b,'left');return[s,[s[0],t[1]],t];}
+  const s=anchor(a,'right'),t=anchor(b,'left');
+  if(Math.abs(s[1]-t[1])<1)return[s,t];
+  const mx=(s[0]+t[0])/2;return[s,[mx,s[1]],[mx,t[1]],t];
+}
+function rounded(p,r=10){
+  let d=`M${p[0][0]},${p[0][1]}`;
+  for(let i=1;i<p.length-1;i++){
+    const[a,b,c]=[p[i-1],p[i],p[i+1]];
+    const l1=Math.hypot(b[0]-a[0],b[1]-a[1]),l2=Math.hypot(c[0]-b[0],c[1]-b[1]);
+    const rr=Math.min(r,l1/2,l2/2);
+    const p1=[b[0]-(b[0]-a[0])/l1*rr,b[1]-(b[1]-a[1])/l1*rr];
+    const p2=[b[0]+(c[0]-b[0])/l2*rr,b[1]+(c[1]-b[1])/l2*rr];
+    d+=` L${p1[0]},${p1[1]} Q${b[0]},${b[1]} ${p2[0]},${p2[1]}`;
+  }
+  const z=p[p.length-1];return d+` L${z[0]},${z[1]}`;
+}
+function labelPos(p,e){
+  let best=0,bl=-1;
+  for(let i=0;i<p.length-1;i++){const l=Math.hypot(p[i+1][0]-p[i][0],p[i+1][1]-p[i][1]);if(l>bl){bl=l;best=i;}}
+  if(e.m==='p'){best=1;}
+  return[(p[best][0]+p[best+1][0])/2,(p[best][1]+p[best+1][1])/2];
+}
+
+const svg=document.getElementById('diagram');
+const W=cx(11)+NW/2+48, H=cy(8)+NH/2+40;
+svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+const NS='http://www.w3.org/2000/svg';
+const el=(tag,attrs,parent)=>{const x=document.createElementNS(NS,tag);for(const k in attrs)x.setAttribute(k,attrs[k]);if(parent)parent.appendChild(x);return x;};
+
+const defs=el('defs',{},svg);
+[['arr',''],['arr-hl','hl']].forEach(([id,cl])=>{
+  const m=el('marker',{id,viewBox:'0 0 10 10',refX:'9',refY:'5',markerWidth:'7',markerHeight:'7',orient:'auto-start-reverse'},defs);
+  el('path',{d:'M0,0 L10,5 L0,10 z',class:'arrowhead '+cl},m);
+});
+
+// Carriles
+const lanes=[['resp','RESPONSABLE',cy(0)-48,(cy(3)+cy(4))/2,'var(--resp)'],['entry','ENTRADA',(cy(3)+cy(4))/2,(cy(4)+cy(5))/2,'var(--muted)'],['part','PARTICIPANTE',(cy(4)+cy(5))/2,cy(8)+NH/2+18,'var(--part)']];
+const laneG=el('g',{},svg);
+lanes.forEach(([k,name,y1,y2,col])=>{
+  const g=el('g',{'data-lane':k,class:'lane'},laneG);
+  el('rect',{x:0,y:y1,width:W,height:y2-y1,class:'lane-band',fill:`color-mix(in srgb, ${col} ${k==='entry'?4:7}%, transparent)`},g);
+  el('rect',{x:0,y:y1,width:4,height:y2-y1,fill:col},g);
+  const t=el('text',{x:22,y:(y1+y2)/2,class:'lane-label','text-anchor':'middle',transform:`rotate(-90 22 ${(y1+y2)/2})`},g);t.textContent=name;
+});
+
+const edgeG=el('g',{},svg), nodeG=el('g',{},svg);
+E.forEach((e,i)=>{
+  const p=pointsFor(e);e.idx=i;
+  const g=el('g',{class:'edge'+(e.media?' media':''),'data-f':e.f,'data-t':e.t},edgeG);
+  e.g=g;
+  e.path=el('path',{d:rounded(p),class:'e','marker-end':'url(#arr)'},g);
+  if(e.l){
+    const[lx,ly]=labelPos(p,e);
+    const bg=el('rect',{class:'lb',rx:4},g);
+    const t=el('text',{x:lx,y:ly+4,'text-anchor':'middle'},g);t.textContent=e.l;
+    requestAnimationFrame(()=>{const b=t.getBBox();bg.setAttribute('x',b.x-4);bg.setAttribute('y',b.y-1);bg.setAttribute('width',b.width+8);bg.setAttribute('height',b.height+2);});
+  }
+});
+
+N.forEach(n=>{
+  const[w,h]=size(n);
+  const g=el('g',{class:`node ${n.type} lane-${n.lane}`+(n.media?' media':''),tabindex:'0',role:'button','aria-label':n.title+(n.media?' (prioridad Media)':''),'data-id':n.id},nodeG);
+  n.g=g;
+  if(n.type==='decision'){
+    el('polygon',{points:`${n.x},${n.y-h/2} ${n.x+w/2},${n.y} ${n.x},${n.y+h/2} ${n.x-w/2},${n.y}`,class:'box'},g);
+  }else if(n.type==='conn'){
+    el('circle',{cx:n.x,cy:n.y,r:CR,class:'box'},g);
+  }else{
+    const rx=(n.type==='start'||n.type==='end')?h/2:9;
+    el('rect',{x:n.x-w/2,y:n.y-h/2,width:w,height:h,rx,class:'box '+n.lane},g);
+    if(n.type==='screen'){
+      const cp=el('clipPath',{id:'cp-'+n.id},defs);el('rect',{x:n.x-w/2,y:n.y-h/2,width:w,height:h,rx},cp);
+      el('rect',{x:n.x-w/2,y:n.y-h/2,width:5,height:h,class:'stripe '+n.lane,'clip-path':`url(#cp-${n.id})`},g);
+    }
+  }
+  const lines=n.t, lh=15;
+  let y0=n.y-(lines.length-1)*lh/2+4;
+  if(n.hu&&n.type!=='decision'){
+    const it=el('text',{x:n.x,y:n.y-h/2+15,'text-anchor':'middle',class:'id'},g);it.textContent=n.hu;
+    y0=n.y-h/2+15+16+(lines.length===1?4:0);
+  }
+  if(n.type==='conn')y0=n.y+5;
+  lines.forEach((s,i)=>{const t=el('text',{x:n.x,y:y0+i*lh,'text-anchor':'middle',class:'l'},g);t.textContent=s;});
+  if(n.media&&n.type!=='conn'){
+    const tg=el('g',{class:'mtag'},g);
+    el('rect',{x:n.x+w/2-40,y:n.y-h/2-8,width:36,height:15,rx:7.5},tg);
+    const tt=el('text',{x:n.x+w/2-22,y:n.y-h/2+3,'text-anchor':'middle'},tg);tt.textContent='MEDIA';
+  }
+  g.addEventListener('click',ev=>{ev.stopPropagation();select(n.id);});
+  g.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();select(n.id);}});
+});
+
+// Panel
+const panel=document.getElementById('panel');
+const legendHTML=`
+ <div class="eyebrow">Cómo leer el mapa</div>
+ <h2>Toca cualquier cuadro para ver qué hace</h2>
+ <p class="muted">El mapa empieza a la izquierda en el carril gris y se divide según el rol que la persona tiene en el grupo que abre.</p>
+ <h3>Formas</h3>
+ <div class="legend">
+  <svg viewBox="0 0 44 28" aria-hidden="true"><rect x="2" y="6" width="40" height="16" rx="8" fill="var(--ink)"/></svg><span>Inicio o fin de un camino</span>
+  <svg viewBox="0 0 44 28" aria-hidden="true"><rect x="2" y="3" width="40" height="22" rx="4" fill="var(--surface)" stroke="var(--line)"/><rect x="2" y="3" width="4" height="22" fill="var(--resp)"/></svg><span>Pantalla</span>
+  <svg viewBox="0 0 44 28" aria-hidden="true"><rect x="2" y="3" width="40" height="22" rx="4" fill="color-mix(in srgb,var(--resp) 13%,var(--surface))" stroke="var(--resp)"/></svg><span>Acción (crear algo)</span>
+  <svg viewBox="0 0 44 28" aria-hidden="true"><polygon points="22,2 42,14 22,26 2,14" fill="var(--surface)" stroke="var(--ink)"/></svg><span>Decisión: el camino se divide</span>
+  <svg viewBox="0 0 44 28" aria-hidden="true"><circle cx="22" cy="14" r="10" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.5"/><text x="22" y="18" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink)">A</text></svg><span>Conector: el flujo sigue donde está la misma letra</span>
+  <svg viewBox="0 0 44 28" aria-hidden="true"><rect x="2" y="3" width="40" height="22" rx="4" fill="var(--surface)" stroke="var(--muted)" stroke-dasharray="4 3"/></svg><span>Borde punteado: prioridad Media, solo si da el tiempo</span>
+ </div>
+ <h3>Colores</h3>
+ <div class="chips"><span class="chip resp">Responsable</span><span class="chip part">Participante</span><span class="chip">Entrada</span></div>
+ <h3>Empieza por aquí</h3>
+ <div class="nextlist">
+  <button class="linkbtn" data-go="r_lista">Pasar lista, el centro del flujo del responsable</button>
+  <button class="linkbtn" data-go="p_cuadra">¿Todo cuadra?, donde se detecta el error</button>
+  <button class="linkbtn" data-go="rol">¿Rol en este grupo?, por qué hay dos vistas</button>
+ </div>`;
+function renderPanel(n){
+  if(!n){panel.innerHTML=legendHTML;bindGo(panel);return;}
+  const laneName={resp:'Responsable',part:'Participante',entry:'Entrada'}[n.lane];
+  const kind={screen:'Pantalla',action:'Acción',decision:'Decisión',start:'Inicio',end:'Fin',conn:'Conector'}[n.type];
+  const ins=E.filter(e=>e.t===n.id).map(e=>byId[e.f]);
+  const outs=E.filter(e=>e.f===n.id).map(e=>[byId[e.t],e.l]);
+  const prio=n.hu?(n.media?'<span class="chip media">Media</span>':'<span class="chip alta">Alta</span>'):'';
+  let h=`<div class="eyebrow">${kind} · ${laneName}</div><h2>${n.title}</h2>
+   <div class="chips">${prio}${n.hu?`<span class="chip">${n.hu}</span>`:''}${n.rf?`<span class="chip">${n.rf}</span>`:''}</div>
+   <p style="margin-top:12px">${n.desc}</p>`;
+  if(n.crit)h+=`<h3>Reglas clave</h3><ul>${n.crit.map(c=>`<li>${c}</li>`).join('')}</ul>`;
+  if(ins.length)h+=`<h3>Viene de</h3><div class="nextlist">${ins.map(m=>`<button class="linkbtn" data-go="${m.id}">${m.title}</button>`).join('')}</div>`;
+  if(outs.length)h+=`<h3>Lleva a</h3><div class="nextlist">${outs.map(([m,l])=>`<button class="linkbtn" data-go="${m.id}">${l?l+' → ':''}${m.title}</button>`).join('')}</div>`;
+  h+=`<h3 style="margin-top:18px"></h3><button class="linkbtn" data-clear="1">Ver la leyenda</button>`;
+  panel.innerHTML=h;bindGo(panel);
+}
+function bindGo(root){
+  root.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>{select(b.dataset.go,true);}));
+  root.querySelectorAll('[data-clear]').forEach(b=>b.addEventListener('click',()=>select(null)));
+}
+
+let selected=null;
+function select(id,scroll){
+  selected=id;
+  N.forEach(n=>n.g.classList.toggle('sel',n.id===id));
+  E.forEach(e=>{const on=id&&(e.f===id||e.t===id);e.g.classList.toggle('hl',!!on);e.path.setAttribute('marker-end',on?'url(#arr-hl)':'url(#arr)');});
+  renderPanel(id?byId[id]:null);
+  if(id&&scroll)scrollToNode(byId[id]);
+}
+const canvas=document.getElementById('canvas');
+function scale(){return svg.getBoundingClientRect().width/W;}
+function scrollToNode(n){
+  const s=scale();
+  canvas.scrollTo({left:n.x*s-canvas.clientWidth/2,top:n.y*s-canvas.clientHeight/2,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+}
+
+// Filtros
+let role='all';
+function applyFilters(){
+  const showMedia=document.getElementById('show-media').checked;
+  N.forEach(n=>{
+    n.g.classList.toggle('hide',!showMedia&&!!n.media);
+    n.g.classList.toggle('dim',role!=='all'&&n.lane!==role&&n.lane!=='entry');
+  });
+  E.forEach(e=>{
+    const a=byId[e.f],b=byId[e.t];
+    e.g.classList.toggle('hide',!showMedia&&e.media);
+    const inRole=role==='all'||a.lane===role||b.lane===role;
+    e.g.classList.toggle('dim',!inRole);
+  });
+  laneG.querySelectorAll('.lane').forEach(g=>g.classList.toggle('dim',role!=='all'&&g.dataset.lane!==role&&g.dataset.lane!=='entry'));
+}
+document.querySelectorAll('[data-role]').forEach(b=>b.addEventListener('click',()=>{
+  role=b.dataset.role;
+  document.querySelectorAll('[data-role]').forEach(x=>x.setAttribute('aria-pressed',x===b?'true':'false'));
+  applyFilters();
+}));
+document.getElementById('show-media').addEventListener('change',applyFilters);
+
+// Zoom y paneo
+let z=1;
+function setZoom(v){z=Math.max(.45,Math.min(1.6,v));svg.style.width=(W*z)+'px';svg.style.height=(H*z)+'px';}
+function fit(){const s=Math.min((canvas.clientWidth-4)/W,(canvas.clientHeight-4)/H);setZoom(Math.max(.45,s));}
+document.getElementById('z-in').onclick=()=>setZoom(z*1.2);
+document.getElementById('z-out').onclick=()=>setZoom(z/1.2);
+document.getElementById('z-fit').onclick=fit;
+setZoom(.9);
+
+let drag=null;
+canvas.addEventListener('pointerdown',e=>{if(e.target.closest('.node'))return;drag={x:e.clientX,y:e.clientY,l:canvas.scrollLeft,t:canvas.scrollTop,moved:false};canvas.classList.add('drag');});
+window.addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.abs(dx)+Math.abs(dy)>3)drag.moved=true;canvas.scrollLeft=drag.l-dx;canvas.scrollTop=drag.t-dy;});
+window.addEventListener('pointerup',()=>{if(drag&&!drag.moved&&selected)select(null);drag=null;canvas.classList.remove('drag');});
+
+// Task flows
+const F=[
+ {cls:'resp',title:'Registrar la asistencia y las horas',who:'Encargado de iglesia · responsable · asistencia manual',
+  steps:[['grupos','Mis grupos'],['r_hub','Grupo de la iglesia'],['r_act','Actividades'],['r_det','Jornada de hoy'],['r_lista','Pasar lista'],['r_horas','Entrada, salida y ajuste con motivo'],['r_fin','Guardado y visible','end'],['r_rep','Reportes: presentes, ausencias y tasa']],
+  ok:'Lo que ve en el reporte coincide con lo que registró.'},
+ {cls:'part',title:'Registrar su presencia con QR',who:'Estudiante de servicio social · participante · asistencia por QR',
+  steps:[['grupos','Mis grupos'],['p_hub','Grupo donde hace horas'],['p_act','Actividades'],['p_curso','Actividad en curso'],['p_scan','Escanear QR'],['p_ok','Presencia registrada','end'],['p_hist','Mi historial: asistencia y horas registradas y reconocidas']],
+  ok:'Su historial muestra la presencia y las horas que acaba de marcar.'},
+ {cls:'resp',title:'Pasar lista de un entrenamiento',who:'Entrenador de fútbol · responsable · asistencia manual, sin horas',
+  steps:[['grupos','Mis grupos'],['r_hub','Equipo'],['r_act','Actividades'],['r_det','Entrenamiento de hoy'],['r_lista','Pasar lista: presente, ausente o justificada'],['r_horas_d','¿Control de horas? No','dec'],['r_fin','Guardado y visible','end'],['r_rep','Reportes: tasa y motivos de un jugador']],
+  ok:'Puede decir cuántas veces faltó un jugador y por qué.'},
+ {cls:'err',title:'Detectar una inconsistencia el mismo día',who:'Cualquier perfil · el equipo introduce un error antes de la consulta',
+  steps:[['p_hist','Mi historial'],['p_cuadra','¿Todo cuadra? No: falta una hora','dec'],['p_avisa','Reporta el error'],['connA_in','El responsable lo recibe'],['r_lista','Corrige en Pasar lista'],['p_listo','Historial actualizado ese día','end']],
+  ok:'Indicador nuevo: al menos 2 de 3 usuarios detectan el error.'}
+];
+const flowsEl=document.getElementById('flows');
+F.forEach((f,i)=>{
+  const art=document.createElement('article');art.className='flow '+f.cls;
+  art.innerHTML=`<div class="flow-head"><h2>${i+1}. ${f.title}</h2><span class="who">${f.who}</span></div>
+   <ol class="steps">${f.steps.map(([id,label,k])=>{const n=byId[id];return `<li><button class="step ${k||''}" data-node="${id}"><small>${n.hu||(n.type==='decision'?'decisión':n.type==='end'?'fin':'pantalla')}</small>${label}</button></li>`}).join('')}</ol>
+   <div class="meta"><span><b>Se cumple cuando:</b> ${f.ok}</span></div>`;
+  flowsEl.appendChild(art);
+});
+flowsEl.querySelectorAll('[data-node]').forEach(b=>b.addEventListener('click',()=>{show('user-flow');requestAnimationFrame(()=>select(b.dataset.node,true));}));
+
+// Pestañas con hash
+function show(view){
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===view));
+  document.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-selected',b.dataset.view===view?'true':'false'));
+  document.getElementById('k-uf').classList.toggle('on',view==='user-flow');
+  document.getElementById('k-tf').classList.toggle('on',view==='task-flows');
+  document.querySelector('#k-uf .tag').hidden=view!=='user-flow';
+  document.getElementById('tf-tag').hidden=view!=='task-flows';
+  if(location.hash!=='#'+view)history.replaceState(null,'','#'+view);
+}
+document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>show(b.dataset.view)));
+function fromHash(){const h=location.hash.slice(1);show(h==='task-flows'?'task-flows':'user-flow');}
+window.addEventListener('hashchange',fromHash);
+fromHash();
+renderPanel(null);
+applyFilters();
+})();
+</script>
+</body>
+</html>

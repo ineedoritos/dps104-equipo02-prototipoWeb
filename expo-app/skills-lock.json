@@ -1,0 +1,40 @@
+{
+  "version": 2,
+  "skills": {
+    "debugging-workflows": {
+      "source": "github/gh-aw",
+      "commit": "d2c0ce30c96e44b91c45880fe85467240f717561",
+      "sourceType": "github",
+      "skillPath": ".github/skills/debugging-workflows/SKILL.md",
+      "computedHash": "d66f6178f274e144061535710f5e436af7fbcbe9ddfe12d630e07ced07a98df8"
+    },
+    "github-issue-query": {
+      "source": "github/gh-aw",
+      "commit": "d2c0ce30c96e44b91c45880fe85467240f717561",
+      "sourceType": "github",
+      "skillPath": ".github/skills/github-issue-query/SKILL.md",
+      "computedHash": "09689cfe0fc1b2692f4ec27fe4b29bf8e34c4f35a563a46d2299e7550fcbea8c"
+    },
+    "github-issues": {
+      "source": "github/awesome-copilot",
+      "commit": "f10fdb8b2660ce85c98f220b2f1ca24653768a5c",
+      "sourceType": "github",
+      "skillPath": "skills/github-issues/SKILL.md",
+      "computedHash": "2f264ec8b6728b145806031d0e98c3d6e076684bce64ca596be8e82d5495814a"
+    },
+    "github-pr-query": {
+      "source": "github/gh-aw",
+      "commit": "d2c0ce30c96e44b91c45880fe85467240f717561",
+      "sourceType": "github",
+      "skillPath": ".github/skills/github-pr-query/SKILL.md",
+      "computedHash": "cbd4541acc054ac804150012108200fd8cbd3ed42e7c5e8543f8b3ec247fb9e9"
+    },
+    "github-workflows-query": {
+      "source": "github/gh-aw",
+      "commit": "d2c0ce30c96e44b91c45880fe85467240f717561",
+      "sourceType": "github",
+      "skillPath": ".github/skills/github-workflows-query/SKILL.md",
+      "computedHash": "10d44308f42cce9c9e2503b3f761ba2cf166ff3fcdfa9354c99f9ef83ad32a79"
+    }
+  }
+}

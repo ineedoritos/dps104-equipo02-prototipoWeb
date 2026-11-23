@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diagrama ER · Registro de actividades</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#ECEFF2; --surface:#FFFFFF; --ink:#17212B; --muted:#5D6A77; --line:#C8D0D8;
+  --alta:#0D7A72; --media:#B85409; --accent:#3346D3;
+  --font-display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --font-body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0;max-width:100%;overflow-x:hidden}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.5}
+button{font:inherit;color:inherit}
+
+header{padding:18px 24px 8px;max-width:1600px;margin:0 auto}
+.eyebrow{font-family:var(--font-mono);font-size:12px;color:var(--muted);letter-spacing:.02em}
+h1{font-family:var(--font-display);font-weight:700;font-size:clamp(22px,2.8vw,32px);line-height:1.12;margin:4px 0 0}
+.subtitle{margin:6px 0 0;color:var(--muted);font-size:14px;max-width:80ch}
+
+main{padding:8px 24px 32px;max-width:1600px;margin:0 auto;display:grid;gap:18px;min-width:0}
+
+.viewer-shell{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  min-width:0;
+}
+.viewer-shell:fullscreen,
+.viewer-shell:-webkit-full-screen{
+  background:var(--bg);
+  padding:14px 18px 18px;
+  height:100vh;
+  width:100vw;
+  max-width:none;
+}
+.viewer-shell:fullscreen .canvas-wrap,
+.viewer-shell:-webkit-full-screen .canvas-wrap{
+  flex:1 1 auto;
+  height:auto;
+  max-height:none;
+  min-height:0;
+}
+
+.toolbar{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px 12px;
+  align-items:center;
+  justify-content:space-between;
+  min-width:0;
+}
+.toolbar-left{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px 10px;
+  align-items:center;
+  min-width:0;
+}
+.toolbar-right{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  align-items:center;
+}
+
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:var(--surface);max-width:100%}
+.seg button{border:0;background:transparent;padding:7px 12px;cursor:pointer;font-size:13.5px;color:var(--muted);font-weight:500;white-space:nowrap}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+
+.badges{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.badge{font-family:var(--font-mono);font-size:11px;padding:3px 9px;border-radius:999px;border:1px solid var(--line);background:var(--surface);white-space:nowrap}
+.badge.alta{border-color:var(--alta);color:var(--alta)}
+.badge.media{border-color:var(--media);color:var(--media);border-style:dashed}
+
+.toolbar-right button{
+  border:1px solid var(--line);
+  background:var(--surface);
+  border-radius:8px;
+  min-width:34px;
+  height:34px;
+  cursor:pointer;
+  padding:0 10px;
+  font-size:13px;
+  font-weight:500;
+  white-space:nowrap;
+}
+.toolbar-right button:hover{border-color:var(--accent);color:var(--accent)}
+.toolbar-right button.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+.toolbar-right button.primary:hover{opacity:.9;color:#fff}
+.hint{font-family:var(--font-mono);font-size:11px;color:var(--muted);white-space:nowrap}
+
+.canvas-wrap{
+  position:relative;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background-color:var(--surface);
+  background-image:radial-gradient(color-mix(in srgb,var(--muted) 26%,transparent) 1px,transparent 1.2px);
+  background-size:22px 22px;
+  overflow:auto;
+  height:min(72vh,760px);
+  min-height:420px;
+  width:100%;
+  cursor:grab;
+  user-select:none;
+  -webkit-user-select:none;
+  touch-action:none;
+}
+.canvas-wrap.drag{cursor:grabbing}
+
+#diagram-stage{
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  padding:24px;
+  min-width:100%;
+  min-height:100%;
+  width:max-content;
+}
+#diagram-stage svg{
+  display:block;
+  max-width:none !important;
+  flex:0 0 auto;
+  user-select:none;
+  -webkit-user-select:none;
+}
+.err-box{padding:20px;color:#991b1b;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;font-family:var(--font-mono);font-size:13px;white-space:pre-wrap;user-select:text}
+
+.grid-info{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px;min-width:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px;min-width:0}
+.card h2{font-family:var(--font-display);font-size:18px;margin:0 0 10px;display:flex;align-items:center;gap:8px}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex:0 0 auto}
+.dot.alta{background:var(--alta)}
+.dot.media{background:var(--media)}
+.dot.sec{background:var(--accent)}
+.card ul{margin:0;padding-left:18px}
+.card li{margin:6px 0;font-size:14px;overflow-wrap:anywhere}
+code{font-family:var(--font-mono);font-size:12.5px;background:#F1F4F8;padding:1px 5px;border-radius:5px;color:#1E293B;overflow-wrap:anywhere}
+
+.table-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:10px;margin-top:8px}
+.t-item{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#FAFBFD;min-width:0}
+.t-item.media{border-style:dashed;border-color:color-mix(in srgb,var(--media) 55%,var(--line))}
+.t-item .t-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px;margin-bottom:4px}
+.t-item b{font-family:var(--font-mono);font-size:13.5px}
+.t-item span{font-family:var(--font-mono);font-size:11px;color:var(--muted)}
+.t-item p{margin:0;font-size:13px;color:var(--muted)}
+
+@media (max-width:960px){
+  header,main{padding-left:14px;padding-right:14px}
+  .hint{display:none}
+  .canvas-wrap{height:min(68vh,620px);min-height:360px}
+}
+@media (max-width:560px){
+  .seg{width:100%}
+  .seg button{flex:1 1 auto;text-align:center;font-size:12.5px;padding:7px 8px}
+  .toolbar-right{width:100%}
+  #btn-fs{margin-left:auto}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="eyebrow">DPS104 · Equipo 02 · Supabase (PostgreSQL) · Base de datos en español</div>
+  <h1>Modelo Entidad-Relación · Registro de actividades</h1>
+  <p class="subtitle">Cubre RF01–RF16 del T1. Cada <strong>jornada</strong> (actividad individual de un solo día en el T1) concentra sus <strong>asistencias</strong> y sus <strong>códigos QR</strong>. Arrastra para moverte, usa <code>Ctrl + rueda</code> o <code>Ctrl + / − / 0</code> para zoom y <strong>Pantalla completa</strong> para revisarlo cómodo.</p>
+</header>
+
+<main>
+  <section class="viewer-shell" id="viewer-shell">
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <div class="seg" role="group" aria-label="Alcance del diagrama">
+          <button id="btn-all" aria-pressed="true">Completo (10 tablas)</button>
+          <button id="btn-alta" aria-pressed="false">Solo MVP Alta (6 tablas)</button>
+        </div>
+        <div class="badges">
+          <span class="badge alta">6 Alta (1-dic)</span>
+          <span class="badge media">4 Media (post-prueba)</span>
+        </div>
+      </div>
+
+      <div class="toolbar-right" role="group" aria-label="Controles de zoom y pantalla completa">
+        <span class="hint">Ctrl + scroll / +/-</span>
+        <button id="z-out" title="Alejar (Ctrl -)">−</button>
+        <button id="z-reset" title="Restablecer a 100% (Ctrl 0)">100%</button>
+        <button id="z-in" title="Acercar (Ctrl +)">+</button>
+        <button id="z-fit" title="Ajustar al contenedor">Ajustar</button>
+        <button id="btn-fs" class="primary" title="Pantalla completa">⛶ Pantalla completa</button>
+      </div>
+    </div>
+
+    <div class="canvas-wrap" id="canvas" aria-label="Lienzo del diagrama ER">
+      <div id="diagram-stage">Cargando diagrama Mermaid...</div>
+    </div>
+  </section>
+
+  <section class="grid-info">
+    <article class="card">
+      <h2><span class="dot sec"></span>4 funciones en el servidor (RPCs)</h2>
+      <ul>
+        <li><code>registrar_asistencia_manual(...)</code>: verifica rol responsable, jornada iniciada y no cancelada, elegibilidad al inicio, horas válidas (sin futuras ni solapadas) y recalcula si cambia a ausencia.</li>
+        <li><code>registrar_asistencia_qr(...)</code>: verifica token vigente (15 min) de la jornada, rol participante, sin duplicar marca, entrada/salida y radio GPS ≤ 100 m con precisión ≤ 50 m si está activo.</li>
+        <li><code>obtener_reporte_grupo(grupo_id, desde, hasta)</code>: calcula <code>presentes</code>, <code>ausencias</code> (incluye justificadas), <code>tasa = presentes ÷ (presentes + ausencias) × 100</code> y horas, excluyendo jornadas canceladas y sin registro.</li>
+        <li><code>gestionar_integrante(...)</code>: incorpora por correo, cambia rol o retira conservando historial, y bloquea retirar o degradar al último responsable.</li>
+      </ul>
+    </article>
+
+    <article class="card">
+      <h2><span class="dot alta"></span>Reglas de integridad y seguridad (RLS)</h2>
+      <ul>
+        <li><strong>Creador = primer responsable:</strong> al crear un registro en <code>grupos</code>, un trigger/RPC inserta automáticamente al creador en <code>integrantes_grupo</code> con <code>rol = 'responsable'</code>.</li>
+        <li><strong>Jornada de un solo día:</strong> en <code>jornadas</code>, <code>fin_en &gt; inicio_en</code> y ambos deben ocurrir en la misma jornada (máx. 24 h / mismo día); eventos de varios días son jornadas separadas.</li>
+        <li><strong>Un solo registro por jornada:</strong> <code>UNIQUE(jornada_id, participante_id)</code> en <code>asistencias</code>; corregir actualiza ese mismo registro.</li>
+        <li><strong>Copia de configuración en jornada:</strong> cambiar la config en <code>grupos</code> no altera jornadas pasadas porque <code>jornadas</code> guarda su propia copia al crearse.</li>
+        <li><strong>Autorización en servidor (RNF03):</strong> RLS activo en todas las tablas con <code>auth.uid()</code> contra <code>integrantes_grupo</code>; retirar llena <code>retirado_en</code> sin borrar historial.</li>
+      </ul>
+    </article>
+
+    <article class="card">
+      <h2><span class="dot media"></span>Soporte preparado para prioridad Media</h2>
+      <ul>
+        <li><strong>GPS puntual (HU11):</strong> <code>ref_latitud</code> y <code>ref_longitud</code> viven en <code>jornadas</code> (nulos cuando no se usan); sin mapas ni rastreo continuo.</li>
+        <li><strong>Validación previa (HU12):</strong> <code>estado_validacion</code> arranca en <code>'aprobado'</code> cuando <code>requiere_validacion = false</code>; nadie aprueba sus propios registros.</li>
+        <li><strong>Una revisión pendiente (HU13):</strong> índice único parcial en <code>solicitudes_revision(jornada_id, participante_id) WHERE estado = 'pendiente'</code>.</li>
+        <li><strong>Push sin duplicados (HU16):</strong> <code>clave_unica</code> en <code>notificaciones</code> evita avisos repetidos en reintentos; siempre visibles en la app aunque se niegue permiso push.</li>
+      </ul>
+    </article>
+  </section>
+
+  <section class="card">
+    <h2>Mapa rápido: tabla → Requerimientos (RF / HU)</h2>
+    <div class="table-list">
+      <div class="t-item"><div class="t-head"><b>usuarios</b><span>Alta · RF01 / HU01</span></div><p>Cuenta única por persona en esquema <code>public</code> (enlazada a <code>auth.users.id</code>).</p></div>
+      <div class="t-item"><div class="t-head"><b>grupos</b><span>Alta · RF02, RF04</span></div><p>Grupos y su configuración por defecto (manual/QR, horas y opciones).</p></div>
+      <div class="t-item"><div class="t-head"><b>integrantes_grupo</b><span>Alta · RF03 / HU03</span></div><p>Membresías, único rol por grupo y fechas de ingreso/retiro.</p></div>
+      <div class="t-item"><div class="t-head"><b>jornadas</b><span>Alta · RF05, RF06 (+RF11)</span></div><p>Actividades/sesiones de un solo día con horario, copia de config y GPS opcional.</p></div>
+      <div class="t-item"><div class="t-head"><b>codigos_qr</b><span>Alta · RF08 / HU08</span></div><p>Tokens temporales de 15 min de una jornada (revocables y regenerables).</p></div>
+      <div class="t-item"><div class="t-head"><b>asistencias</b><span>Alta · RF07–RF09, RF14, RF15</span></div><p>Registro individual por participante en una jornada: estado, horas, ajuste y validación.</p></div>
+      <div class="t-item media"><div class="t-head"><b>fotos_jornada</b><span>Media · RF10 / HU10</span></div><p>Evidencia fotográfica opcional de la jornada en Supabase Storage.</p></div>
+      <div class="t-item media"><div class="t-head"><b>solicitudes_revision</b><span>Media · RF13 / HU13</span></div><p>Reclamos del participante sobre una jornada y resolución con motivo.</p></div>
+      <div class="t-item media"><div class="t-head"><b>notificaciones</b><span>Media · RF16 / HU16</span></div><p>Bandeja in-app para los 3 eventos + clave de deduplicación.</p></div>
+      <div class="t-item media"><div class="t-head"><b>tokens_push</b><span>Media · RF16 / HU16</span></div><p>Dirección push Expo/FCM por dispositivo Android del usuario.</p></div>
+    </div>
+  </section>
+</main>
+
+<script type="module">
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+
+mermaid.initialize({
+  startOnLoad: false,
+  theme: "base",
+  themeVariables: {
+    primaryColor: "#FFFFFF",
+    primaryBorderColor: "#0D7A72",
+    primaryTextColor: "#17212B",
+    lineColor: "#5D6A77",
+    secondaryColor: "#F4F7F9",
+    tertiaryColor: "#FAFBFD",
+    fontFamily: "IBM Plex Sans, Segoe UI, system-ui, sans-serif",
+    fontSize: "13px"
+  },
+  er: {
+    useMaxWidth: false,
+    layoutDirection: "TB",
+    entityPadding: 14
+  }
+});
+
+const ER_ALTA = `erDiagram
+  usuarios {
+    uuid id PK "igual a auth.users.id"
+    text nombre "obligatorio"
+    text correo UK "unico, busca integrantes"
+    timestamptz creado_en
+  }
+
+  grupos {
+    uuid id PK
+    text nombre "obligatorio"
+    text descripcion "opcional"
+    text modalidad_asistencia "manual o qr"
+    boolean control_horas "independiente de modalidad"
+    boolean gps_habilitado "solo con qr (Media)"
+    boolean fotos_habilitadas "opcional (Media)"
+    boolean requiere_validacion "opcional (Media)"
+    boolean notificaciones_habilitadas "opcional (Media)"
+    uuid creado_por FK "tambien entra en integrantes_grupo"
+    timestamptz creado_en
+  }
+
+  integrantes_grupo {
+    uuid id PK
+    uuid grupo_id FK
+    uuid usuario_id FK
+    text rol "responsable o participante"
+    timestamptz unido_en
+    timestamptz retirado_en "null si activo, guarda historial"
+  }
+
+  jornadas {
+    uuid id PK "actividad o sesion de un dia"
+    uuid grupo_id FK
+    text titulo
+    text descripcion
+    timestamptz inicio_en
+    timestamptz fin_en "mismo dia y mayor que inicio_en"
+    boolean cancelada "excluye de totales"
+    text modalidad_asistencia "copia al crear"
+    boolean control_horas "copia al crear"
+    boolean gps_habilitado "copia al crear"
+    boolean fotos_habilitadas "copia al crear"
+    boolean requiere_validacion "copia al crear"
+    boolean notificaciones_habilitadas "copia al crear"
+    float8 ref_latitud "GPS opcional (Media)"
+    float8 ref_longitud "GPS opcional (Media)"
+    timestamptz ref_ubicacion_en "opcional (Media)"
+    uuid creado_por FK
+    timestamptz creado_en
+  }
+
+  codigos_qr {
+    uuid id PK
+    uuid jornada_id FK
+    text codigo_hash UK
+    timestamptz expira_en "15 min o fin jornada"
+    timestamptz revocado_en "null si vigente"
+    uuid generado_por FK
+    timestamptz creado_en
+  }
+
+  asistencias {
+    uuid id PK
+    uuid jornada_id FK "UNIQUE con participante_id"
+    uuid participante_id FK "UNIQUE con jornada_id"
+    text estado "presente, ausente o justificada"
+    text motivo_ausencia "obligatorio si justificada"
+    text origen "manual o qr"
+    timestamptz hora_entrada "si control_horas"
+    timestamptz hora_salida "mayor que hora_entrada"
+    integer duracion_minutos "calculada"
+    integer minutos_reconocidos "entre 0 y duracion"
+    text motivo_ajuste "obligatorio si reconocido menor"
+    text estado_validacion "aprobado o pendiente"
+    uuid validado_por FK "nunca el mismo participante"
+    uuid actualizado_por FK
+    timestamptz actualizado_en
+  }
+
+  usuarios ||--o{ grupos : "crea"
+  usuarios ||--o{ integrantes_grupo : "es miembro"
+  grupos ||--o{ integrantes_grupo : "tiene"
+  grupos ||--o{ jornadas : "organiza"
+  usuarios ||--o{ jornadas : "crea"
+  jornadas ||--o{ codigos_qr : "genera"
+  usuarios ||--o{ codigos_qr : "emite"
+  jornadas ||--o{ asistencias : "registra"
+  usuarios ||--o{ asistencias : "participa"
+`;
+
+const ER_MEDIA = `
+  fotos_jornada {
+    uuid id PK "Media RF10"
+    uuid jornada_id FK
+    uuid autor_id FK
+    text ruta_storage "Supabase Storage"
+    timestamptz retirada_en "null si visible"
+    uuid retirada_por FK
+    timestamptz creado_en
+  }
+
+  solicitudes_revision {
+    uuid id PK "Media RF13"
+    uuid jornada_id FK "1 pendiente por usuario"
+    uuid participante_id FK
+    text motivo_solicitud "obligatorio"
+    text estado "pendiente, resuelta o rechazada"
+    text motivo_resolucion "obligatorio al resolver"
+    uuid resuelta_por FK
+    timestamptz creado_en
+    timestamptz resuelta_en
+  }
+
+  notificaciones {
+    uuid id PK "Media RF16"
+    uuid usuario_id FK
+    uuid jornada_id FK "opcional"
+    text tipo_evento "asistencia, horas o revision"
+    text clave_unica UK "evita duplicados"
+    text titulo
+    text mensaje
+    boolean leida
+    timestamptz creado_en
+  }
+
+  tokens_push {
+    uuid id PK "Media RF16"
+    uuid usuario_id FK
+    text expo_push_token UK
+    text plataforma "android o ios"
+    boolean activo
+    timestamptz actualizado_en
+  }
+
+  jornadas ||--o{ fotos_jornada : "documenta"
+  usuarios ||--o{ fotos_jornada : "sube"
+  jornadas ||--o{ solicitudes_revision : "tiene reclamo"
+  usuarios ||--o{ solicitudes_revision : "solicita"
+  usuarios ||--o{ notificaciones : "recibe"
+  jornadas |o--o{ notificaciones : "referencia"
+  usuarios ||--o{ tokens_push : "registra dispositivo"
+`;
+
+const shell = document.getElementById("viewer-shell");
+const stage = document.getElementById("diagram-stage");
+const canvas = document.getElementById("canvas");
+const btnAll = document.getElementById("btn-all");
+const btnAlta = document.getElementById("btn-alta");
+const btnFs = document.getElementById("btn-fs");
+const btnReset = document.getElementById("z-reset");
+
+const MIN_ZOOM = 0.25;
+const MAX_ZOOM = 2.6;
+let zoom = 1;
+let naturalW = 1000;
+let naturalH = 700;
+let currentSvg = null;
+let renderCount = 0;
+
+function applySvgDimensions() {
+  if (!currentSvg) return;
+  currentSvg.style.width = `${Math.round(naturalW * zoom)}px`;
+  currentSvg.style.height = `${Math.round(naturalH * zoom)}px`;
+  btnReset.textContent = `${Math.round(zoom * 100)}%`;
+}
+
+function setZoom(nextZoom, anchorClientX, anchorClientY) {
+  if (!currentSvg) return;
+  const clamped = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, nextZoom));
+  if (Math.abs(clamped - zoom) < 0.001) return;
+
+  const rect = canvas.getBoundingClientRect();
+  const relX = anchorClientX !== undefined ? anchorClientX - rect.left : canvas.clientWidth / 2;
+  const relY = anchorClientY !== undefined ? anchorClientY - rect.top : canvas.clientHeight / 2;
+  const contentX = (canvas.scrollLeft + relX) / zoom;
+  const contentY = (canvas.scrollTop + relY) / zoom;
+
+  zoom = clamped;
+  applySvgDimensions();
+
+  canvas.scrollLeft = Math.max(0, contentX * zoom - relX);
+  canvas.scrollTop = Math.max(0, contentY * zoom - relY);
+}
+
+function fitToView() {
+  if (!currentSvg || !naturalW || !naturalH) return;
+  const availW = Math.max(240, canvas.clientWidth - 52);
+  const availH = Math.max(240, canvas.clientHeight - 52);
+  const target = Math.min(availW / naturalW, availH / naturalH, 1.15);
+  zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, target));
+  applySvgDimensions();
+  canvas.scrollTo({ left: 0, top: 0 });
+}
+
+async function renderDiagram(mode) {
+  const src = mode === "alta" ? ER_ALTA : (ER_ALTA + ER_MEDIA);
+  renderCount += 1;
+  try {
+    const { svg } = await mermaid.render(`er-svg-${renderCount}`, src);
+    stage.innerHTML = svg;
+    currentSvg = stage.querySelector("svg");
+    if (currentSvg) {
+      const vb = currentSvg.viewBox?.baseVal;
+      if (vb && vb.width > 0 && vb.height > 0) {
+        naturalW = vb.width;
+        naturalH = vb.height;
+      } else {
+        const bbox = currentSvg.getBBox();
+        naturalW = bbox.width || 1200;
+        naturalH = bbox.height || 800;
+        currentSvg.setAttribute("viewBox", `0 0 ${naturalW} ${naturalH}`);
+      }
+      currentSvg.removeAttribute("width");
+      currentSvg.removeAttribute("height");
+      currentSvg.style.maxWidth = "none";
+      requestAnimationFrame(fitToView);
+    }
+  } catch (err) {
+    currentSvg = null;
+    stage.innerHTML = `<div class="err-box">Error al renderizar Mermaid:\n${err?.message || err}</div>`;
+  }
+}
+
+btnAll.addEventListener("click", () => {
+  btnAll.setAttribute("aria-pressed", "true");
+  btnAlta.setAttribute("aria-pressed", "false");
+  renderDiagram("all");
+});
+
+btnAlta.addEventListener("click", () => {
+  btnAlta.setAttribute("aria-pressed", "true");
+  btnAll.setAttribute("aria-pressed", "false");
+  renderDiagram("alta");
+});
+
+document.getElementById("z-in").addEventListener("click", () => setZoom(zoom * 1.18));
+document.getElementById("z-out").addEventListener("click", () => setZoom(zoom / 1.18));
+btnReset.addEventListener("click", () => setZoom(1));
+document.getElementById("z-fit").addEventListener("click", fitToView);
+
+// Intercepta Ctrl + scroll sobre toda la zona del visor para hacer zoom al diagrama (no a la página)
+shell.addEventListener("wheel", (e) => {
+  if (!e.ctrlKey && !e.metaKey) return;
+  e.preventDefault();
+  const factor = e.deltaY < 0 ? 1.14 : 1 / 1.14;
+  setZoom(zoom * factor, e.clientX, e.clientY);
+}, { passive: false });
+
+// Zoom con teclado: Ctrl + / Ctrl - / Ctrl 0
+window.addEventListener("keydown", (e) => {
+  if (!e.ctrlKey && !e.metaKey) return;
+  if (e.key === "+" || e.key === "=" || e.code === "NumpadAdd") {
+    e.preventDefault();
+    setZoom(zoom * 1.18);
+  } else if (e.key === "-" || e.code === "NumpadSubtract") {
+    e.preventDefault();
+    setZoom(zoom / 1.18);
+  } else if (e.key === "0" || e.code === "Numpad0") {
+    e.preventDefault();
+    setZoom(1);
+  }
+});
+
+// Pantalla completa (incluye barra de controles + lienzo)
+function updateFsButton() {
+  const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+  btnFs.textContent = isFs ? "✕ Salir pantalla completa" : "⛶ Pantalla completa";
+  setTimeout(fitToView, 60);
+}
+
+btnFs.addEventListener("click", async () => {
+  const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+  try {
+    if (!isFs) {
+      if (shell.requestFullscreen) await shell.requestFullscreen();
+      else if (shell.webkitRequestFullscreen) shell.webkitRequestFullscreen();
+    } else {
+      if (document.exitFullscreen) await document.exitFullscreen();
+      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+    }
+  } catch (err) {
+    console.error("Fullscreen error:", err);
+  }
+});
+document.addEventListener("fullscreenchange", updateFsButton);
+document.addEventListener("webkitfullscreenchange", updateFsButton);
+
+// Reajustar suavemente si cambia el tamaño de ventana
+let resizeTimer = null;
+window.addEventListener("resize", () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(fitToView, 120);
+});
+
+// Arrastrar para mover el lienzo sin seleccionar texto
+let drag = null;
+canvas.addEventListener("pointerdown", (e) => {
+  if (e.button !== 0) return;
+  e.preventDefault();
+  drag = { x: e.clientX, y: e.clientY, l: canvas.scrollLeft, t: canvas.scrollTop };
+  canvas.classList.add("drag");
+});
+window.addEventListener("pointermove", (e) => {
+  if (!drag) return;
+  canvas.scrollLeft = drag.l - (e.clientX - drag.x);
+  canvas.scrollTop = drag.t - (e.clientY - drag.y);
+});
+window.addEventListener("pointerup", () => {
+  drag = null;
+  canvas.classList.remove("drag");
+});
+
+renderDiagram("all");
+</script>
+</body>
+</html>
