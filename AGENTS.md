@@ -44,3 +44,11 @@ Nunca adivines reglas de negocio, nombres de tablas ni rutas de pantallas. Antes
   gh issue develop 12 --base develop --checkout     # crear rama de trabajo desde develop ligada a la issue
   gh pr create --base develop                       # abrir PR hacia develop
   ```
+
+## 6. Skills de agentes
+- **Fuente única:** `.agents/skills/`. Ahí se agregan o editan las skills del proyecto.
+- `.claude/skills/` (Claude Code) y `.commandcode/skills/` (Command Code) son **copias** de `.agents/skills/` (sin symlinks, para evitar problemas en Windows). Al cambiar una skill, vuelve a copiarla en el mismo commit:
+  ```bash
+  rm -rf .claude/skills .commandcode/skills
+  cp -r .agents/skills .claude/skills && cp -r .agents/skills .commandcode/skills
+  ```
