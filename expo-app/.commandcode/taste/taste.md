@@ -1,0 +1,3 @@
+- Prefers installing skills/tooling at the project level rather than globally (avoids a bloated global install with unused or obsolete skills). Confidence: 0.75
+- Wants issues linked to specs for traceability (spec as single source of truth, issues reference it) rather than specs copy-pasted into issues. Confidence: 0.6
+- Prefers spec-only output: wants just the specs/design, not files, folders, or code created — tooling that scaffolds (e.g. `specify init`) should be proposed as commands rather than run. Confidence: 0.7
