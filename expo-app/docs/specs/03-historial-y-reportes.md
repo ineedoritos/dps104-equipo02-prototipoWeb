@@ -34,3 +34,4 @@ Módulo de consulta de prioridad **Alta** (`RF14`–`RF15`), clave para validar 
     - Se excluyen las **jornadas canceladas** y las jornadas donde el participante **no tiene registro** (sin registro ≠ ausente).
     - Si `presentes + ausencias = 0`, se muestra `—` o `N/A` (nunca división por cero ni `NaN`).
   - `CA03`: Los reportes son de **solo lectura en la app**, sin exportaciones (PDF/Excel) y sin mezclar datos de otros grupos (protegido por RLS y RPC `obtener_reporte_grupo`).
+  - `CA04`: Cuando el período tiene registros de asistencia, se muestra una barra apilada con los totales de **presentes**, **ausencias justificadas** y **ausencias sin motivo** del grupo. Cada total coincide con la suma de su categoría en el reporte y se actualiza al cambiar de período. Si el período no tiene registros, se muestra el estado vacío de la pantalla.
