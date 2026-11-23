@@ -2,7 +2,7 @@
 
 Catálogo listo para crear las issues en GitHub (`gh api` o MCP).
 > **Regla:** nunca copies los Criterios de Aceptación completos en el cuerpo de una issue; enlaza siempre a `docs/specs/...#huXX`.
-> **En GitHub:** dentro de una issue los enlaces relativos no funcionan; usa URL absoluta a `develop` (`https://github.com/pgap22/registro-actividades-udb/blob/develop/docs/...#huXX`). Las anclas `#huXX`, `#rpc-...`, `#rls` y `#tablas-alta` existen como `<a id>` en los docs.
+> **En GitHub:** usa URLs absolutas a los documentos de `expo-app/docs/` en `develop`, por ejemplo `https://github.com/ineedoritos/dps104-equipo02-registro-actividades/blob/develop/expo-app/docs/...#huXX`. Las anclas `#huXX`, `#rpc-...`, `#rls` y `#tablas-alta` existen como `<a id>` en los docs.
 
 ---
 

@@ -28,7 +28,7 @@ Nunca adivines reglas de negocio, nombres de tablas ni rutas de pantallas. Antes
 ## 4. Git Flow y cambios a specs
 - Flujo de ramas: `main` (cortes `"Fase N"` de cada laboratorio) ← `develop` (integración diaria) ← rama de trabajo del integrante.
 - Si una implementación requiere ajustar una regla de negocio, tabla o pantalla, actualiza el archivo correspondiente en `docs/` **en el mismo PR**.
-- Nunca copies los Criterios de Aceptación completos en las issues: enlaza a los docs. Dentro de una issue usa URL absoluta a `develop` (`https://github.com/pgap22/registro-actividades-udb/blob/develop/docs/specs/...#huXX`); los enlaces relativos solo funcionan dentro de archivos del repo.
+- Nunca copies los Criterios de Aceptación completos en las issues. Enlaza a los documentos de `expo-app/docs/` con una URL absoluta de `develop`, por ejemplo `https://github.com/ineedoritos/dps104-equipo02-registro-actividades/blob/develop/expo-app/docs/specs/...#huXX`.
 
 ## 5. Leer issues con GitHub CLI (`gh`)
 - **Recomendado:** antes de empezar una issue, el desarrollador o el agente debe tener instalada y autenticada la [GitHub CLI](https://cli.github.com/). Así la issue se lee desde la terminal, sin copiar y pegar desde el navegador.
