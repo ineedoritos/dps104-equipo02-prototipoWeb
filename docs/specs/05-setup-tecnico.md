@@ -16,6 +16,7 @@ Spec de soporte para las issues `[SETUP-01]` y `[SETUP-02]`. Las decisiones est�
 | App | Expo SDK (managed) + React Native + **TypeScript estricto** | *(anotar)* | App Android (`RNF01`). |
 | Navegación | Expo Router | la del SDK | `(auth)`, `(tabs)`, `grupos/[grupoId]/...` (`docs/screens/README.md`). |
 | Estilos | **NativeWind v4** + Tailwind CSS 3.x | *(anotar)* | Clases utilitarias (`ADR-001`). |
+| Estado compartido | Redux Toolkit (`@reduxjs/toolkit`) + React Redux (`react-redux`) | *(anotar)* | Dependencias en `SETUP-01`. Configuración en la primera historia que necesite estado compartido (`ADR-001`). |
 | Backend | Supabase Cloud **Free** (Auth + PostgreSQL + API + Storage) | — | `ADR-002`. |
 | Cliente BD | `@supabase/supabase-js` v2 + `@react-native-async-storage/async-storage` + `react-native-url-polyfill` | *(anotar)* | Sesión persistente y llamadas RPC. |
 | Migraciones | Supabase CLI (vía `npx supabase`) | *(anotar)* | SQL versionado en `supabase/migrations/`. |
@@ -38,6 +39,7 @@ Spec de soporte para las issues `[SETUP-01]` y `[SETUP-02]`. Las decisiones est�
 | ESLint en Expo (`expo lint`) | https://docs.expo.dev/guides/using-eslint/ |
 | TypeScript en Expo | https://docs.expo.dev/guides/typescript/ |
 | NativeWind (instalación con Expo) | https://www.nativewind.dev/ *(usar la guía de la v4)* |
+| Redux Toolkit y React Redux | https://redux.js.org/toolkit/introduction/getting-started · https://redux.js.org/react-redux/introduction/getting-started |
 | Supabase + Expo React Native (tutorial oficial) | https://supabase.com/docs/guides/getting-started/tutorials/with-expo-react-native |
 | Supabase Auth (correo y contraseña) | https://supabase.com/docs/guides/auth/passwords |
 | Row Level Security | https://supabase.com/docs/guides/database/postgres/row-level-security |
@@ -99,12 +101,18 @@ supabase/
    - Fijar en `app.json` el identificador Android **definitivo**: `"android": { "package": "sv.udb.registroactividades" }`. Firebase (`[SETUP-03]`) queda atado a este valor; cambiarlo después obliga a rehacer credenciales.
 3. Crear el esqueleto de rutas: `(auth)/login`, `(tabs)` con 4 pestañas (`Mis grupos`, `Mi historial`, `Notificaciones`, `Cuenta`) y una ruta interna `grupos/[grupoId]`.
 4. Crear `lib/fecha.ts` (`ADR-006`) y añadir los scripts `typecheck` y `lint`.
-5. Anotar versiones en §1.
+5. Instalar las dependencias de Redux Toolkit y React Redux desde la raíz del proyecto:
+   ```bash
+   npm install @reduxjs/toolkit react-redux
+   ```
+   El store, el `Provider` y los slices se incorporan en la primera historia que necesite estado compartido.
+6. Anotar versiones en §1.
 
 **Criterios de aceptación:**
 - `SETUP01-CA01`: La app abre en Android (Expo Go o dev build) y navega entre las 4 pestañas y una pantalla de pila interna.
 - `SETUP01-CA02`: Una pantalla real muestra estilos NativeWind aplicados (smoke test visual de `ADR-001`).
 - `SETUP01-CA03`: `npm run typecheck` y `npm run lint` terminan sin errores.
+- `SETUP01-CA04`: `@reduxjs/toolkit` y `react-redux` figuran como dependencias directas en `package.json` y sus versiones aparecen en `npm ls @reduxjs/toolkit react-redux --depth=0` y en la tabla de stack (§1).
 
 ---
 
