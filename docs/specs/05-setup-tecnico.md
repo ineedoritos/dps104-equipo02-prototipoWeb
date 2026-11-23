@@ -2,7 +2,7 @@
 
 Spec de soporte para las issues `[SETUP-01]` y `[SETUP-02]`. Las decisiones están cerradas en `ADR-001`, `ADR-002` y `ADR-006`; aquí se dice **qué se instala, cómo y cómo se verifica**.
 
-> **Regla de versiones:** usar la versión **estable vigente** al momento de crear el proyecto (`npx create-expo-app@latest`) y **anotarla en la tabla §1** dentro del mismo PR de `[SETUP-01]`. No mezclar NativeWind v2/v4 (`ADR-001`).
+> **Regla de versiones:** usar la versión **estable vigente** al momento de crear el proyecto (`npx rn-new@latest`, ver §4) y **anotarla en la tabla §1** dentro del mismo PR de `[SETUP-01]`. No mezclar NativeWind v2/v4 (`ADR-001`).
 
 ---
 
@@ -30,7 +30,8 @@ Spec de soporte para las issues `[SETUP-01]` y `[SETUP-02]`. Las decisiones est�
 
 | Tema | Enlace |
 |---|---|
-| Crear proyecto Expo | https://docs.expo.dev/more/create-expo/ |
+| Create Expo Stack (`rn-new`) | https://github.com/roninoss/create-expo-stack · https://www.npmjs.com/package/rn-new |
+| Crear proyecto Expo (alternativa manual) | https://docs.expo.dev/more/create-expo/ |
 | Expo Router (rutas, grupos, layouts) | https://docs.expo.dev/router/introduction/ |
 | Variables de entorno `EXPO_PUBLIC_*` | https://docs.expo.dev/guides/environment-variables/ |
 | ESLint en Expo (`expo lint`) | https://docs.expo.dev/guides/using-eslint/ |
@@ -80,8 +81,15 @@ supabase/
 
 ## 4. `[SETUP-01]` · Base de la app
 
-1. `npx create-expo-app@latest` con plantilla TypeScript + Expo Router; activar `"strict": true` en `tsconfig.json`.
-2. Instalar y configurar NativeWind v4 según su guía (Babel, Metro, `tailwind.config.js`, `global.css`).
+1. Generar la base con **Create Expo Stack** (paquete `rn-new`), que ya deja Expo Router + NativeWind configurados (Babel, Metro, `tailwind.config.js`, `global.css`):
+   ```bash
+   npx rn-new@latest --help          # confirmar los flags vigentes antes de usarlos
+   npx rn-new@latest registro-actividades --expo-router --tabs --nativewind --noGit
+   ```
+   - `--noGit`: el repo ya existe; mover el contenido generado a la raíz del repo (sin pisar `docs/`, `AGENTS.md` ni `.gitignore`; fusionar el `.gitignore` generado con el actual).
+   - **No** usar `--supabase` ni plantillas de auth: el cliente se escribe en `[SETUP-02]` según §5.3.
+   - Verificar en `package.json` que `nativewind` quedó en **v4** (`ADR-001`). Si el generador instala otra versión mayor, anotarlo en el PR y actualizar `ADR-001` antes de seguir.
+2. Activar `"strict": true` en `tsconfig.json` y comprobar que una pantalla real renderiza clases NativeWind.
 3. Crear el esqueleto de rutas: `(auth)/login`, `(tabs)` con 4 pestañas (`Mis grupos`, `Mi historial`, `Notificaciones`, `Cuenta`) y una ruta interna `grupos/[grupoId]`.
 4. Crear `lib/fecha.ts` (`ADR-006`) y añadir los scripts `typecheck` y `lint`.
 5. Anotar versiones en §1.
