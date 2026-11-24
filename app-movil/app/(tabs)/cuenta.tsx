@@ -1,8 +1,10 @@
 import { useRouter } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
 
+import { PerfilCuentaCard } from '@/components/cuenta/PerfilCuentaCard';
+import { SesionCuentaCard } from '@/components/cuenta/SesionCuentaCard';
 import usuarioJson from '@/data/usuario.json';
-import { colores, espaciados, radios } from '@/lib/tema';
+import { colores, espaciados } from '@/lib/tema';
 import type { Usuario } from '@/types/actividad';
 
 const usuario = usuarioJson as Usuario;
@@ -17,37 +19,8 @@ export default function CuentaScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.contenido}>
-      <View style={styles.perfil}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarTexto}>{nombre.charAt(0)}</Text>
-        </View>
-        <Text style={styles.nombre}>{nombre}</Text>
-        <Text style={styles.rol}>Miembro de la comunidad</Text>
-      </View>
-
-      <View style={styles.tarjeta}>
-        <Text style={styles.tituloTarjeta}>Información personal</Text>
-
-        <View style={styles.fila}>
-          <Text style={styles.etiqueta}>Nombre</Text>
-          <Text style={styles.valor}>{nombre}</Text>
-        </View>
-      </View>
-
-      <View style={styles.tarjeta}>
-        <Text style={styles.tituloTarjeta}>Sesión</Text>
-        <Text style={styles.descripcion}>
-          Administra el acceso a tu cuenta en este dispositivo.
-        </Text>
-
-        <Pressable
-          accessibilityRole="button"
-          onPress={() => router.replace('/(auth)/login')}
-          style={({ pressed }) => [styles.boton, pressed && styles.botonPresionado]}
-        >
-          <Text style={styles.botonTexto}>Cerrar sesión</Text>
-        </Pressable>
-      </View>
+      <PerfilCuentaCard nombre={nombre} />
+      <SesionCuentaCard onCerrarSesion={() => router.replace('/(auth)/login')} />
     </ScrollView>
   );
 }
@@ -59,90 +32,5 @@ const styles = StyleSheet.create({
     gap: espaciados.md,
     padding: espaciados.md,
     paddingBottom: espaciados.xl,
-  },
-  perfil: {
-    alignItems: 'center',
-    backgroundColor: colores.superficie,
-    borderColor: colores.borde,
-    borderRadius: radios.xl,
-    borderWidth: 1,
-    padding: espaciados.lg,
-  },
-  avatar: {
-    alignItems: 'center',
-    backgroundColor: colores.primarioSuave,
-    borderRadius: 999,
-    height: 76,
-    justifyContent: 'center',
-    width: 76,
-  },
-  avatarTexto: {
-    color: colores.primario,
-    fontSize: 30,
-    fontWeight: '800',
-  },
-  nombre: {
-    color: colores.texto,
-    fontSize: 22,
-    fontWeight: '800',
-    marginTop: espaciados.md,
-  },
-  rol: {
-    color: colores.textoSuave,
-    fontSize: 14,
-    marginTop: espaciados.xs,
-  },
-  tarjeta: {
-    backgroundColor: colores.superficie,
-    borderColor: colores.borde,
-    borderRadius: radios.lg,
-    borderWidth: 1,
-    padding: espaciados.lg,
-  },
-  tituloTarjeta: {
-    color: colores.texto,
-    fontSize: 17,
-    fontWeight: '700',
-  },
-  fila: {
-    alignItems: 'center',
-    borderTopColor: colores.grisSuave,
-    borderTopWidth: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: espaciados.md,
-    paddingTop: espaciados.md,
-  },
-  etiqueta: {
-    color: colores.textoSuave,
-    fontSize: 14,
-  },
-  valor: {
-    color: colores.texto,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  descripcion: {
-    color: colores.textoSuave,
-    fontSize: 14,
-    lineHeight: 20,
-    marginTop: espaciados.xs,
-  },
-  boton: {
-    alignItems: 'center',
-    backgroundColor: colores.superficie,
-    borderColor: colores.bordeFuerte,
-    borderRadius: radios.md,
-    borderWidth: 1,
-    marginTop: espaciados.md,
-    paddingVertical: 12,
-  },
-  botonPresionado: {
-    opacity: 0.85,
-  },
-  botonTexto: {
-    color: colores.grisTexto,
-    fontSize: 14,
-    fontWeight: '600',
   },
 });
