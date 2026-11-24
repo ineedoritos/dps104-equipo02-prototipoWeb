@@ -12,15 +12,15 @@ Spec de soporte para las issues `[SETUP-01]` y `[SETUP-02]`. Las decisiones est�
 
 | Capa | Tecnología | Versión fijada | Uso |
 |---|---|---|---|
-| Runtime | Node.js LTS + npm | *(anotar)* | Herramientas de desarrollo. |
-| App | Expo SDK (managed) + React Native + **TypeScript estricto** | *(anotar)* | App Android (`RNF01`). |
-| Navegación | Expo Router | la del SDK | `(auth)`, `(tabs)`, `grupos/[grupoId]/...` (`docs/screens/README.md`). |
-| Estilos | **React Native `StyleSheet`** (Expo normal, sin NativeWind) | incluido en RN | `StyleSheet.create` estándar (`ADR-001`). |
-| Estado compartido | Redux Toolkit (`@reduxjs/toolkit`) + React Redux (`react-redux`) | *(anotar)* | Dependencias en `SETUP-01`. Configuración en la primera historia que necesite estado compartido (`ADR-001`). |
+| Runtime | Node.js LTS + npm | Node.js **v26.13.1** · npm **11.20.0** | Herramientas de desarrollo. |
+| App | Expo SDK (managed) + React Native + **TypeScript estricto** | Expo SDK **58.0.26** · React Native **0.88.1** · React **19.3.0** · TypeScript **6.0.3** | App Android (`RNF01`). |
+| Navegación | Expo Router | **58.0.32** | `(auth)`, `(tabs)`, `grupos/[grupoId]/...` (`docs/screens/README.md`). |
+| Estilos | **React Native `StyleSheet`** (Expo normal, sin NativeWind) | Incluido en React Native **0.88.1** | `StyleSheet.create` estándar (`ADR-001`). |
+| Estado compartido | Redux Toolkit (`@reduxjs/toolkit`) + React Redux (`react-redux`) | `@reduxjs/toolkit` **2.15.0** · `react-redux` **9.3.1** | Dependencias en `SETUP-01`. Configuración en la primera historia que necesite estado compartido (`ADR-001`). |
 | Backend | Supabase Cloud **Free** (Auth + PostgreSQL + API + Storage) | — | `ADR-002`. |
-| Cliente BD | `@supabase/supabase-js` v2 + `@react-native-async-storage/async-storage` + `react-native-url-polyfill` | *(anotar)* | Sesión persistente y llamadas RPC. |
-| Migraciones | Supabase CLI (vía `npx supabase`) | *(anotar)* | SQL versionado en `supabase/migrations/`. |
-| Calidad | `tsc --noEmit` + `expo lint` (ESLint) | — | `typecheck` y `lint` (`ADR-005`). **Sin tests automatizados.** |
+| Cliente BD | `@supabase/supabase-js` v2 + `@react-native-async-storage/async-storage` + `react-native-url-polyfill` | Pendiente (`SETUP-02`) | Sesión persistente y llamadas RPC. |
+| Migraciones | Supabase CLI (vía `npx supabase`) | Pendiente (`SETUP-02`) | SQL versionado en `supabase/migrations/`. |
+| Calidad | `tsc --noEmit` + `expo lint` (ESLint) | TypeScript **6.0.3** · ESLint **9.39.5** · `eslint-config-expo` **58.0.4** | `typecheck` y `lint` (`ADR-005`). **Sin tests automatizados.** |
 | Hardware *(según issue)* | `expo-camera` (`HU08b`), `expo-location` (`HU11`), `expo-notifications` + `expo-device` + `expo-dev-client` (`SETUP-03`) | la del SDK | Instalar **solo** en la issue que lo usa, con `npx expo install`. |
 | Push *(Media)* | Firebase (plan **Spark**, gratis) solo para FCM v1 + EAS (Expo) + Supabase Edge Functions | — | `ADR-004`, `[SETUP-03]`. |
 
