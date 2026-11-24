@@ -1,0 +1,28 @@
+[
+  { "actividadId": 1, "participanteId": 1, "estado": "presente" },
+  { "actividadId": 1, "participanteId": 2, "estado": "presente" },
+  { "actividadId": 1, "participanteId": 3, "estado": "justificada", "motivo": "Cita médica programada" },
+  { "actividadId": 1, "participanteId": 4, "estado": "presente" },
+  { "actividadId": 1, "participanteId": 5, "estado": "ausente" },
+  { "actividadId": 1, "participanteId": 6, "estado": "presente" },
+
+  { "actividadId": 2, "participanteId": 1, "estado": "presente" },
+  { "actividadId": 2, "participanteId": 2, "estado": "justificada", "motivo": "Examen parcial en la universidad" },
+  { "actividadId": 2, "participanteId": 3, "estado": "presente" },
+  { "actividadId": 2, "participanteId": 4, "estado": "presente" },
+  { "actividadId": 2, "participanteId": 5, "estado": "presente" },
+
+  { "actividadId": 5, "participanteId": 1, "estado": "presente" },
+  { "actividadId": 5, "participanteId": 2, "estado": "presente" },
+  { "actividadId": 5, "participanteId": 3, "estado": "presente" },
+  { "actividadId": 5, "participanteId": 4, "estado": "ausente" },
+  { "actividadId": 5, "participanteId": 5, "estado": "presente" },
+  { "actividadId": 5, "participanteId": 6, "estado": "justificada", "motivo": "Compromiso familiar" },
+
+  { "actividadId": 6, "participanteId": 1, "estado": "presente" },
+  { "actividadId": 6, "participanteId": 2, "estado": "ausente" },
+  { "actividadId": 6, "participanteId": 3, "estado": "presente" },
+  { "actividadId": 6, "participanteId": 4, "estado": "presente" },
+  { "actividadId": 6, "participanteId": 5, "estado": "justificada", "motivo": "Incapacidad médica" },
+  { "actividadId": 6, "participanteId": 6, "estado": "presente" }
+]

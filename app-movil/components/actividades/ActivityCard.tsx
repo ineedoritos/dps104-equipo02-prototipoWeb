@@ -1,7 +1,13 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colores, espaciados, radios } from '@/lib/tema';
 import type { Actividad, EstadoActividad } from '@/types/actividad';
+
+export interface ActivityCardProps {
+  activity: Actividad;
+  variant: EstadoActividad;
+  onPress?: () => void;
+}
 
 type ConfiguracionEstado = {
   etiqueta: string;
@@ -39,14 +45,10 @@ const CONFIGURACION_ESTADO: Record<EstadoActividad, ConfiguracionEstado> = {
   },
 };
 
-type Props = {
-  actividad: Actividad;
-};
+export function ActivityCard({ activity, variant, onPress }: ActivityCardProps) {
+  const configuracion = CONFIGURACION_ESTADO[variant];
 
-export function ActivityCard({ actividad }: Props) {
-  const configuracion = CONFIGURACION_ESTADO[actividad.status];
-
-  return (
+  const contenido = (
     <View style={[styles.tarjeta, { borderTopColor: configuracion.colorBorde }]}>
       <View style={styles.filaSuperior}>
         <View
@@ -65,33 +67,55 @@ export function ActivityCard({ actividad }: Props) {
         </View>
 
         <Text style={styles.fecha}>
-          {actividad.date} · {actividad.startTime}
+          {activity.date} · {activity.startTime}
+          {activity.endTime ? ` - ${activity.endTime}` : ''}
         </Text>
       </View>
 
-      <Text style={styles.titulo}>{actividad.title}</Text>
-      <Text style={styles.descripcion}>{actividad.description}</Text>
+      <Text style={styles.titulo}>{activity.title}</Text>
+      <Text style={styles.descripcion}>{activity.description}</Text>
 
       <View style={styles.divisor} />
 
       <View style={styles.ubicacion}>
         <Text style={styles.icono}>📍</Text>
-        <Text style={styles.ubicacionTexto}>{actividad.location}</Text>
+        <Text style={styles.ubicacionTexto}>{activity.location}</Text>
       </View>
 
       <View style={styles.estadisticas}>
         <Text style={styles.estadistica}>
-          👥 <Text style={styles.estadisticaFuerte}>{actividad.participants}</Text> participantes
+          👥 <Text style={styles.estadisticaFuerte}>{activity.participants}</Text> participantes
         </Text>
         <Text style={styles.estadistica}>
-          📸 <Text style={styles.estadisticaFuerte}>{actividad.evidenceCount}</Text> evidencias
+          📸 <Text style={styles.estadisticaFuerte}>{activity.evidenceCount}</Text> evidencias
         </Text>
       </View>
+
+      {onPress ? (
+        <Text style={styles.accionPie}>Ver participantes y asistencia ›</Text>
+      ) : null}
     </View>
+  );
+
+  if (!onPress) {
+    return contenido;
+  }
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      onPress={onPress}
+      style={({ pressed }) => [pressed && styles.presionado]}
+    >
+      {contenido}
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
+  presionado: {
+    opacity: 0.88,
+  },
   tarjeta: {
     backgroundColor: colores.superficie,
     borderColor: colores.borde,
@@ -186,5 +210,12 @@ const styles = StyleSheet.create({
   estadisticaFuerte: {
     color: colores.texto,
     fontWeight: '700',
+  },
+  accionPie: {
+    color: colores.primario,
+    fontSize: 13,
+    fontWeight: '600',
+    marginTop: espaciados.sm + 4,
+    textAlign: 'right',
   },
 });

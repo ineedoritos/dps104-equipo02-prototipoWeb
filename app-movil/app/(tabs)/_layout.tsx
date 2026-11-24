@@ -14,7 +14,17 @@ function IconoInicio({ color }: Props) {
   return (
     <SymbolView
       name={{ ios: 'house.fill', android: 'home', web: 'home' }}
-      size={28}
+      size={26}
+      tintColor={color}
+    />
+  );
+}
+
+function IconoReportes({ color }: Props) {
+  return (
+    <SymbolView
+      name={{ ios: 'chart.bar.fill', android: 'bar_chart', web: 'bar_chart' }}
+      size={26}
       tintColor={color}
     />
   );
@@ -24,7 +34,7 @@ function IconoCuenta({ color }: Props) {
   return (
     <SymbolView
       name={{ ios: 'person.crop.circle.fill', android: 'account_circle', web: 'account_circle' }}
-      size={28}
+      size={26}
       tintColor={color}
     />
   );
@@ -58,6 +68,13 @@ export default function TabsLayout() {
           title: 'Inicio',
           headerShown: false,
           tabBarIcon: ({ color }) => <IconoInicio color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="reportes"
+        options={{
+          title: 'Reportes',
+          tabBarIcon: ({ color }) => <IconoReportes color={color} />,
         }}
       />
       <Tabs.Screen
