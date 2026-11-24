@@ -65,7 +65,7 @@ export default function LoginScreen() {
             </Pressable>
 
             <Text style={styles.nota}>
-              Formulario visual de SETUP-01. La autenticación real llega con HU01.
+              La autenticación con correo y contraseña estará disponible muy pronto.
             </Text>
           </View>
         </ScrollView>

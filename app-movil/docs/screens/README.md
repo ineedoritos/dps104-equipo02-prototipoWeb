@@ -33,6 +33,8 @@ app/
                 └── mi-registro.tsx                # SCREEN-17 (Detalle del registro)
 ```
 
+> **Estado de la demo de `[SETUP-01]`:** la app abre directo en el tablero de **Inicio** (basado en `prototipo-web`, con datos mock en `data/`) y el navbar muestra solo **Inicio** y **Cuenta**. Las rutas de `SCREEN-02` en adelante se incorporan en sus historias de usuario.
+
 ## Índice maestro de pantallas
 
 | # | Archivo | Título en Wireflow | Rol | Prioridad | Spec / HU |

@@ -17,6 +17,7 @@ Nunca adivines reglas de negocio, nombres de tablas ni rutas de pantallas. Antes
 - **Base de datos en español:** respeta exactamente los nombres de tablas, columnas y funciones SQL en `docs/database.md` (en español, `snake_case`, sin tildes ni `ñ`).
 - **Seguridad (RNF03):** jamás pongas `service_role` ni credenciales privadas en la app Expo. Toda autorización y validación sensible vive en **RLS** y en los **4 RPCs** de PostgreSQL.
 - **Estados obligatorios en toda pantalla (RNF04):** toda vista con datos remotos o permisos debe manejar estado `cargando`, `vacío`, `error visible con reintento seguro` y denegación de permisos sin crashear.
+- **Copy de interfaz user-friendly:** los textos visibles para el usuario **no deben incluir** claves internas de seguimiento (`HUxx`, `SETUP-xx`, `RNFxx`, `SCREEN-xx`), referencias a issues, specs o ADRs, nombres de tablas/campos ni notas de implementación (por ejemplo, *"pantalla base"*, *"mock"* o *"pendiente de HUxx"*). Usa español claro y orientado a la tarea de la persona.
 
 ## 3. Calidad y verificación (sin tests automatizados)
 - **NO instales ni escribas tests automatizados** (sin Jest, Vitest ni Testing Library; ver `docs/adrs/ADR-005-gitflow-issues-y-calidad.md`).

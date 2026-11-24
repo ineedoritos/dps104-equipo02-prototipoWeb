@@ -1,15 +1,31 @@
 import { Tabs } from 'expo-router';
-import { StyleSheet, Text, type ColorValue } from 'react-native';
+import { SymbolView } from 'expo-symbols';
+import type { ColorValue } from 'react-native';
 
 import { colores } from '@/lib/tema';
 
 type Props = {
-  simbolo: string;
   color: ColorValue;
 };
 
-function IconoPestana({ simbolo, color }: Props) {
-  return <Text style={[styles.icono, { color }]}>{simbolo}</Text>;
+function IconoInicio({ color }: Props) {
+  return (
+    <SymbolView
+      name={{ ios: 'house.fill', android: 'home', web: 'home' }}
+      size={28}
+      tintColor={color}
+    />
+  );
+}
+
+function IconoCuenta({ color }: Props) {
+  return (
+    <SymbolView
+      name={{ ios: 'person.crop.circle.fill', android: 'account_circle', web: 'account_circle' }}
+      size={28}
+      tintColor={color}
+    />
+  );
 }
 
 export default function TabsLayout() {
@@ -21,46 +37,29 @@ export default function TabsLayout() {
         headerShadowVisible: false,
         tabBarActiveTintColor: colores.primario,
         tabBarInactiveTintColor: colores.textoSuave,
-        tabBarStyle: { backgroundColor: colores.superficie, borderTopColor: colores.borde },
         tabBarLabelStyle: { fontSize: 12, fontWeight: '600' },
+        tabBarStyle: {
+          backgroundColor: colores.superficie,
+          borderTopColor: colores.borde,
+          paddingTop: 6,
+        },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Mis grupos',
-          tabBarIcon: ({ color }) => <IconoPestana simbolo="▦" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="historial"
-        options={{
-          title: 'Mi historial',
-          tabBarIcon: ({ color }) => <IconoPestana simbolo="◷" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="notificaciones"
-        options={{
-          title: 'Notificaciones',
-          tabBarIcon: ({ color }) => <IconoPestana simbolo="◔" color={color} />,
+          title: 'Inicio',
+          headerShown: false,
+          tabBarIcon: ({ color }) => <IconoInicio color={color} />,
         }}
       />
       <Tabs.Screen
         name="cuenta"
         options={{
           title: 'Cuenta',
-          tabBarIcon: ({ color }) => <IconoPestana simbolo="◉" color={color} />,
+          tabBarIcon: ({ color }) => <IconoCuenta color={color} />,
         }}
       />
     </Tabs>
   );
 }
-
-const styles = StyleSheet.create({
-  icono: {
-    fontSize: 20,
-    fontWeight: '600',
-    lineHeight: 24,
-  },
-});
