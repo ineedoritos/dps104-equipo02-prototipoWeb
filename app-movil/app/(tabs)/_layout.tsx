@@ -1,7 +1,10 @@
-import { Tabs } from 'expo-router';
+import { Redirect, Tabs } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
+import { Platform } from 'react-native';
 import type { ColorValue } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useAuth } from '@/lib/auth';
 import { colores } from '@/lib/tema';
 
 type Props = {
@@ -29,6 +32,15 @@ function IconoCuenta({ color }: Props) {
 }
 
 export default function TabsLayout() {
+  const { usuario } = useAuth();
+  const insets = useSafeAreaInsets();
+
+  if (!usuario) {
+    return <Redirect href="/(auth)/login" />;
+  }
+
+  const bottomInset = Math.max(insets.bottom, Platform.OS === 'android' ? 16 : 0);
+
   return (
     <Tabs
       screenOptions={{
@@ -41,6 +53,8 @@ export default function TabsLayout() {
         tabBarStyle: {
           backgroundColor: colores.superficie,
           borderTopColor: colores.borde,
+          height: 58 + bottomInset,
+          paddingBottom: bottomInset,
           paddingTop: 6,
         },
       }}

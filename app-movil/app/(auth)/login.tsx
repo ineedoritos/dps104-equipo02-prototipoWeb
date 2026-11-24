@@ -1,4 +1,5 @@
 import { useRouter } from 'expo-router';
+import { useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -11,10 +12,53 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useAuth } from '@/lib/auth';
 import { colores, espaciados, radios } from '@/lib/tema';
+
+const REGEX_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { iniciarSesion } = useAuth();
+
+  const [correo, setCorreo] = useState('');
+  const [contrasena, setContrasena] = useState('');
+  const [mostrarContrasena, setMostrarContrasena] = useState(false);
+  const [errorCorreo, setErrorCorreo] = useState('');
+  const [errorContrasena, setErrorContrasena] = useState('');
+
+  const manejarInicioSesion = () => {
+    const correoLimpio = correo.trim();
+    let valido = true;
+
+    if (!REGEX_CORREO.test(correoLimpio)) {
+      setErrorCorreo('Ingresa un correo electrónico válido.');
+      valido = false;
+    } else {
+      setErrorCorreo('');
+    }
+
+    if (contrasena.length < 6) {
+      setErrorContrasena('La contraseña debe tener al menos 6 caracteres.');
+      valido = false;
+    } else {
+      setErrorContrasena('');
+    }
+
+    if (!valido) {
+      return;
+    }
+
+    iniciarSesion(correoLimpio, contrasena);
+    router.replace('/(tabs)');
+  };
+
+  const usarCuentaDemo = () => {
+    setCorreo('demo@udb.edu.sv');
+    setContrasena('123456');
+    setErrorCorreo('');
+    setErrorContrasena('');
+  };
 
   return (
     <SafeAreaView style={styles.pantalla}>
@@ -41,31 +85,64 @@ export default function LoginScreen() {
               autoCapitalize="none"
               autoComplete="email"
               keyboardType="email-address"
+              onChangeText={(valor) => {
+                setCorreo(valor);
+                if (errorCorreo) {
+                  setErrorCorreo('');
+                }
+              }}
               placeholder="correo@ejemplo.com"
               placeholderTextColor={colores.textoSuave}
-              style={styles.campo}
+              style={[styles.campo, errorCorreo ? styles.campoError : null]}
+              value={correo}
             />
+            {errorCorreo ? <Text style={styles.textoError}>{errorCorreo}</Text> : null}
 
             <Text style={styles.etiqueta}>Contraseña</Text>
-            <TextInput
-              autoCapitalize="none"
-              autoComplete="password"
-              placeholder="Mínimo 6 caracteres"
-              placeholderTextColor={colores.textoSuave}
-              secureTextEntry
-              style={styles.campo}
-            />
+            <View style={[styles.campoContrasena, errorContrasena ? styles.campoError : null]}>
+              <TextInput
+                autoCapitalize="none"
+                autoComplete="password"
+                onChangeText={(valor) => {
+                  setContrasena(valor);
+                  if (errorContrasena) {
+                    setErrorContrasena('');
+                  }
+                }}
+                placeholder="Mínimo 6 caracteres"
+                placeholderTextColor={colores.textoSuave}
+                secureTextEntry={!mostrarContrasena}
+                style={styles.inputContrasena}
+                value={contrasena}
+              />
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => setMostrarContrasena((visible) => !visible)}
+                style={styles.botonVer}
+              >
+                <Text style={styles.textoVer}>{mostrarContrasena ? 'Ocultar' : 'Ver'}</Text>
+              </Pressable>
+            </View>
+            {errorContrasena ? <Text style={styles.textoError}>{errorContrasena}</Text> : null}
 
             <Pressable
               accessibilityRole="button"
-              onPress={() => router.replace('/(tabs)')}
+              onPress={manejarInicioSesion}
               style={({ pressed }) => [styles.boton, pressed && styles.botonPresionado]}
             >
-              <Text style={styles.textoBoton}>Entrar a la demo</Text>
+              <Text style={styles.textoBoton}>Iniciar sesión</Text>
+            </Pressable>
+
+            <Pressable
+              accessibilityRole="button"
+              onPress={usarCuentaDemo}
+              style={({ pressed }) => [styles.botonSecundario, pressed && styles.botonPresionado]}
+            >
+              <Text style={styles.textoBotonSecundario}>Completar datos demo</Text>
             </Pressable>
 
             <Text style={styles.nota}>
-              La autenticación con correo y contraseña estará disponible muy pronto.
+              Usa cualquier correo válido y una contraseña de 6+ caracteres, o toca «Completar datos demo».
             </Text>
           </View>
         </ScrollView>
@@ -142,12 +219,53 @@ const styles = StyleSheet.create({
     paddingHorizontal: espaciados.md,
     paddingVertical: espaciados.sm + 4,
   },
+  campoContrasena: {
+    alignItems: 'center',
+    backgroundColor: colores.fondo,
+    borderColor: colores.borde,
+    borderRadius: radios.md,
+    borderWidth: 1,
+    flexDirection: 'row',
+  },
+  inputContrasena: {
+    color: colores.texto,
+    flex: 1,
+    fontSize: 16,
+    paddingHorizontal: espaciados.md,
+    paddingVertical: espaciados.sm + 4,
+  },
+  botonVer: {
+    paddingHorizontal: espaciados.md,
+    paddingVertical: espaciados.sm + 4,
+  },
+  textoVer: {
+    color: colores.primario,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  campoError: {
+    borderColor: '#DC2626',
+  },
+  textoError: {
+    color: '#B91C1C',
+    fontSize: 12,
+    marginTop: espaciados.xs,
+  },
   boton: {
     alignItems: 'center',
     backgroundColor: colores.primario,
     borderRadius: radios.md,
     marginTop: espaciados.lg,
     paddingVertical: espaciados.md,
+  },
+  botonSecundario: {
+    alignItems: 'center',
+    backgroundColor: colores.superficie,
+    borderColor: colores.borde,
+    borderRadius: radios.md,
+    borderWidth: 1,
+    marginTop: espaciados.sm,
+    paddingVertical: espaciados.sm + 4,
   },
   botonPresionado: {
     opacity: 0.85,
@@ -156,6 +274,11 @@ const styles = StyleSheet.create({
     color: colores.superficie,
     fontSize: 16,
     fontWeight: '700',
+  },
+  textoBotonSecundario: {
+    color: colores.grisTexto,
+    fontSize: 14,
+    fontWeight: '600',
   },
   nota: {
     color: colores.textoSuave,

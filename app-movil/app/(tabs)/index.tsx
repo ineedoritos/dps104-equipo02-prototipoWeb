@@ -7,15 +7,16 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   ToastAndroid,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ActivityCard } from '@/components/actividades/ActivityCard';
+import { DatePickerField } from '@/components/ui/DatePickerField';
 import actividadesJson from '@/data/actividades.json';
 import usuarioJson from '@/data/usuario.json';
+import { useAuth } from '@/lib/auth';
 import { colores, espaciados, radios } from '@/lib/tema';
 import type {
   Actividad,
@@ -25,7 +26,7 @@ import type {
 } from '@/types/actividad';
 
 const actividades = actividadesJson as Actividad[];
-const usuario = usuarioJson as Usuario;
+const usuarioDemo = usuarioJson as Usuario;
 
 const OPCIONES_ESTADO: { valor: EstadoActividad | 'all'; etiqueta: string }[] = [
   { valor: 'all', etiqueta: 'Todos los estados' },
@@ -34,15 +35,9 @@ const OPCIONES_ESTADO: { valor: EstadoActividad | 'all'; etiqueta: string }[] = 
   { valor: 'completed', etiqueta: 'Completadas' },
 ];
 
-function esFechaISO(valor: string): boolean {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(valor)) {
-    return false;
-  }
-
-  return !Number.isNaN(new Date(`${valor}T00:00:00`).getTime());
-}
-
 export default function InicioScreen() {
+  const { usuario } = useAuth();
+  const nombreUsuario = usuario?.name ?? usuarioDemo.name;
   const [filtros, setFiltros] = useState<FiltrosActividades>({
     status: 'all',
     dateFrom: '',
@@ -73,14 +68,10 @@ export default function InicioScreen() {
     }, []),
   );
 
-  const desdeInvalido = filtros.dateFrom.length > 0 && !esFechaISO(filtros.dateFrom);
-  const hastaInvalido = filtros.dateTo.length > 0 && !esFechaISO(filtros.dateTo);
-
   const actividadesFiltradas = actividades.filter((actividad) => {
     const coincideEstado = filtros.status === 'all' || actividad.status === filtros.status;
-    const coincideDesde =
-      !esFechaISO(filtros.dateFrom) || actividad.date >= filtros.dateFrom;
-    const coincideHasta = !esFechaISO(filtros.dateTo) || actividad.date <= filtros.dateTo;
+    const coincideDesde = !filtros.dateFrom || actividad.date >= filtros.dateFrom;
+    const coincideHasta = !filtros.dateTo || actividad.date <= filtros.dateTo;
 
     return coincideEstado && coincideDesde && coincideHasta;
   });
@@ -103,7 +94,7 @@ export default function InicioScreen() {
       >
         <View style={styles.tarjetaPrincipal}>
           <View style={styles.encabezado}>
-            <Text style={styles.saludo}>¡Hola, {usuario.name}! 👋</Text>
+            <Text style={styles.saludo}>¡Hola, {nombreUsuario}! 👋</Text>
             <Text style={styles.descripcionEncabezado}>
               Tu comunidad te necesita. Consulta tus actividades y registra tu participación.
             </Text>
@@ -155,42 +146,26 @@ export default function InicioScreen() {
               </View>
 
               <View style={styles.filaFechas}>
-                <View style={[styles.campoGrupo, styles.campoMitad]}>
-                  <Text style={styles.etiqueta}>Desde</Text>
-                  <TextInput
-                    autoCapitalize="none"
-                    keyboardType="numbers-and-punctuation"
-                    maxLength={10}
-                    onChangeText={(valor) =>
+                <View style={styles.campoMitad}>
+                  <DatePickerField
+                    label="Desde"
+                    maxDate={filtros.dateTo || undefined}
+                    onChange={(valor) =>
                       setFiltros((anteriores) => ({ ...anteriores, dateFrom: valor }))
                     }
-                    placeholder="AAAA-MM-DD"
-                    placeholderTextColor={colores.textoSuave}
-                    style={[styles.campo, desdeInvalido && styles.campoError]}
                     value={filtros.dateFrom}
                   />
-                  {desdeInvalido ? (
-                    <Text style={styles.textoError}>Usa el formato AAAA-MM-DD</Text>
-                  ) : null}
                 </View>
 
-                <View style={[styles.campoGrupo, styles.campoMitad]}>
-                  <Text style={styles.etiqueta}>Hasta</Text>
-                  <TextInput
-                    autoCapitalize="none"
-                    keyboardType="numbers-and-punctuation"
-                    maxLength={10}
-                    onChangeText={(valor) =>
+                <View style={styles.campoMitad}>
+                  <DatePickerField
+                    label="Hasta"
+                    minDate={filtros.dateFrom || undefined}
+                    onChange={(valor) =>
                       setFiltros((anteriores) => ({ ...anteriores, dateTo: valor }))
                     }
-                    placeholder="AAAA-MM-DD"
-                    placeholderTextColor={colores.textoSuave}
-                    style={[styles.campo, hastaInvalido && styles.campoError]}
                     value={filtros.dateTo}
                   />
-                  {hastaInvalido ? (
-                    <Text style={styles.textoError}>Usa el formato AAAA-MM-DD</Text>
-                  ) : null}
                 </View>
               </View>
 

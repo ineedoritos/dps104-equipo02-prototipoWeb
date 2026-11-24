@@ -1,17 +1,26 @@
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import usuarioJson from '@/data/usuario.json';
+import { useAuth } from '@/lib/auth';
 import { colores, espaciados, radios } from '@/lib/tema';
 import type { Usuario } from '@/types/actividad';
 
-const usuario = usuarioJson as Usuario;
+const usuarioDemo = usuarioJson as Usuario;
 
 function capitalizar(texto: string): string {
   return texto.charAt(0).toUpperCase() + texto.slice(1);
 }
 
 export default function CuentaScreen() {
-  const nombre = capitalizar(usuario.name);
+  const router = useRouter();
+  const { usuario, cerrarSesion } = useAuth();
+  const nombre = capitalizar(usuario?.name ?? usuarioDemo.name);
+
+  const manejarCerrarSesion = () => {
+    cerrarSesion();
+    router.replace('/(auth)/login');
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.contenido}>
@@ -30,6 +39,13 @@ export default function CuentaScreen() {
           <Text style={styles.etiqueta}>Nombre</Text>
           <Text style={styles.valor}>{nombre}</Text>
         </View>
+
+        {usuario?.email ? (
+          <View style={styles.fila}>
+            <Text style={styles.etiqueta}>Correo</Text>
+            <Text style={styles.valor}>{usuario.email}</Text>
+          </View>
+        ) : null}
       </View>
 
       <View style={styles.tarjeta}>
@@ -40,12 +56,7 @@ export default function CuentaScreen() {
 
         <Pressable
           accessibilityRole="button"
-          onPress={() =>
-            Alert.alert(
-              'Cerrar sesión',
-              'Estamos preparando esta función para tu cuenta. Muy pronto podrás usarla.',
-            )
-          }
+          onPress={manejarCerrarSesion}
           style={({ pressed }) => [styles.boton, pressed && styles.botonPresionado]}
         >
           <Text style={styles.botonTexto}>Cerrar sesión</Text>
