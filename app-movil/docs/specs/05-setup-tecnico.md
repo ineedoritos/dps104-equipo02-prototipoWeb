@@ -61,7 +61,7 @@ Spec de soporte para las issues `[SETUP-01]` y `[SETUP-02]`. Las decisiones est�
 
 ## 3. Estructura del repositorio
 
-Las rutas de la app móvil y los comandos de setup de esta spec se ejecutan desde `expo-app/`.
+Las rutas de la app móvil y los comandos de setup de esta spec se ejecutan desde `app-movil/`.
 
 ```text
 app/                    # Rutas Expo Router (ver docs/screens/README.md)
@@ -96,7 +96,7 @@ supabase/
    npx rn-new@latest --help          # confirmar los flags vigentes antes de usarlos
    npx rn-new@latest registro-actividades --expo-router --tabs --nativewind --noGit
    ```
-   - `--noGit`: el repo ya existe. Mover el contenido generado a `expo-app/`, conservar `docs/` y `AGENTS.md`, y fusionar el `.gitignore` generado con el actual.
+   - `--noGit`: el repo ya existe. Mover el contenido generado a `app-movil/`, conservar `docs/` y `AGENTS.md`, y fusionar el `.gitignore` generado con el actual.
    - **No** usar `--supabase` ni plantillas de auth: el cliente se escribe en `[SETUP-02]` según §5.3.
    - Verificar en `package.json` que `nativewind` quedó en **v4** (`ADR-001`). Si el generador instala otra versión mayor, anotarlo en el PR y actualizar `ADR-001` antes de seguir.
 2. Activar `"strict": true` en `tsconfig.json` y comprobar que una pantalla real renderiza clases NativeWind.
