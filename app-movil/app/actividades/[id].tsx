@@ -22,12 +22,19 @@ import { colores, espaciados, radios } from '@/lib/tema';
 import type { EstadoAsistencia, RegistroAsistencia } from '@/types/actividad';
 
 type MapaAsistencia = Record<number, { estado?: EstadoAsistencia; motivo: string }>;
+type PestanaActividad = 'asistencia' | 'reporte';
 
 const OPCIONES: { estado: EstadoAsistencia; letra: string }[] = [
   { estado: 'presente', letra: 'P' },
   { estado: 'ausente', letra: 'A' },
   { estado: 'justificada', letra: 'J' },
 ];
+
+const ETIQUETA_ESTADO: Record<EstadoAsistencia, string> = {
+  presente: 'Presente',
+  justificada: 'Justificada',
+  ausente: 'Ausente',
+};
 
 export default function ActividadDetalleScreen() {
   const router = useRouter();
@@ -37,6 +44,7 @@ export default function ActividadDetalleScreen() {
   const actividad = obtenerActividadPorId(actividadId);
   const participantes = obtenerParticipantes();
 
+  const [pestana, setPestana] = useState<PestanaActividad>('asistencia');
   const [mapa, setMapa] = useState<MapaAsistencia>(() => {
     const iniciales: MapaAsistencia = {};
     const guardados = obtenerAsistenciasActividad(actividadId);
@@ -65,7 +73,10 @@ export default function ActividadDetalleScreen() {
       if (item.estado === 'justificada') justificadas += 1;
     }
 
-    return { presentes, ausentes, justificadas };
+    const total = presentes + ausentes + justificadas;
+    const tasa = total > 0 ? `${Math.round((presentes / total) * 100)}%` : '—';
+
+    return { presentes, ausentes, justificadas, total, tasa };
   }, [mapa]);
 
   if (!actividad) {
@@ -130,8 +141,8 @@ export default function ActividadDetalleScreen() {
     }
 
     guardarAsistenciasActividad(actividadId, registros);
-    Alert.alert('Asistencia guardada', 'Los cambios se actualizaron en el reporte.', [
-      { text: 'OK', onPress: () => router.back() },
+    Alert.alert('Asistencia guardada', 'Los datos de la actividad se actualizaron.', [
+      { text: 'OK' },
     ]);
   };
 
@@ -151,79 +162,201 @@ export default function ActividadDetalleScreen() {
           <Text style={styles.meta}>📍 {actividad.location}</Text>
         </View>
 
-        <View style={styles.tarjeta}>
-          <Text style={styles.tituloSeccion}>Participantes y asistencia manual</Text>
-          <Text style={styles.leyenda}>P Presente · A Ausente · J Justificada</Text>
+        <View style={styles.pestanas}>
+          <Pressable
+            onPress={() => setPestana('asistencia')}
+            style={[styles.pestana, pestana === 'asistencia' && styles.pestanaActiva]}
+          >
+            <Text
+              style={[styles.pestanaTexto, pestana === 'asistencia' && styles.pestanaTextoActiva]}
+            >
+              Asistencia
+            </Text>
+          </Pressable>
 
-          <View style={styles.lista}>
-            {participantes.map((participante) => {
-              const item = mapa[participante.id] ?? { motivo: '' };
+          <Pressable
+            onPress={() => setPestana('reporte')}
+            style={[styles.pestana, pestana === 'reporte' && styles.pestanaActiva]}
+          >
+            <Text style={[styles.pestanaTexto, pestana === 'reporte' && styles.pestanaTextoActiva]}>
+              Reporte
+            </Text>
+          </Pressable>
+        </View>
 
-              return (
-                <View key={participante.id} style={styles.filaParticipante}>
-                  <View style={styles.filaSuperior}>
-                    <View style={styles.infoParticipante}>
-                      <Text style={styles.nombreParticipante}>{participante.nombre}</Text>
-                      <Text style={styles.correoParticipante}>{participante.correo}</Text>
-                    </View>
+        {pestana === 'asistencia' ? (
+          <View style={styles.tarjeta}>
+            <Text style={styles.tituloSeccion}>Participantes y asistencia manual</Text>
+            <Text style={styles.leyenda}>P Presente · A Ausente · J Justificada</Text>
 
-                    <View style={styles.grupoBotones}>
-                      {OPCIONES.map((opcion) => {
-                        const activo = item.estado === opcion.estado;
-                        return (
-                          <Pressable
-                            key={opcion.estado}
-                            onPress={() => seleccionarEstado(participante.id, opcion.estado)}
-                            style={[
-                              styles.botonEstado,
-                              activo && styles[`boton_${opcion.estado}`],
-                            ]}
-                          >
-                            <Text
+            <View style={styles.lista}>
+              {participantes.map((participante) => {
+                const item = mapa[participante.id] ?? { motivo: '' };
+
+                return (
+                  <View key={participante.id} style={styles.filaParticipante}>
+                    <View style={styles.filaSuperior}>
+                      <View style={styles.infoParticipante}>
+                        <Text style={styles.nombreParticipante}>{participante.nombre}</Text>
+                        <Text style={styles.correoParticipante}>{participante.correo}</Text>
+                      </View>
+
+                      <View style={styles.grupoBotones}>
+                        {OPCIONES.map((opcion) => {
+                          const activo = item.estado === opcion.estado;
+                          return (
+                            <Pressable
+                              key={opcion.estado}
+                              onPress={() => seleccionarEstado(participante.id, opcion.estado)}
                               style={[
-                                styles.textoEstado,
-                                activo && styles.textoEstadoActivo,
+                                styles.botonEstado,
+                                activo && styles[`boton_${opcion.estado}`],
                               ]}
                             >
-                              {opcion.letra}
-                            </Text>
-                          </Pressable>
-                        );
-                      })}
+                              <Text
+                                style={[
+                                  styles.textoEstado,
+                                  activo && styles.textoEstadoActivo,
+                                ]}
+                              >
+                                {opcion.letra}
+                              </Text>
+                            </Pressable>
+                          );
+                        })}
+                      </View>
                     </View>
-                  </View>
 
-                  {item.estado === 'justificada' ? (
-                    <TextInput
-                      onChangeText={(texto) => cambiarMotivo(participante.id, texto)}
-                      placeholder="Motivo de la ausencia (obligatorio)"
-                      placeholderTextColor={colores.textoSuave}
-                      style={styles.campoMotivo}
-                      value={item.motivo}
+                    {item.estado === 'justificada' ? (
+                      <TextInput
+                        onChangeText={(texto) => cambiarMotivo(participante.id, texto)}
+                        placeholder="Motivo de la ausencia (obligatorio)"
+                        placeholderTextColor={colores.textoSuave}
+                        style={styles.campoMotivo}
+                        value={item.motivo}
+                      />
+                    ) : null}
+                  </View>
+                );
+              })}
+            </View>
+
+            <View style={styles.resumen}>
+              <Text style={styles.resumenTexto}>
+                {resumen.presentes} presentes · {resumen.ausentes} ausentes · {resumen.justificadas}{' '}
+                justificadas
+              </Text>
+            </View>
+
+            {error ? <Text style={styles.textoError}>{error}</Text> : null}
+
+            <Pressable
+              accessibilityRole="button"
+              onPress={manejarGuardar}
+              style={({ pressed }) => [styles.botonGuardar, pressed && styles.presionado]}
+            >
+              <Text style={styles.textoGuardar}>Guardar asistencia</Text>
+            </Pressable>
+          </View>
+        ) : (
+          <View style={styles.tarjeta}>
+            <View style={styles.reporteEncabezado}>
+              <View>
+                <Text style={styles.tituloSeccion}>Reporte de esta actividad</Text>
+                <Text style={styles.leyenda}>
+                  {resumen.total} de {participantes.length} participantes registrados
+                </Text>
+              </View>
+              <Text style={styles.tasaGrande}>{resumen.tasa}</Text>
+            </View>
+
+            {resumen.total === 0 ? (
+              <View style={styles.reporteVacio}>
+                <Text style={styles.reporteVacioTexto}>
+                  Todavía no hay registros de asistencia en esta actividad.
+                </Text>
+              </View>
+            ) : (
+              <>
+                <View style={styles.barraContenedor}>
+                  {resumen.presentes > 0 ? (
+                    <View
+                      style={[
+                        styles.barraSegmento,
+                        styles.barraPresente,
+                        { flex: resumen.presentes },
+                      ]}
+                    />
+                  ) : null}
+                  {resumen.justificadas > 0 ? (
+                    <View
+                      style={[
+                        styles.barraSegmento,
+                        styles.barraJustificada,
+                        { flex: resumen.justificadas },
+                      ]}
+                    />
+                  ) : null}
+                  {resumen.ausentes > 0 ? (
+                    <View
+                      style={[
+                        styles.barraSegmento,
+                        styles.barraAusente,
+                        { flex: resumen.ausentes },
+                      ]}
                     />
                   ) : null}
                 </View>
-              );
-            })}
+
+                <View style={styles.leyendaColores}>
+                  <View style={styles.leyendaItem}>
+                    <View style={[styles.punto, styles.barraPresente]} />
+                    <Text style={styles.leyendaItemTexto}>Presentes: {resumen.presentes}</Text>
+                  </View>
+                  <View style={styles.leyendaItem}>
+                    <View style={[styles.punto, styles.barraJustificada]} />
+                    <Text style={styles.leyendaItemTexto}>
+                      Justificadas: {resumen.justificadas}
+                    </Text>
+                  </View>
+                  <View style={styles.leyendaItem}>
+                    <View style={[styles.punto, styles.barraAusente]} />
+                    <Text style={styles.leyendaItemTexto}>Sin motivo: {resumen.ausentes}</Text>
+                  </View>
+                </View>
+
+                <View style={styles.lista}>
+                  {participantes.map((participante) => {
+                    const item = mapa[participante.id];
+                    return (
+                      <View key={participante.id} style={styles.filaReporte}>
+                        <View style={styles.infoParticipante}>
+                          <Text style={styles.nombreParticipante}>{participante.nombre}</Text>
+                          {item?.estado === 'justificada' && item.motivo.trim() ? (
+                            <Text style={styles.motivoReporte}>Motivo: {item.motivo.trim()}</Text>
+                          ) : null}
+                        </View>
+                        <Text
+                          style={[
+                            styles.badgeReporte,
+                            item?.estado ? styles[`badge_${item.estado}`] : styles.badgeSinRegistro,
+                          ]}
+                        >
+                          {item?.estado ? ETIQUETA_ESTADO[item.estado] : 'Sin registro'}
+                        </Text>
+                      </View>
+                    );
+                  })}
+                </View>
+
+                <Text style={styles.notaPie}>
+                  Tasa = presentes ÷ (presentes + ausencias) × 100. Las justificadas cuentan como
+                  ausencia con motivo visible.
+                </Text>
+              </>
+            )}
           </View>
-
-          <View style={styles.resumen}>
-            <Text style={styles.resumenTexto}>
-              {resumen.presentes} presentes · {resumen.ausentes} ausentes · {resumen.justificadas}{' '}
-              justificadas
-            </Text>
-          </View>
-
-          {error ? <Text style={styles.textoError}>{error}</Text> : null}
-
-          <Pressable
-            accessibilityRole="button"
-            onPress={manejarGuardar}
-            style={({ pressed }) => [styles.botonGuardar, pressed && styles.presionado]}
-          >
-            <Text style={styles.textoGuardar}>Guardar asistencia</Text>
-          </Pressable>
-        </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -271,6 +404,31 @@ const styles = StyleSheet.create({
     color: colores.textoSuave,
     fontSize: 13,
     marginTop: 4,
+  },
+  pestanas: {
+    backgroundColor: colores.superficie,
+    borderColor: colores.borde,
+    borderRadius: radios.md,
+    borderWidth: 1,
+    flexDirection: 'row',
+    padding: 4,
+  },
+  pestana: {
+    alignItems: 'center',
+    borderRadius: radios.sm,
+    flex: 1,
+    paddingVertical: 10,
+  },
+  pestanaActiva: {
+    backgroundColor: colores.primario,
+  },
+  pestanaTexto: {
+    color: colores.grisTexto,
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  pestanaTextoActiva: {
+    color: colores.superficie,
   },
   tituloSeccion: {
     color: colores.texto,
@@ -386,5 +544,103 @@ const styles = StyleSheet.create({
     color: colores.superficie,
     fontSize: 16,
     fontWeight: '700',
+  },
+  reporteEncabezado: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  tasaGrande: {
+    color: colores.primario,
+    fontSize: 22,
+    fontWeight: '800',
+  },
+  reporteVacio: {
+    backgroundColor: colores.fondo,
+    borderRadius: radios.md,
+    marginTop: espaciados.md,
+    padding: espaciados.lg,
+  },
+  reporteVacioTexto: {
+    color: colores.textoSuave,
+    fontSize: 13,
+    textAlign: 'center',
+  },
+  barraContenedor: {
+    borderRadius: radios.sm,
+    flexDirection: 'row',
+    height: 16,
+    marginTop: espaciados.md,
+    overflow: 'hidden',
+  },
+  barraSegmento: {
+    height: '100%',
+  },
+  barraPresente: {
+    backgroundColor: colores.exitoPunto,
+  },
+  barraJustificada: {
+    backgroundColor: '#F59E0B',
+  },
+  barraAusente: {
+    backgroundColor: '#EF4444',
+  },
+  leyendaColores: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: espaciados.md,
+    marginTop: espaciados.md,
+  },
+  leyendaItem: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 6,
+  },
+  punto: {
+    borderRadius: 999,
+    height: 10,
+    width: 10,
+  },
+  leyendaItemTexto: {
+    color: colores.grisTexto,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  filaReporte: {
+    alignItems: 'center',
+    borderTopColor: colores.grisSuave,
+    borderTopWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: espaciados.sm,
+    paddingVertical: 12,
+  },
+  motivoReporte: {
+    color: colores.textoSuave,
+    fontSize: 12,
+    marginTop: 2,
+  },
+  badgeReporte: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  badge_presente: {
+    color: colores.exito,
+  },
+  badge_justificada: {
+    color: '#B45309',
+  },
+  badge_ausente: {
+    color: '#DC2626',
+  },
+  badgeSinRegistro: {
+    color: colores.textoSuave,
+    fontWeight: '500',
+  },
+  notaPie: {
+    color: colores.textoSuave,
+    fontSize: 12,
+    lineHeight: 18,
+    marginTop: espaciados.md,
   },
 });
