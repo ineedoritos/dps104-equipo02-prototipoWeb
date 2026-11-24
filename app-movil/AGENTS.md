@@ -28,7 +28,7 @@ Nunca adivines reglas de negocio, nombres de tablas ni rutas de pantallas. Antes
 ## 4. Git Flow y cambios a specs
 - `main` es la rama de integración y de los cortes `"Fase N"`. Cada integrante abre su PR desde una rama de trabajo según `docs/adrs/ADR-005-gitflow-issues-y-calidad.md`.
 - Si una implementación requiere ajustar una regla de negocio, tabla o pantalla, actualiza el archivo correspondiente en `docs/` **en el mismo PR**.
-- Nunca copies los Criterios de Aceptación completos en las issues. Enlaza a los documentos de `expo-app/docs/` con una URL absoluta de `main`, por ejemplo `https://github.com/ineedoritos/dps104-equipo02-prototipoWeb/blob/main/expo-app/docs/specs/...#huXX`.
+- Nunca copies los Criterios de Aceptación completos en las issues. Enlaza a los documentos de `app-movil/docs/` con una URL absoluta de `main`, por ejemplo `https://github.com/ineedoritos/dps104-equipo02-prototipoWeb/blob/main/app-movil/docs/specs/...#huXX`.
 
 ## 5. Leer issues con GitHub CLI (`gh`)
 - **Recomendado:** antes de empezar una issue, el desarrollador o el agente debe tener instalada y autenticada la [GitHub CLI](https://cli.github.com/). Así la issue se lee desde la terminal, sin copiar y pegar desde el navegador.
