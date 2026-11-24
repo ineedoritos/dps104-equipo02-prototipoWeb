@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "nombre": "Ana Martínez",
+    "correo": "ana.martinez@correo.com"
+  },
+  {
+    "id": 2,
+    "nombre": "Carlos López",
+    "correo": "carlos.lopez@correo.com"
+  },
+  {
+    "id": 3,
+    "nombre": "Sofía Ramírez",
+    "correo": "sofia.ramirez@correo.com"
+  },
+  {
+    "id": 4,
+    "nombre": "Diego Hernández",
+    "correo": "diego.hernandez@correo.com"
+  },
+  {
+    "id": 5,
+    "nombre": "Valeria Castro",
+    "correo": "valeria.castro@correo.com"
+  },
+  {
+    "id": 6,
+    "nombre": "Luis Morales",
+    "correo": "luis.morales@correo.com"
+  }
+]

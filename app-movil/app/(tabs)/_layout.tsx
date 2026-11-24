@@ -14,7 +14,7 @@ function IconoInicio({ color }: Props) {
   return (
     <SymbolView
       name={{ ios: 'house.fill', android: 'home', web: 'home' }}
-      size={28}
+      size={26}
       tintColor={color}
     />
   );
@@ -24,7 +24,7 @@ function IconoCuenta({ color }: Props) {
   return (
     <SymbolView
       name={{ ios: 'person.crop.circle.fill', android: 'account_circle', web: 'account_circle' }}
-      size={28}
+      size={26}
       tintColor={color}
     />
   );
