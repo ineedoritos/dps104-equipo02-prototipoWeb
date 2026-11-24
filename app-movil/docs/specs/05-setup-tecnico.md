@@ -2,7 +2,7 @@
 
 Spec de soporte para las issues `[SETUP-01]` y `[SETUP-02]`. Las decisiones están cerradas en `ADR-001`, `ADR-002` y `ADR-006`; aquí se dice **qué se instala, cómo y cómo se verifica**.
 
-> **Regla de versiones:** usar la versión **estable vigente** al momento de crear el proyecto (`npx rn-new@latest`, ver §4) y **anotarla en la tabla §1** dentro del mismo PR de `[SETUP-01]`. No mezclar NativeWind v2/v4 (`ADR-001`).
+> **Regla de versiones:** usar la versión **estable vigente** al momento de crear el proyecto (`npx create-expo-app@latest`, ver §4) y **anotarla en la tabla §1** dentro del mismo PR de `[SETUP-01]`. Se descarta NativeWind por rendimiento; usar `StyleSheet` nativo (`ADR-001`).
 
 ---
 
@@ -15,7 +15,7 @@ Spec de soporte para las issues `[SETUP-01]` y `[SETUP-02]`. Las decisiones est�
 | Runtime | Node.js LTS + npm | *(anotar)* | Herramientas de desarrollo. |
 | App | Expo SDK (managed) + React Native + **TypeScript estricto** | *(anotar)* | App Android (`RNF01`). |
 | Navegación | Expo Router | la del SDK | `(auth)`, `(tabs)`, `grupos/[grupoId]/...` (`docs/screens/README.md`). |
-| Estilos | **NativeWind v4** + Tailwind CSS 3.x | *(anotar)* | Clases utilitarias (`ADR-001`). |
+| Estilos | **React Native `StyleSheet`** (Expo normal, sin NativeWind) | incluido en RN | `StyleSheet.create` estándar (`ADR-001`). |
 | Estado compartido | Redux Toolkit (`@reduxjs/toolkit`) + React Redux (`react-redux`) | *(anotar)* | Dependencias en `SETUP-01`. Configuración en la primera historia que necesite estado compartido (`ADR-001`). |
 | Backend | Supabase Cloud **Free** (Auth + PostgreSQL + API + Storage) | — | `ADR-002`. |
 | Cliente BD | `@supabase/supabase-js` v2 + `@react-native-async-storage/async-storage` + `react-native-url-polyfill` | *(anotar)* | Sesión persistente y llamadas RPC. |
@@ -32,13 +32,12 @@ Spec de soporte para las issues `[SETUP-01]` y `[SETUP-02]`. Las decisiones est�
 
 | Tema | Enlace |
 |---|---|
-| Create Expo Stack (`rn-new`) | https://github.com/roninoss/create-expo-stack · https://www.npmjs.com/package/rn-new |
-| Crear proyecto Expo (alternativa manual) | https://docs.expo.dev/more/create-expo/ |
+| Crear proyecto Expo (`create-expo-app`) | https://docs.expo.dev/more/create-expo/ |
 | Expo Router (rutas, grupos, layouts) | https://docs.expo.dev/router/introduction/ |
 | Variables de entorno `EXPO_PUBLIC_*` | https://docs.expo.dev/guides/environment-variables/ |
 | ESLint en Expo (`expo lint`) | https://docs.expo.dev/guides/using-eslint/ |
 | TypeScript en Expo | https://docs.expo.dev/guides/typescript/ |
-| NativeWind (instalación con Expo) | https://www.nativewind.dev/ *(usar la guía de la v4)* |
+| `StyleSheet` en React Native | https://reactnative.dev/docs/stylesheet |
 | Redux Toolkit y React Redux | https://redux.js.org/toolkit/introduction/getting-started · https://redux.js.org/react-redux/introduction/getting-started |
 | Supabase + Expo React Native (tutorial oficial) | https://supabase.com/docs/guides/getting-started/tutorials/with-expo-react-native |
 | Supabase Auth (correo y contraseña) | https://supabase.com/docs/guides/auth/passwords |
@@ -91,15 +90,14 @@ supabase/
 
 ## 4. `[SETUP-01]` · Base de la app
 
-1. Generar la base con **Create Expo Stack** (paquete `rn-new`), que ya deja Expo Router + NativeWind configurados (Babel, Metro, `tailwind.config.js`, `global.css`):
+1. Generar la base con la plantilla oficial de **Expo** (`create-expo-app`), con Expo Router + TypeScript y sin NativeWind:
    ```bash
-   npx rn-new@latest --help          # confirmar los flags vigentes antes de usarlos
-   npx rn-new@latest registro-actividades --expo-router --tabs --nativewind --noGit
+   npx create-expo-app@latest --help          # confirmar los flags vigentes antes de usarlos
+   npx create-expo-app@latest registro-actividades
    ```
-   - `--noGit`: el repo ya existe. Mover el contenido generado a `app-movil/`, conservar `docs/` y `AGENTS.md`, y fusionar el `.gitignore` generado con el actual.
-   - **No** usar `--supabase` ni plantillas de auth: el cliente se escribe en `[SETUP-02]` según §5.3.
-   - Verificar en `package.json` que `nativewind` quedó en **v4** (`ADR-001`). Si el generador instala otra versión mayor, anotarlo en el PR y actualizar `ADR-001` antes de seguir.
-2. Activar `"strict": true` en `tsconfig.json` y comprobar que una pantalla real renderiza clases NativeWind.
+   - El repo ya existe: mover el contenido generado a `app-movil/`, conservar `docs/` y `AGENTS.md`, y fusionar el `.gitignore` generado con el actual.
+   - **No** instalar NativeWind ni Tailwind CSS (`ADR-001`: descartado por temas de rendimiento); tampoco instalar Supabase todavía (el cliente se escribe en `[SETUP-02]` según §5.3).
+2. Activar `"strict": true` en `tsconfig.json` y comprobar que una pantalla real renderiza estilos con `StyleSheet.create`.
    - Fijar en `app.json` el identificador Android **definitivo**: `"android": { "package": "sv.udb.registroactividades" }`. Firebase (`[SETUP-03]`) queda atado a este valor; cambiarlo después obliga a rehacer credenciales.
 3. Crear el esqueleto de rutas: `(auth)/login`, `(tabs)` con 4 pestañas (`Mis grupos`, `Mi historial`, `Notificaciones`, `Cuenta`) y una ruta interna `grupos/[grupoId]`.
 4. Crear `lib/fecha.ts` (`ADR-006`) y añadir los scripts `typecheck` y `lint`.
@@ -112,7 +110,7 @@ supabase/
 
 **Criterios de aceptación:**
 - `SETUP01-CA01`: La app abre en Android (Expo Go o dev build) y navega entre las 4 pestañas y una pantalla de pila interna.
-- `SETUP01-CA02`: Una pantalla real muestra estilos NativeWind aplicados (smoke test visual de `ADR-001`).
+- `SETUP01-CA02`: Una pantalla real muestra estilos aplicados con `StyleSheet` nativo de React Native (smoke test visual de `ADR-001`).
 - `SETUP01-CA03`: `npm run typecheck` y `npm run lint` terminan sin errores.
 - `SETUP01-CA04`: `@reduxjs/toolkit` y `react-redux` figuran como dependencias directas en `package.json` y sus versiones aparecen en `npm ls @reduxjs/toolkit react-redux --depth=0` y en la tabla de stack (§1).
 
