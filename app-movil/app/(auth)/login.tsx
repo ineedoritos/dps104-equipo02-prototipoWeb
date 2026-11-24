@@ -12,14 +12,12 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useAuth } from '@/lib/auth';
 import { colores, espaciados, radios } from '@/lib/tema';
 
 const REGEX_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { iniciarSesion } = useAuth();
 
   const [correo, setCorreo] = useState('');
   const [contrasena, setContrasena] = useState('');
@@ -49,15 +47,7 @@ export default function LoginScreen() {
       return;
     }
 
-    iniciarSesion(correoLimpio, contrasena);
     router.replace('/(tabs)');
-  };
-
-  const usarCuentaDemo = () => {
-    setCorreo('demo@udb.edu.sv');
-    setContrasena('123456');
-    setErrorCorreo('');
-    setErrorContrasena('');
   };
 
   return (
@@ -68,13 +58,7 @@ export default function LoginScreen() {
       >
         <ScrollView contentContainerStyle={styles.contenido} keyboardShouldPersistTaps="handled">
           <View style={styles.encabezado}>
-            <View style={styles.insignia}>
-              <Text style={styles.insigniaTexto}>UDB · DPS104</Text>
-            </View>
             <Text style={styles.titulo}>Registro de actividades</Text>
-            <Text style={styles.subtitulo}>
-              Organiza jornadas, pases de lista y horas de servicio desde tu teléfono.
-            </Text>
           </View>
 
           <View style={styles.tarjeta}>
@@ -130,20 +114,8 @@ export default function LoginScreen() {
               onPress={manejarInicioSesion}
               style={({ pressed }) => [styles.boton, pressed && styles.botonPresionado]}
             >
-              <Text style={styles.textoBoton}>Iniciar sesión</Text>
+              <Text style={styles.textoBoton}>Entrar</Text>
             </Pressable>
-
-            <Pressable
-              accessibilityRole="button"
-              onPress={usarCuentaDemo}
-              style={({ pressed }) => [styles.botonSecundario, pressed && styles.botonPresionado]}
-            >
-              <Text style={styles.textoBotonSecundario}>Completar datos demo</Text>
-            </Pressable>
-
-            <Text style={styles.nota}>
-              Usa cualquier correo válido y una contraseña de 6+ caracteres, o toca «Completar datos demo».
-            </Text>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -164,30 +136,10 @@ const styles = StyleSheet.create({
   encabezado: {
     marginBottom: espaciados.lg,
   },
-  insignia: {
-    alignSelf: 'flex-start',
-    backgroundColor: colores.primarioSuave,
-    borderRadius: radios.sm,
-    paddingHorizontal: espaciados.sm,
-    paddingVertical: espaciados.xs,
-  },
-  insigniaTexto: {
-    color: colores.primario,
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0.6,
-  },
   titulo: {
     color: colores.texto,
-    fontSize: 30,
+    fontSize: 28,
     fontWeight: '800',
-    marginTop: espaciados.md,
-  },
-  subtitulo: {
-    color: colores.textoSuave,
-    fontSize: 16,
-    lineHeight: 23,
-    marginTop: espaciados.sm,
   },
   tarjeta: {
     backgroundColor: colores.superficie,
@@ -258,15 +210,6 @@ const styles = StyleSheet.create({
     marginTop: espaciados.lg,
     paddingVertical: espaciados.md,
   },
-  botonSecundario: {
-    alignItems: 'center',
-    backgroundColor: colores.superficie,
-    borderColor: colores.borde,
-    borderRadius: radios.md,
-    borderWidth: 1,
-    marginTop: espaciados.sm,
-    paddingVertical: espaciados.sm + 4,
-  },
   botonPresionado: {
     opacity: 0.85,
   },
@@ -274,17 +217,5 @@ const styles = StyleSheet.create({
     color: colores.superficie,
     fontSize: 16,
     fontWeight: '700',
-  },
-  textoBotonSecundario: {
-    color: colores.grisTexto,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  nota: {
-    color: colores.textoSuave,
-    fontSize: 12,
-    lineHeight: 18,
-    marginTop: espaciados.md,
-    textAlign: 'center',
   },
 });

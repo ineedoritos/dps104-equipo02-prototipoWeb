@@ -16,7 +16,6 @@ import { ActivityCard } from '@/components/actividades/ActivityCard';
 import { DatePickerField } from '@/components/ui/DatePickerField';
 import actividadesJson from '@/data/actividades.json';
 import usuarioJson from '@/data/usuario.json';
-import { useAuth } from '@/lib/auth';
 import { colores, espaciados, radios } from '@/lib/tema';
 import type {
   Actividad,
@@ -26,7 +25,7 @@ import type {
 } from '@/types/actividad';
 
 const actividades = actividadesJson as Actividad[];
-const usuarioDemo = usuarioJson as Usuario;
+const usuario = usuarioJson as Usuario;
 
 const OPCIONES_ESTADO: { valor: EstadoActividad | 'all'; etiqueta: string }[] = [
   { valor: 'all', etiqueta: 'Todos los estados' },
@@ -36,8 +35,6 @@ const OPCIONES_ESTADO: { valor: EstadoActividad | 'all'; etiqueta: string }[] = 
 ];
 
 export default function InicioScreen() {
-  const { usuario } = useAuth();
-  const nombreUsuario = usuario?.name ?? usuarioDemo.name;
   const [filtros, setFiltros] = useState<FiltrosActividades>({
     status: 'all',
     dateFrom: '',
@@ -94,7 +91,7 @@ export default function InicioScreen() {
       >
         <View style={styles.tarjetaPrincipal}>
           <View style={styles.encabezado}>
-            <Text style={styles.saludo}>¡Hola, {nombreUsuario}! 👋</Text>
+            <Text style={styles.saludo}>¡Hola, {usuario.name}! 👋</Text>
             <Text style={styles.descripcionEncabezado}>
               Tu comunidad te necesita. Consulta tus actividades y registra tu participación.
             </Text>
