@@ -50,7 +50,9 @@ export default function InicioScreen() {
         <MyActivityDashboard
           activities={actividades}
           onCreateActivity={() => router.push('/actividades/crear')}
-          onSelectActivity={(actividad) => router.push(`/actividades/${actividad.id}`)}
+          onSelectActivity={(actividad) =>
+            router.push({ pathname: '/actividades/[id]', params: { id: String(actividad.id) } })
+          }
           user={usuario}
         />
       </ScrollView>
@@ -60,11 +62,11 @@ export default function InicioScreen() {
 
 const styles = StyleSheet.create({
   pantalla: {
-    backgroundColor: colores.fondo,
+    backgroundColor: colores.papel,
     flex: 1,
   },
   contenido: {
-    padding: espaciados.md,
-    paddingBottom: espaciados.xl,
+    padding: espaciados.lg,
+    paddingBottom: espaciados.xxl,
   },
 });

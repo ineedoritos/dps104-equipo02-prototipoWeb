@@ -76,6 +76,16 @@ export function esMismoDia(a: Date | string, b: Date | string = new Date()): boo
   return fechaEnZona(a) === fechaEnZona(b);
 }
 
+/**
+ * Formatea una fecha de calendario (`YYYY-MM-DD`) sin desfase de zona.
+ *
+ * Se ancla al mediodía de El Salvador: `new Date('2026-11-25')` se
+ * interpretaría como medianoche UTC y mostraría el día anterior.
+ */
+export function formatearDia(fechaISO: string, opciones: Intl.DateTimeFormatOptions = {}): string {
+  return formatearFecha(`${fechaISO}T12:00:00${OFFSET_EL_SALVADOR}`, opciones);
+}
+
 /** Convierte un instante a ISO 8601 con el offset fijo de El Salvador. */
 export function aISOConOffset(fecha: Date | string = new Date()): string {
   const { anio, mes, dia, hora, minuto, segundo } = obtenerPartes(aFecha(fecha));
