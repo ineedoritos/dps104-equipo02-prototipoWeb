@@ -31,7 +31,7 @@ Nunca adivines reglas de negocio, nombres de tablas ni rutas de pantallas. Antes
 - Al terminar tu cambio, entrega al desarrollador humano el **guion de prueba manual E2E en navegador** (desktop y responsive) correspondiente para que valide de punta a punta antes de aprobar el PR.
 
 ## 4. Git Flow y cambios a specs
-- `main` es la rama de integración. Cada integrante abre su PR pequeño hacia `main` desde una rama de trabajo (`feat/web-XX-...` o `docs/web-...`).
+- `main` es la rama de integracion. Cada integrante abre su PR pequeño hacia `main` desde una rama de trabajo `feature/<issue>-<descripcion>` o `bugfix/<issue>-<descripcion>` (ver `../AGENTS.md`, seccion 3).
 - Si una implementación requiere ajustar una regla de negocio, pantalla o contrato, actualiza `app-web/docs/` **en el mismo PR**.
 - Nunca copies los Criterios de Aceptación completos en las issues. Enlaza a `app-web/docs/` (y a `app-movil/docs/database.md` cuando aplique) con URLs absolutas a `main`.
 

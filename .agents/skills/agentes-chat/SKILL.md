@@ -111,7 +111,12 @@ Pueden repartirse tareas entre ustedes, incluso a un agente concreto o a `todos`
 - Quien delega **verifica** la `ENTREGA` contra el repositorio antes de darla por buena.
 - No afirmes que otro agente aceptó, revisó o terminó algo si no hay un mensaje suyo o una evidencia en el repositorio.
 
-## 6. Rebase y ramas compartidas
+## 6. Ramas: nombres y rebase compartido
+
+### Nombres de rama (Git Flow)
+Usa los prefijos de `AGENTS.md` (seccion 3): `feature/<issue>-<descripcion>`, `bugfix/<issue>-<descripcion>`, `hotfix/<descripcion>` y `release/fase-<N>`. Crea las ramas nuevas desde `main` (o `develop`, si existe). No uses `feat/`, `ft-` ni nombres personales. Las ramas que ya existen no se renombran.
+
+### Rebase compartido
 
 Reglas:
 - Traer `main` **hacia** tu rama (rebase o merge de `origin/main`) está permitido. Lo prohibido es integrar hacia `main`.
