@@ -102,6 +102,7 @@ export default function ConfirmacionQRScreen() {
 
         <View style={styles.acciones}>
           <Boton
+            estilo={styles.botonAccion}
             icono="reloj"
             onPress={() =>
               router.replace({
@@ -112,6 +113,7 @@ export default function ConfirmacionQRScreen() {
             titulo="Ver mi historial"
           />
           <Boton
+            estilo={styles.botonAccion}
             onPress={() =>
               router.replace({
                 pathname: '/grupos/[grupoId]',
@@ -199,6 +201,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   acciones: {
+    flexDirection: 'row',
     gap: espaciados.md,
+  },
+  botonAccion: {
+    flex: 1,
   },
 });

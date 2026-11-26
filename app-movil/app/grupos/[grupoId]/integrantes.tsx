@@ -1,6 +1,6 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Aviso } from '@/components/ui/Aviso';
@@ -188,7 +188,15 @@ export default function IntegrantesScreen() {
         <View style={styles.espacioDerecha} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.contenido} keyboardShouldPersistTaps="handled">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.pantalla}
+      >
+        <ScrollView
+          automaticallyAdjustKeyboardInsets
+          contentContainerStyle={styles.contenido}
+          keyboardShouldPersistTaps="handled"
+        >
         {errorAccion ? <Aviso texto={errorAccion} tipo="error" /> : null}
 
         <View style={styles.tarjeta}>
@@ -260,25 +268,33 @@ export default function IntegrantesScreen() {
                   </Pressable>
                 </View>
 
-                <View style={styles.selectorRol}>
-                  {(['participante', 'responsable'] as const).map((rolOpcion) => {
-                    const activo = item.rol === rolOpcion;
-                    return (
-                      <Pressable
-                        key={rolOpcion}
-                        accessibilityRole="button"
-                        onPress={() => manejarCambiarRol(item, rolOpcion)}
-                        style={[styles.opcionRol, activo && styles.opcionRolActiva]}
-                      >
-                        <Text
-                          style={[styles.textoOpcionRol, activo && styles.textoOpcionRolActiva]}
+                {esPropio ? (
+                  <View style={styles.rolPropioFijo}>
+                    <Text style={styles.textoRolPropio}>
+                      Tu rol: {item.rol === 'responsable' ? 'Responsable' : 'Participante'} (no se puede cambiar aquí)
+                    </Text>
+                  </View>
+                ) : (
+                  <View style={styles.selectorRol}>
+                    {(['participante', 'responsable'] as const).map((rolOpcion) => {
+                      const activo = item.rol === rolOpcion;
+                      return (
+                        <Pressable
+                          key={rolOpcion}
+                          accessibilityRole="button"
+                          onPress={() => manejarCambiarRol(item, rolOpcion)}
+                          style={[styles.opcionRol, activo && styles.opcionRolActiva]}
                         >
-                          {rolOpcion === 'participante' ? 'Participante' : 'Responsable'}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
+                          <Text
+                            style={[styles.textoOpcionRol, activo && styles.textoOpcionRolActiva]}
+                          >
+                            {rolOpcion === 'participante' ? 'Participante' : 'Responsable'}
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                )}
               </View>
             );
           })}
@@ -288,7 +304,8 @@ export default function IntegrantesScreen() {
           Un rol por grupo. El último responsable no puede salir ni ser retirado. Al retirar a
           alguien, su historial se conserva.
         </Text>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -367,6 +384,19 @@ const styles = StyleSheet.create({
   textoOpcionRolActiva: {
     color: colores.acento,
     fontWeight: pesos.fuerte,
+  },
+  rolPropioFijo: {
+    backgroundColor: colores.acentoSuave,
+    borderColor: colores.acentoBorde,
+    borderRadius: radios.campo,
+    borderWidth: 1,
+    paddingHorizontal: espaciados.md,
+    paddingVertical: espaciados.sm,
+  },
+  textoRolPropio: {
+    color: colores.acento,
+    fontSize: tipografia.cuerpoSm,
+    fontWeight: pesos.medio,
   },
   encabezadoLista: {
     flexDirection: 'row',

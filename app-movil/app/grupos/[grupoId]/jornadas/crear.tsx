@@ -156,25 +156,28 @@ export default function CrearOEditarJornadaScreen() {
   };
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
-      <View style={styles.barraSuperior}>
-        <Pressable
-          accessibilityLabel="Volver"
-          accessibilityRole="button"
-          onPress={() => router.back()}
-          style={styles.botonIcono}
-        >
-          <Icono color={colores.tinta} nombre="volver" tamano={22} />
-        </Pressable>
-        <Text style={styles.tituloBarra}>{esEdicion ? 'Editar jornada' : 'Nueva jornada'}</Text>
-        <View style={styles.espacioDerecha} />
-      </View>
+    <SafeAreaView edges={['bottom']} style={styles.pantalla}>
+      <SafeAreaView edges={['top']} style={styles.fondoBarra}>
+        <View style={styles.barraSuperior}>
+          <Pressable
+            accessibilityLabel="Volver"
+            accessibilityRole="button"
+            onPress={() => router.back()}
+            style={styles.botonIcono}
+          >
+            <Icono color={colores.tinta} nombre="volver" tamano={22} />
+          </Pressable>
+          <Text style={styles.tituloBarra}>{esEdicion ? 'Editar jornada' : 'Nueva jornada'}</Text>
+          <View style={styles.espacioDerecha} />
+        </View>
+      </SafeAreaView>
 
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.flex}
       >
         <ScrollView
+          automaticallyAdjustKeyboardInsets
           contentContainerStyle={styles.contenido}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
@@ -302,6 +305,9 @@ const styles = StyleSheet.create({
   pantalla: {
     backgroundColor: colores.papel,
     flex: 1,
+  },
+  fondoBarra: {
+    backgroundColor: colores.superficie,
   },
   flex: {
     flex: 1,

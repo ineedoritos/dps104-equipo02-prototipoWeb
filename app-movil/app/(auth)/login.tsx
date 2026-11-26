@@ -100,10 +100,14 @@ export default function LoginScreen() {
   return (
     <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.pantalla}
       >
-        <ScrollView contentContainerStyle={styles.contenido} keyboardShouldPersistTaps="handled">
+        <ScrollView
+          automaticallyAdjustKeyboardInsets
+          contentContainerStyle={styles.contenido}
+          keyboardShouldPersistTaps="handled"
+        >
           <View style={styles.encabezado}>
             <View style={styles.marca}>
               <Icono color={colores.acento} nombre="gente" tamano={26} />

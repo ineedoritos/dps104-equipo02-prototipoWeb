@@ -273,24 +273,25 @@ export default function DetalleJornadaScreen() {
               ) : null}
 
               {!jornada.cancelada ? (
-                <Boton
-                  onPress={() =>
-                    router.push({
-                      pathname: '/grupos/[grupoId]/jornadas/crear',
-                      params: { grupoId: grupo.id, jornadaId: jornada.id },
-                    })
-                  }
-                  titulo="Editar jornada"
-                  variante="secundario"
-                />
-              ) : null}
-
-              {!jornada.cancelada ? (
-                <Boton
-                  onPress={() => setModalCancelar(true)}
-                  titulo="Cancelar jornada"
-                  variante="peligro"
-                />
+                <View style={styles.filaAccionesSecundarias}>
+                  <Boton
+                    estilo={styles.botonSecundarioFila}
+                    onPress={() =>
+                      router.push({
+                        pathname: '/grupos/[grupoId]/jornadas/crear',
+                        params: { grupoId: grupo.id, jornadaId: jornada.id },
+                      })
+                    }
+                    titulo="Editar jornada"
+                    variante="secundario"
+                  />
+                  <Boton
+                    estilo={styles.botonSecundarioFila}
+                    onPress={() => setModalCancelar(true)}
+                    titulo="Cancelar jornada"
+                    variante="peligro"
+                  />
+                </View>
               ) : null}
             </View>
           </>
@@ -479,6 +480,14 @@ const styles = StyleSheet.create({
   },
   acciones: {
     gap: espaciados.md,
+  },
+  filaAccionesSecundarias: {
+    flexDirection: 'row',
+    gap: espaciados.md,
+    marginTop: espaciados.xs,
+  },
+  botonSecundarioFila: {
+    flex: 1,
   },
   veloModal: {
     alignItems: 'center',

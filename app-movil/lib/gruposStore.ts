@@ -322,7 +322,7 @@ export function cambiarRolIntegrante(
   integranteId: string,
   nuevoRol: RolGrupo,
 ): void {
-  exigirResponsable(grupoId);
+  const actual = exigirResponsable(grupoId);
 
   const objetivo = integrantes.find(
     (i) => i.id === integranteId && i.grupo_id === grupoId && i.retirado_en === null,
@@ -330,6 +330,13 @@ export function cambiarRolIntegrante(
 
   if (!objetivo || objetivo.rol === nuevoRol) {
     return;
+  }
+
+  if (objetivo.usuario_id === actual.id) {
+    throw new ErrorDominio(
+      'ERR_NO_AUTORIZADO',
+      'No puedes cambiar tu propio rol en el grupo.',
+    );
   }
 
   if (objetivo.rol === 'responsable' && nuevoRol === 'participante') {

@@ -7,11 +7,16 @@
     "icon": "./assets/images/icon.png",
     "scheme": "registroactividades",
     "userInterfaceStyle": "light",
+    "androidStatusBar": {
+      "backgroundColor": "#FFFFFF",
+      "barStyle": "dark-content"
+    },
     "ios": {
       "icon": "./assets/expo.icon"
     },
     "android": {
       "package": "sv.udb.registroactividades",
+      "softwareKeyboardLayoutMode": "resize",
       "adaptiveIcon": {
         "backgroundColor": "#F7F4EE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

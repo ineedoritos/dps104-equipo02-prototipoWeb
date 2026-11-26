@@ -51,27 +51,33 @@ export default function CrearGrupoScreen() {
   };
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
+    <SafeAreaView edges={['bottom']} style={styles.pantalla}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.pantalla}
       >
-        <View style={styles.barraSuperior}>
-          <Pressable
-            accessibilityLabel="Volver"
-            accessibilityRole="button"
-            onPress={() => router.back()}
-            style={styles.botonVolver}
-          >
-            <Icono color={colores.tinta} nombre="volver" tamano={22} />
-          </Pressable>
-          <Text accessibilityRole="header" style={styles.tituloBarra}>
-            Crear grupo
-          </Text>
-          <View style={styles.espacioDerecha} />
-        </View>
+        <SafeAreaView edges={['top']} style={styles.fondoBarra}>
+          <View style={styles.barraSuperior}>
+            <Pressable
+              accessibilityLabel="Volver"
+              accessibilityRole="button"
+              onPress={() => router.back()}
+              style={styles.botonVolver}
+            >
+              <Icono color={colores.tinta} nombre="volver" tamano={22} />
+            </Pressable>
+            <Text accessibilityRole="header" style={styles.tituloBarra}>
+              Crear grupo
+            </Text>
+            <View style={styles.espacioDerecha} />
+          </View>
+        </SafeAreaView>
 
-        <ScrollView contentContainerStyle={styles.contenido} keyboardShouldPersistTaps="handled">
+        <ScrollView
+          automaticallyAdjustKeyboardInsets
+          contentContainerStyle={styles.contenido}
+          keyboardShouldPersistTaps="handled"
+        >
           {errorGeneral ? (
             <Aviso
               accion={<Boton onPress={manejarCrear} tamano="sm" titulo="Reintentar" variante="secundario" />}
@@ -118,6 +124,9 @@ const styles = StyleSheet.create({
   pantalla: {
     backgroundColor: colores.papel,
     flex: 1,
+  },
+  fondoBarra: {
+    backgroundColor: colores.superficie,
   },
   barraSuperior: {
     alignItems: 'center',
