@@ -38,10 +38,10 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Inicio',
+          title: 'Mis grupos',
           headerShown: false,
           tabBarIcon: ({ color }) => (
-            <Icono color={typeof color === 'string' ? color : colores.tintaTenue} nombre="inicio" tamano={24} />
+            <Icono color={typeof color === 'string' ? color : colores.tintaTenue} nombre="gente" tamano={24} />
           ),
         }}
       />
