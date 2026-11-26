@@ -13,6 +13,7 @@ import {
 import { Aviso } from '@/components/ui/Aviso';
 import { BarraSuperior } from '@/components/ui/BarraSuperior';
 import { Boton } from '@/components/ui/Boton';
+import { Estado } from '@/components/ui/Estado';
 import { EstadoVacio } from '@/components/ui/EstadoVacio';
 import { Icono } from '@/components/ui/Icono';
 import { obtenerMisGrupos, obtenerSesionActual, suscribirStore } from '@/lib/gruposStore';
@@ -145,56 +146,30 @@ export default function MisGruposScreen() {
                   onPress={() => router.push(`/grupos/${item.grupo.id}` as Href)}
                   style={({ pressed }) => [styles.tarjeta, pressed && styles.tarjetaPresionada]}
                 >
-                  <View style={styles.filaSuperior}>
+                  <View style={styles.detalleGrupo}>
                     <Text style={styles.nombreGrupo}>{item.grupo.nombre}</Text>
-                    <View
-                      style={[
-                        styles.pildoraRol,
-                        esResponsable ? styles.pildoraResponsable : styles.pildoraParticipante,
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.textoRol,
-                          esResponsable ? styles.textoResponsable : styles.textoParticipante,
-                        ]}
-                      >
-                        {esResponsable ? 'Responsable' : 'Participante'}
+
+                    {item.grupo.descripcion ? (
+                      <Text numberOfLines={2} style={styles.descripcion}>
+                        {item.grupo.descripcion}
                       </Text>
-                    </View>
-                  </View>
+                    ) : null}
 
-                  {item.grupo.descripcion ? (
-                    <Text numberOfLines={2} style={styles.descripcion}>
-                      {item.grupo.descripcion}
-                    </Text>
-                  ) : null}
-
-                  <View style={styles.filaInferior}>
                     <View style={styles.metaGrupo}>
-                      <Icono color={colores.tintaSuave} nombre="gente" tamano={16} />
                       <Text style={[styles.textoMeta, cifrasTabulares]}>
+                        {esResponsable ? 'Responsable' : 'Participante'} ·{' '}
                         {item.totalIntegrantes}{' '}
                         {item.totalIntegrantes === 1 ? 'integrante' : 'integrantes'}
                       </Text>
+                      {item.tieneJornadaEnCurso ? <Estado tono="enCurso" /> : null}
                     </View>
-
-                    {item.tieneJornadaEnCurso ? (
-                      <View style={styles.estadoEnCurso}>
-                        <View style={styles.puntoEnCurso} />
-                        <Text style={styles.textoEnCurso}>Jornada en curso ahora</Text>
-                      </View>
-                    ) : (
-                      <Icono color={colores.tintaTenue} nombre="avanzar" tamano={18} />
-                    )}
                   </View>
+                  <Icono color={colores.tintaSuave} nombre="avanzar" tamano={22} />
                 </Pressable>
               );
             })}
           </View>
         ) : null}
-
-
       </ScrollView>
     </View>
   );
@@ -211,9 +186,6 @@ const styles = StyleSheet.create({
     gap: espaciados.lg,
     padding: espaciados.lg,
     paddingBottom: espaciados.xxl,
-  },
-  encabezado: {
-    gap: espaciados.xs,
   },
   barraEstados: {
     flexDirection: 'row',
@@ -251,24 +223,24 @@ const styles = StyleSheet.create({
     fontSize: tipografia.cuerpoSm,
   },
   lista: {
-    gap: espaciados.md,
+    borderTopColor: colores.borde,
+    borderTopWidth: StyleSheet.hairlineWidth,
   },
   tarjeta: {
-    backgroundColor: colores.superficie,
-    borderColor: colores.borde,
-    borderRadius: radios.tarjeta,
-    borderWidth: 1,
-    gap: espaciados.sm,
-    padding: espaciados.lg,
+    alignItems: 'center',
+    borderBottomColor: colores.borde,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    gap: espaciados.md,
+    minHeight: 64,
+    paddingVertical: espaciados.lg,
   },
   tarjetaPresionada: {
     backgroundColor: colores.superficieAlt,
   },
-  filaSuperior: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: espaciados.sm,
-    justifyContent: 'space-between',
+  detalleGrupo: {
+    flex: 1,
+    gap: espaciados.xs,
   },
   nombreGrupo: {
     color: colores.tinta,
@@ -276,64 +248,19 @@ const styles = StyleSheet.create({
     fontSize: tipografia.tituloSm,
     fontWeight: pesos.fuerte,
   },
-  pildoraRol: {
-    borderRadius: radios.pill,
-    paddingHorizontal: espaciados.md,
-    paddingVertical: espaciados.xs,
-  },
-  pildoraResponsable: {
-    backgroundColor: colores.acentoSuave,
-  },
-  pildoraParticipante: {
-    backgroundColor: colores.completadaSuave,
-  },
-  textoRol: {
-    fontSize: tipografia.micro,
-    fontWeight: pesos.fuerte,
-  },
-  textoResponsable: {
-    color: colores.acento,
-  },
-  textoParticipante: {
-    color: colores.completada,
-  },
   descripcion: {
     color: colores.tintaSuave,
     fontSize: tipografia.cuerpoSm,
     lineHeight: 19,
   },
-  filaInferior: {
-    alignItems: 'center',
-    borderTopColor: colores.borde,
-    borderTopWidth: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: espaciados.xs,
-    paddingTop: espaciados.sm,
-  },
   metaGrupo: {
     alignItems: 'center',
     flexDirection: 'row',
-    gap: espaciados.xs,
+    flexWrap: 'wrap',
+    gap: espaciados.sm,
   },
   textoMeta: {
     color: colores.tintaSuave,
     fontSize: tipografia.cuerpoSm,
-  },
-  estadoEnCurso: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: espaciados.xs,
-  },
-  puntoEnCurso: {
-    backgroundColor: colores.acento,
-    borderRadius: radios.pill,
-    height: 8,
-    width: 8,
-  },
-  textoEnCurso: {
-    color: colores.acento,
-    fontSize: tipografia.micro,
-    fontWeight: pesos.fuerte,
   },
 });

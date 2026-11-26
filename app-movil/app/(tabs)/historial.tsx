@@ -260,7 +260,7 @@ export default function MiHistorialScreen() {
               </View>
 
               {resumen.aplicaControlHoras ? (
-                <View style={styles.tarjetaResumen}>
+                <View style={[styles.tarjetaResumen, styles.resumenHoras]}>
                   <Text style={styles.etiquetaResumen}>Horas</Text>
                   <View style={styles.filaHoras}>
                     <View style={styles.datoHora}>
@@ -433,26 +433,27 @@ const styles = StyleSheet.create({
     fontSize: tipografia.cuerpoSm,
   },
   gridResumen: {
-    gap: espaciados.md,
+    backgroundColor: colores.superficieAlt,
+    borderRadius: radios.tarjeta,
+    paddingHorizontal: espaciados.lg,
   },
   tarjetaResumen: {
-    backgroundColor: colores.superficie,
-    borderColor: colores.borde,
-    borderRadius: radios.tarjeta,
-    borderWidth: 1,
     gap: espaciados.xs,
-    padding: espaciados.lg,
+    paddingVertical: espaciados.lg,
+  },
+  resumenHoras: {
+    borderTopColor: colores.borde,
+    borderTopWidth: StyleSheet.hairlineWidth,
   },
   etiquetaResumen: {
-    color: colores.tintaTenue,
-    fontSize: tipografia.micro,
+    color: colores.tintaSuave,
+    fontSize: tipografia.cuerpoSm,
     fontWeight: pesos.fuerte,
-    textTransform: 'uppercase',
   },
   valorResumen: {
     color: colores.tinta,
     fontSize: tipografia.display,
-    fontWeight: pesos.fuerte,
+    fontWeight: pesos.encabezado,
   },
   desgloseResumen: {
     color: colores.tintaSuave,
@@ -480,15 +481,15 @@ const styles = StyleSheet.create({
     gap: espaciados.lg,
   },
   listaRegistros: {
-    gap: espaciados.md,
+    borderTopColor: colores.borde,
+    borderTopWidth: StyleSheet.hairlineWidth,
   },
   tarjetaRegistro: {
-    backgroundColor: colores.superficie,
-    borderColor: colores.borde,
-    borderRadius: radios.tarjeta,
-    borderWidth: 1,
+    borderBottomColor: colores.borde,
+    borderBottomWidth: StyleSheet.hairlineWidth,
     gap: espaciados.xs,
-    padding: espaciados.lg,
+    minHeight: 48,
+    paddingVertical: espaciados.md,
   },
   tarjetaPresionada: {
     backgroundColor: colores.superficieAlt,

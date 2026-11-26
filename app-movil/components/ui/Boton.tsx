@@ -79,7 +79,7 @@ export function Boton({
 const styles = StyleSheet.create({
   base: {
     alignItems: 'center',
-    borderRadius: radios.campo,
+    borderRadius: radios.pill,
     borderWidth: 1,
     justifyContent: 'center',
     paddingHorizontal: espaciados.md,

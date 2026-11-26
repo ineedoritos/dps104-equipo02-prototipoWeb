@@ -148,7 +148,7 @@ export default function GrupoDetalleScreen() {
       !jornada.cancelada;
 
     return (
-      <View key={jornada.id} style={[styles.tarjetaJornada, esAhoraConQR && styles.tarjetaDestacada]}>
+      <View key={jornada.id} style={styles.filaJornada}>
         <Pressable
           accessibilityRole="button"
           onPress={() => {
@@ -171,7 +171,7 @@ export default function GrupoDetalleScreen() {
         >
           <View style={styles.filaSuperior}>
             <Text style={styles.tituloJornada}>{jornada.titulo}</Text>
-            <Estado etiqueta={metaEstado.etiqueta} tono={metaEstado.tono} />
+            <Icono color={colores.tintaSuave} nombre="avanzar" tamano={22} />
           </View>
 
           <View style={styles.filaMeta}>
@@ -180,6 +180,8 @@ export default function GrupoDetalleScreen() {
               {fechaTexto} · {formatearHoraCorta(jornada.inicio_en)} – {formatearHoraCorta(jornada.fin_en)}
             </Text>
           </View>
+
+          <Estado etiqueta={metaEstado.etiqueta} tono={metaEstado.tono} />
 
           {jornada.cancelada ? (
             <Text style={styles.notaCancelada}>Sus registros no cuentan en los totales.</Text>
@@ -464,18 +466,17 @@ const styles = StyleSheet.create({
     gap: espaciados.lg,
   },
   lista: {
-    gap: espaciados.md,
+    borderTopColor: colores.borde,
+    borderTopWidth: StyleSheet.hairlineWidth,
   },
-  tarjetaJornada: {
-    backgroundColor: colores.superficie,
-    borderColor: colores.borde,
-    borderRadius: radios.tarjeta,
-    borderWidth: 1,
+  filaJornada: {
+    borderBottomColor: colores.borde,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   detalleTocable: {
-    borderRadius: radios.tarjeta,
     gap: espaciados.sm,
-    padding: espaciados.lg,
+    minHeight: 64,
+    paddingVertical: espaciados.md,
   },
   tarjetaPresionada: {
     backgroundColor: colores.superficieAlt,
@@ -499,20 +500,15 @@ const styles = StyleSheet.create({
   },
   textoHorario: {
     color: colores.tintaSuave,
+    flex: 1,
     fontSize: tipografia.cuerpoSm,
   },
   notaCancelada: {
     color: colores.ausente,
     fontSize: tipografia.micro,
   },
-  tarjetaDestacada: {
-    borderColor: colores.acentoBorde,
-    borderWidth: 1.5,
-  },
   pieDestacado: {
-    paddingHorizontal: espaciados.lg,
-    paddingBottom: espaciados.lg,
-    marginTop: espaciados.xs,
+    paddingBottom: espaciados.md,
   },
   accionesErrorGrupo: {
     flexDirection: 'row',

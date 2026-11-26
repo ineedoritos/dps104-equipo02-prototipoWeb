@@ -25,7 +25,7 @@ export function BarraApilada({
 
   return (
     <View style={styles.tarjeta}>
-      <Text style={styles.titulo}>Resumen del período</Text>
+      <Text accessibilityRole="header" style={styles.titulo}>Resumen del período</Text>
 
       <View style={styles.barra}>
         {presentes > 0 ? (
@@ -67,23 +67,21 @@ export function BarraApilada({
 
 const styles = StyleSheet.create({
   tarjeta: {
-    backgroundColor: colores.superficie,
-    borderColor: colores.borde,
+    backgroundColor: colores.superficieAlt,
     borderRadius: radios.tarjeta,
-    borderWidth: 1,
     gap: espaciados.md,
     padding: espaciados.lg,
   },
   titulo: {
     color: colores.tinta,
-    fontSize: tipografia.cuerpo,
-    fontWeight: pesos.fuerte,
+    fontSize: tipografia.tituloSm,
+    fontWeight: pesos.encabezado,
   },
   barra: {
     backgroundColor: colores.papel,
     borderRadius: radios.pill,
     flexDirection: 'row',
-    height: 14,
+    height: espaciados.md,
     overflow: 'hidden',
     width: '100%',
   },

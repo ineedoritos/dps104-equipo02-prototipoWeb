@@ -177,7 +177,12 @@ export default function DetalleJornadaScreen() {
               />
             ) : null}
 
-            <View style={styles.tarjetaPrincipal}>
+            <View style={styles.detallePrincipal}>
+              <Text accessibilityRole="header" style={styles.tituloJornada}>{jornada.titulo}</Text>
+              {jornada.descripcion ? (
+                <Text style={styles.descripcionJornada}>{jornada.descripcion}</Text>
+              ) : null}
+
               <View style={styles.filaEstado}>
                 <Estado etiqueta={metaEstado.etiqueta} tono={metaEstado.tono} />
                 <Text style={styles.etiquetaModalidad}>
@@ -185,9 +190,6 @@ export default function DetalleJornadaScreen() {
                   {jornada.control_horas ? 'con horas' : 'sin horas'}
                 </Text>
               </View>
-
-              <Text style={styles.tituloJornada}>{jornada.titulo}</Text>
-              <Text style={styles.descripcionJornada}>{jornada.descripcion}</Text>
 
               <View style={styles.filaHorario}>
                 <Icono color={colores.tintaSuave} nombre="reloj" tamano={16} />
@@ -206,10 +208,10 @@ export default function DetalleJornadaScreen() {
               </View>
 
               <View style={styles.tarjetaStat}>
-                <Text style={[styles.valorStat, styles.colorAusente, cifrasTabulares]}>
+                <Text style={[styles.valorStat, cifrasTabulares]}>
                   {resumen.ausentesJustificadas}
                 </Text>
-                <Text style={styles.etiquetaStat}>Aus. / Justif.</Text>
+                <Text style={styles.etiquetaStat}>Ausencias</Text>
               </View>
 
               <View style={styles.tarjetaStat}>
@@ -388,13 +390,8 @@ const styles = StyleSheet.create({
     color: colores.tintaSuave,
     fontSize: tipografia.cuerpoSm,
   },
-  tarjetaPrincipal: {
-    backgroundColor: colores.superficie,
-    borderColor: colores.borde,
-    borderRadius: radios.tarjeta,
-    borderWidth: 1,
+  detallePrincipal: {
     gap: espaciados.sm,
-    padding: espaciados.lg,
   },
   filaEstado: {
     alignItems: 'center',
@@ -410,8 +407,9 @@ const styles = StyleSheet.create({
   },
   tituloJornada: {
     color: colores.tinta,
-    fontSize: tipografia.titulo,
-    fontWeight: pesos.fuerte,
+    fontSize: tipografia.display,
+    fontWeight: pesos.encabezado,
+    letterSpacing: -0.6,
   },
   descripcionJornada: {
     color: colores.tintaSuave,
@@ -430,16 +428,16 @@ const styles = StyleSheet.create({
     fontSize: tipografia.cuerpoSm,
   },
   gridResumen: {
+    backgroundColor: colores.superficieAlt,
+    borderRadius: radios.tarjeta,
     flexDirection: 'row',
-    gap: espaciados.sm,
+    flexWrap: 'wrap',
+    padding: espaciados.xs,
   },
   tarjetaStat: {
     alignItems: 'center',
-    backgroundColor: colores.superficie,
-    borderColor: colores.borde,
-    borderRadius: radios.tarjeta,
-    borderWidth: 1,
-    flex: 1,
+    flexBasis: 76,
+    flexGrow: 1,
     gap: espaciados.xs,
     paddingHorizontal: espaciados.sm,
     paddingVertical: espaciados.md,
@@ -451,9 +449,6 @@ const styles = StyleSheet.create({
   },
   colorPresente: {
     color: colores.presente,
-  },
-  colorAusente: {
-    color: colores.ausente,
   },
   etiquetaStat: {
     color: colores.tintaSuave,

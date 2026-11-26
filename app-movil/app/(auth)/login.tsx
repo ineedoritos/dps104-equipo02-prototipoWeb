@@ -110,18 +110,15 @@ export default function LoginScreen() {
           contentContainerStyle={styles.contenido}
           keyboardShouldPersistTaps="handled"
         >
-          <View style={styles.encabezado}>
+          <View style={styles.identidad}>
             <View style={styles.marca}>
-              <Icono color={colores.acento} nombre="gente" tamano={26} />
+              <Icono color={colores.superficie} nombre="lista" tamano={20} />
             </View>
-            <Text accessibilityRole="header" style={styles.titulo}>
-              Registro de actividades
-            </Text>
-            <Text style={styles.subtitulo}>Tu asistencia y tus horas, el mismo día.</Text>
+            <Text style={styles.nombreApp}>Registro de actividades</Text>
           </View>
 
-          <View style={styles.tarjeta}>
-            <Text style={styles.tituloFormulario}>
+          <View style={styles.panel}>
+            <Text accessibilityRole="header" style={styles.titulo}>
               {modoRegistro ? 'Crear cuenta' : 'Iniciar sesión'}
             </Text>
 
@@ -235,45 +232,36 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     gap: espaciados.xl,
     justifyContent: 'center',
-    padding: espaciados.lg,
+    paddingHorizontal: espaciados.xl,
+    paddingVertical: espaciados.xl,
   },
-  encabezado: {
+  identidad: {
+    alignItems: 'center',
+    flexDirection: 'row',
     gap: espaciados.sm,
   },
   marca: {
     alignItems: 'center',
-    backgroundColor: colores.acentoSuave,
-    borderColor: colores.acentoBorde,
-    borderRadius: radios.tarjeta,
-    borderWidth: 1,
-    height: 52,
+    backgroundColor: colores.tinta,
+    borderRadius: radios.sm,
+    height: espaciados.xxl,
     justifyContent: 'center',
-    marginBottom: espaciados.xs,
-    width: 52,
+    width: espaciados.xxl,
   },
   titulo: {
     color: colores.tinta,
     fontSize: tipografia.display,
-    fontWeight: pesos.fuerte,
-    letterSpacing: -0.4,
+    fontWeight: pesos.encabezado,
+    letterSpacing: -0.6,
   },
-  subtitulo: {
-    color: colores.tintaSuave,
-    fontSize: tipografia.cuerpo,
-    lineHeight: 22,
-  },
-  tarjeta: {
-    backgroundColor: colores.superficie,
-    borderColor: colores.borde,
-    borderRadius: radios.tarjeta,
-    borderWidth: 1,
-    gap: espaciados.md,
-    padding: espaciados.lg,
-  },
-  tituloFormulario: {
+  nombreApp: {
     color: colores.tinta,
-    fontSize: tipografia.titulo,
+    flex: 1,
+    fontSize: tipografia.cuerpo,
     fontWeight: pesos.fuerte,
+  },
+  panel: {
+    gap: espaciados.lg,
   },
   formulario: {
     gap: espaciados.md,

@@ -1,9 +1,9 @@
 import { Tabs } from 'expo-router';
-import { Platform } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Icono } from '@/components/ui/Icono';
-import { colores, pesos, tipografia } from '@/lib/tema';
+import { Icono, type NombreIcono } from '@/components/ui/Icono';
+import { colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
 
 export default function TabsLayout() {
   const insets = useSafeAreaInsets();
@@ -13,7 +13,7 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colores.acento,
+        tabBarActiveTintColor: colores.tinta,
         tabBarInactiveTintColor: colores.tintaSuave,
         tabBarLabelStyle: {
           fontSize: tipografia.micro,
@@ -23,9 +23,9 @@ export default function TabsLayout() {
         tabBarStyle: {
           backgroundColor: colores.superficie,
           borderTopColor: colores.borde,
-          height: 60 + bottomInset,
+          height: 64 + bottomInset,
           paddingBottom: bottomInset,
-          paddingTop: 8,
+          paddingTop: espaciados.xs,
         },
       }}
     >
@@ -33,8 +33,8 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: 'Mis grupos',
-          tabBarIcon: ({ color }) => (
-            <Icono color={typeof color === 'string' ? color : colores.tintaSuave} nombre="gente" tamano={24} />
+          tabBarIcon: ({ focused }) => (
+            <IconoPestana activo={focused} nombre="gente" />
           ),
         }}
       />
@@ -42,8 +42,8 @@ export default function TabsLayout() {
         name="historial"
         options={{
           title: 'Mi historial',
-          tabBarIcon: ({ color }) => (
-            <Icono color={typeof color === 'string' ? color : colores.tintaSuave} nombre="reloj" tamano={24} />
+          tabBarIcon: ({ focused }) => (
+            <IconoPestana activo={focused} nombre="reloj" />
           ),
         }}
       />
@@ -51,11 +51,30 @@ export default function TabsLayout() {
         name="cuenta"
         options={{
           title: 'Cuenta',
-          tabBarIcon: ({ color }) => (
-            <Icono color={typeof color === 'string' ? color : colores.tintaSuave} nombre="cuenta" tamano={24} />
+          tabBarIcon: ({ focused }) => (
+            <IconoPestana activo={focused} nombre="cuenta" />
           ),
         }}
       />
     </Tabs>
   );
 }
+
+function IconoPestana({ activo, nombre }: { activo: boolean; nombre: NombreIcono }) {
+  return (
+    <View style={[styles.iconoPestana, activo && styles.iconoActivo]}>
+      <Icono color={activo ? colores.superficie : colores.tintaSuave} nombre={nombre} tamano={22} />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  iconoPestana: {
+    alignItems: 'center',
+    borderRadius: radios.pill,
+    height: espaciados.xxl,
+    justifyContent: 'center',
+    width: espaciados.xxxl,
+  },
+  iconoActivo: { backgroundColor: colores.tinta },
+});

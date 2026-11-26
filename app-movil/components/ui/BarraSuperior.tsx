@@ -44,7 +44,11 @@ export function BarraSuperior({
           </Pressable>
         ) : null}
 
-        <Text accessibilityRole="header" numberOfLines={2} style={styles.titulo}>
+        <Text
+          accessibilityRole="header"
+          numberOfLines={2}
+          style={[styles.titulo, !mostrarVolver && styles.tituloRaiz]}
+        >
           {titulo}
         </Text>
 
@@ -87,6 +91,11 @@ const styles = StyleSheet.create({
     fontSize: tipografia.tituloSm,
     fontWeight: pesos.fuerte,
     paddingVertical: espaciados.xs,
+  },
+  tituloRaiz: {
+    fontSize: tipografia.display,
+    fontWeight: pesos.encabezado,
+    letterSpacing: -0.6,
   },
   derecha: {
     alignItems: 'flex-end',

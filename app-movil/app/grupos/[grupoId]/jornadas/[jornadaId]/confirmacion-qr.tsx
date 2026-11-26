@@ -84,7 +84,7 @@ export default function ConfirmacionQRScreen() {
             ]}
           >
             <Icono
-              color={esInformativa ? colores.info : colores.acento}
+              color={esInformativa ? colores.info : colores.presente}
               nombre={esInformativa ? 'info' : 'hecho'}
               tamano={36}
             />
@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
     width: 72,
   },
   circuloExito: {
-    backgroundColor: colores.acentoSuave,
+    backgroundColor: colores.presenteSuave,
   },
   circuloInfo: {
     backgroundColor: colores.infoSuave,
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   subtituloHora: {
-    color: colores.acento,
+    color: colores.tinta,
     fontSize: tipografia.cuerpo,
     fontWeight: pesos.fuerte,
     textAlign: 'center',

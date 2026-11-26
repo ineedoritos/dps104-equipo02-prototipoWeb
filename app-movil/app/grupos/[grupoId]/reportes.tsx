@@ -130,7 +130,7 @@ export default function ReportesGrupoScreen() {
         ) : null}
 
         <View style={styles.tarjetaFiltros}>
-          <Text style={styles.tituloFiltros}>Período del reporte</Text>
+          <Text accessibilityRole="header" style={styles.tituloFiltros}>Período del reporte</Text>
           <View style={styles.gridPeriodos}>
             {OPCIONES_PERIODO.map((opcion) => {
               const activo = periodo === opcion.id;
@@ -216,7 +216,7 @@ export default function ReportesGrupoScreen() {
               presentes={reporte.totalPresentes}
             />
 
-            <View style={styles.tabla}>
+            <View>
               <Text accessibilityRole="header" style={styles.encabezadoTabla}>Por integrante</Text>
 
               {reporte.filas.map((fila) => {
@@ -326,18 +326,12 @@ const styles = StyleSheet.create({
     fontWeight: pesos.fuerte,
   },
   tarjetaFiltros: {
-    backgroundColor: colores.superficie,
-    borderColor: colores.borde,
-    borderRadius: radios.tarjeta,
-    borderWidth: 1,
     gap: espaciados.md,
-    padding: espaciados.md,
   },
   tituloFiltros: {
-    color: colores.tintaSuave,
-    fontSize: tipografia.micro,
-    fontWeight: pesos.fuerte,
-    letterSpacing: 0.2,
+    color: colores.tinta,
+    fontSize: tipografia.tituloSm,
+    fontWeight: pesos.encabezado,
   },
   gridPeriodos: {
     flexDirection: 'row',
@@ -348,7 +342,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: colores.superficieAlt,
     borderColor: colores.borde,
-    borderRadius: radios.campo,
+    borderRadius: radios.pill,
     borderWidth: 1,
     flexBasis: '48%',
     flexGrow: 1,
@@ -358,16 +352,17 @@ const styles = StyleSheet.create({
     paddingVertical: espaciados.sm,
   },
   chipPeriodoActivo: {
-    backgroundColor: colores.acentoSuave,
-    borderColor: colores.acentoBorde,
+    backgroundColor: colores.tinta,
+    borderColor: colores.tinta,
   },
   textoPeriodo: {
     color: colores.tintaSuave,
+    textAlign: 'center',
     fontSize: tipografia.cuerpoSm,
     fontWeight: pesos.medio,
   },
   textoPeriodoActivo: {
-    color: colores.acento,
+    color: colores.superficie,
     fontWeight: pesos.fuerte,
   },
   fechas: { gap: espaciados.sm },
@@ -384,26 +379,18 @@ const styles = StyleSheet.create({
     color: colores.tintaSuave,
     fontSize: tipografia.cuerpoSm,
   },
-  tabla: {
-    backgroundColor: colores.superficie,
-    borderColor: colores.borde,
-    borderRadius: radios.tarjeta,
-    borderWidth: 1,
-    overflow: 'hidden',
-  },
   encabezadoTabla: {
-    backgroundColor: colores.superficieAlt,
     color: colores.tinta,
-    fontSize: tipografia.cuerpo,
-    fontWeight: pesos.fuerte,
-    padding: espaciados.md,
+    fontSize: tipografia.tituloSm,
+    fontWeight: pesos.encabezado,
+    paddingBottom: espaciados.md,
   },
   filaTabla: {
     borderTopColor: colores.borde,
-    borderTopWidth: 1,
+    borderTopWidth: StyleSheet.hairlineWidth,
     gap: espaciados.xs,
     minHeight: 48,
-    padding: espaciados.md,
+    paddingVertical: espaciados.md,
   },
   filaPresionada: { backgroundColor: colores.superficieAlt },
   filaResumen: {

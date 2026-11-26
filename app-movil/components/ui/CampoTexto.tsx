@@ -73,14 +73,15 @@ const styles = StyleSheet.create({
   },
   campoContenedor: {
     alignItems: 'center',
-    backgroundColor: colores.superficie,
-    borderColor: colores.borde,
+    backgroundColor: colores.superficieAlt,
+    borderColor: colores.bordeFuerte,
     borderRadius: radios.campo,
     borderWidth: 1,
     flexDirection: 'row',
     minHeight: 48,
   },
   campoEnfocado: {
+    backgroundColor: colores.superficie,
     borderColor: colores.acento,
   },
   campoConError: {
