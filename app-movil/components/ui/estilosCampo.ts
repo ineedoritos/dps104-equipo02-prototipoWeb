@@ -1,12 +1,12 @@
 import { StyleSheet } from 'react-native';
 
-import { colores, espaciados, interlineado, pesos, radios, tipografia } from '@/lib/tema';
+import { colores, interlineado, pesos, radios, tipografia } from '@/lib/tema';
 
-export const alturaInteriorCampo = 50;
+export const alturaInteriorCampo = 54;
 
 export const estilosCampo = StyleSheet.create({
   contenedor: {
-    gap: espaciados.xs,
+    gap: 8,
   },
   etiqueta: {
     color: colores.tinta,
@@ -16,8 +16,8 @@ export const estilosCampo = StyleSheet.create({
   marco: {
     alignItems: 'center',
     backgroundColor: colores.superficieAlt,
-    borderColor: colores.bordeFuerte,
-    borderRadius: radios.campo,
+    borderColor: colores.acentoBorde,
+    borderRadius: radios.tarjeta,
     borderWidth: 1,
     flexDirection: 'row',
     minHeight: alturaInteriorCampo + 2,

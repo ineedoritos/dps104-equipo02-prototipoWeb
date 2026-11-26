@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { ReactNode } from 'react';
+import type { ComponentRef, ReactNode, Ref } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import type { StyleProp, TextInputProps, ViewStyle } from 'react-native';
 
@@ -8,6 +8,7 @@ import { colores, espaciados, tipografia } from '@/lib/tema';
 
 export interface CampoTextoProps extends Omit<TextInputProps, 'style'> {
   etiqueta: string;
+  ref?: Ref<ComponentRef<typeof TextInput>>;
   error?: string;
   accesorio?: ReactNode;
   multilinea?: boolean;
@@ -18,13 +19,15 @@ export function CampoTexto({
   etiqueta,
   error,
   accesorio,
-  multilinea = false,
+  multilinea,
+  multiline,
   estilo,
   onBlur,
   onFocus,
   ...propiedades
 }: CampoTextoProps) {
   const [enfocado, setEnfocado] = useState(false);
+  const variasLineas = multilinea ?? multiline ?? false;
 
   return (
     <View style={[estilosCampo.contenedor, estilo]}>
@@ -43,7 +46,7 @@ export function CampoTexto({
           selectionColor={colores.acentoBorde}
           cursorColor={colores.acento}
           {...propiedades}
-          multiline={multilinea}
+          multiline={variasLineas}
           onBlur={(evento) => {
             setEnfocado(false);
             onBlur?.(evento);
@@ -53,8 +56,8 @@ export function CampoTexto({
             onFocus?.(evento);
           }}
           placeholderTextColor={colores.tintaSuave}
-          style={[styles.campo, multilinea && styles.campoMultilinea]}
-          textAlignVertical={multilinea ? 'top' : 'center'}
+          style={[styles.campo, variasLineas && styles.campoMultilinea]}
+          textAlignVertical={variasLineas ? 'top' : 'center'}
           underlineColorAndroid="transparent"
         />
         {accesorio}
@@ -76,7 +79,7 @@ const styles = StyleSheet.create({
     paddingVertical: espaciados.sm,
   },
   campoMultilinea: {
-    minHeight: 96,
+    minHeight: 112,
     paddingTop: espaciados.md,
   },
 });

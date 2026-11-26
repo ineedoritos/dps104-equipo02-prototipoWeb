@@ -1,4 +1,4 @@
-import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import dayjs from 'dayjs';
 import { useState } from 'react';
 import { Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -42,14 +42,12 @@ export function HoraPickerField({
 
   const fechaActual = parsearHoraADate(value);
 
-  const manejarCambio = (evento: DateTimePickerEvent, fechaSeleccionada?: Date) => {
+  const manejarCambio = (fechaSeleccionada: Date) => {
     if (Platform.OS === 'android') {
       setAbierto(false);
     }
 
-    if (evento.type === 'set' && fechaSeleccionada) {
-      onChange(dayjs(fechaSeleccionada).format('HH:mm'));
-    }
+    onChange(dayjs(fechaSeleccionada).format('HH:mm'));
   };
 
   return (
@@ -89,7 +87,8 @@ export function HoraPickerField({
           display="default"
           is24Hour
           mode="time"
-          onChange={manejarCambio}
+          onDismiss={() => setAbierto(false)}
+          onValueChange={(_, fechaSeleccionada) => manejarCambio(fechaSeleccionada)}
           value={fechaActual}
         />
       ) : null}
@@ -108,7 +107,7 @@ export function HoraPickerField({
                 display="spinner"
                 is24Hour
                 mode="time"
-                onChange={manejarCambio}
+                onValueChange={(_, fechaSeleccionada) => manejarCambio(fechaSeleccionada)}
                 value={fechaActual}
               />
               <Boton onPress={() => setAbierto(false)} titulo="Listo" />

@@ -36,7 +36,9 @@ Con Expo Go en un teléfono Android, inicia desde un arranque limpio. En el pase
 7. Verifica la dirección visual en **Iniciar sesión**, **Mis grupos**, **Detalle de jornada**, **Mi historial** y **Reportes**. Comprueba la continuidad del fondo entre la barra de estado y el encabezado, las pestañas y filtros activos, y el contraste de las acciones.
 8. En **Nueva jornada**, abre el teclado, introduce un título y confirma que puedes desplazarte hasta el botón. Selecciona fecha y horas, provoca un error de horario y corrígelo. Abre una jornada con asistencia registrada y comprueba que fecha y horas están deshabilitadas.
 9. En **Pasar lista**, cambia entre presente, ausente y justificada. Revisa que TalkBack anuncie el estado seleccionado y que el gráfico de **Reportes** identifique las categorías por escrito. Repite con tamaño de fuente ampliado.
-10. En el flujo de QR, comprueba que el código y su caducidad caben en pantalla y que la confirmación sigue ofreciendo el regreso al grupo.
+10. En teléfono y tablet, abre **Iniciar sesión** y **Crear cuenta**. Usa Siguiente en el teclado, muestra y oculta la contraseña, inicia sesión y cierra sesión desde **Cuenta**. Comprueba que Atrás no vuelve a Cuenta y que Metro no emite `POP_TO_TOP`.
+11. Cambia entre pestañas y entra y sal del detalle de una jornada. Revisa que el fondo sea continuo entre pantallas. Abre y cancela los selectores de fecha y hora, confirma que conservan el valor anterior y comprueba que Metro no avisa de `DateTimePicker.onChange`.
+12. En el flujo de QR, comprueba que el código y su caducidad caben en pantalla y que la confirmación sigue ofreciendo el regreso al grupo.
 8. Con controles de prueba apagados, comprueba que una jornada configurada para QR ofrece registrar la asistencia desde la lista del responsable. Repite con los controles habilitados para recorrer **Mostrar QR → Simular lectura válida → Confirmación → Mi historial**. La lectura y la matriz QR de esta versión son simulaciones locales.
 
 ---

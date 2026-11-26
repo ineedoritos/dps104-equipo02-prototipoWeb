@@ -94,7 +94,7 @@ export default function CrearGrupoScreen() {
           tipo="info"
         />
 
-        <Boton cargando={cargando} icono="nueva" onPress={manejarCrear} titulo="Crear grupo" />
+        <Boton cargando={cargando} onPress={manejarCrear} titulo="Crear grupo" />
       </ScrollView>
     </SafeAreaView>
   );
@@ -106,6 +106,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   contenido: {
+    alignSelf: 'center',
+    maxWidth: 560,
+    width: '100%',
     gap: espaciados.lg,
     padding: espaciados.lg,
     paddingBottom: espaciados.xxl,

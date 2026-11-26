@@ -1,4 +1,4 @@
-import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import dayjs from 'dayjs';
 import { useState } from 'react';
 import { Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -37,14 +37,12 @@ export function DatePickerField({
   const fechaMinima = minDate ? dayjs(minDate, 'YYYY-MM-DD').toDate() : undefined;
   const fechaMaxima = maxDate ? dayjs(maxDate, 'YYYY-MM-DD').toDate() : undefined;
 
-  const manejarCambio = (evento: DateTimePickerEvent, fechaSeleccionada?: Date) => {
+  const manejarCambio = (fechaSeleccionada: Date) => {
     if (Platform.OS === 'android') {
       setAbierto(false);
     }
 
-    if (evento.type === 'set' && fechaSeleccionada) {
-      onChange(dayjs(fechaSeleccionada).format('YYYY-MM-DD'));
-    }
+    onChange(dayjs(fechaSeleccionada).format('YYYY-MM-DD'));
   };
 
   return (
@@ -94,7 +92,8 @@ export function DatePickerField({
           maximumDate={fechaMaxima}
           minimumDate={fechaMinima}
           mode="date"
-          onChange={manejarCambio}
+          onDismiss={() => setAbierto(false)}
+          onValueChange={(_, fechaSeleccionada) => manejarCambio(fechaSeleccionada)}
           value={fechaActual}
         />
       ) : null}
@@ -114,7 +113,7 @@ export function DatePickerField({
                 maximumDate={fechaMaxima}
                 minimumDate={fechaMinima}
                 mode="date"
-                onChange={manejarCambio}
+                onValueChange={(_, fechaSeleccionada) => manejarCambio(fechaSeleccionada)}
                 value={fechaActual}
               />
               <Boton onPress={() => setAbierto(false)} titulo="Listo" />

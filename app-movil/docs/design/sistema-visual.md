@@ -82,7 +82,7 @@ Pesos: normal (400), medio (500), fuerte (600) y encabezado (700).
 ### 2.3 Espaciado y radios
 
 - **Espaciados (base 4):** `xs: 4`, `sm: 8`, `md: 12`, `lg: 16`, `xl: 24`, `xxl: 32`, `xxxl: 48`.
-- **Radios por tipo de superficie:** `sm: 8` (badges/elementos internos), `campo: 16` (controles), `tarjeta: 20` (paneles), `modal: 24` (diálogos), `pill: 999` (botones y chips).
+- **Radios por tipo de superficie:** `sm: 8` (badges/elementos internos), `campo: 16` (controles compactos), `tarjeta: 20` (campos de formulario y paneles), `modal: 24` (diálogos), `pill: 999` (botones y chips).
 
 ---
 
@@ -93,7 +93,7 @@ Toda pantalla nueva o refactorizada debe componer estos primitivos antes de crea
 | Componente | Responsabilidad | Regla clave |
 |---|---|---|
 | `Boton` | Acción táctil (`primario`, `secundario`, `fantasma`, `peligro`) | Acción primaria negra, forma de cápsula y estados de carga y deshabilitado. |
-| `CampoTexto` | Entrada de texto con etiqueta y error | Comparte marco, etiqueta y error con los selectores de fecha y hora en `estilosCampo`. Altura mínima de 52 dp. |
+| `CampoTexto` | Entrada de texto con etiqueta y error | Comparte marco, etiqueta y error con los selectores de fecha y hora en `estilosCampo`. Altura mínima de 56 dp. |
 | `BarraSuperior` | Encabezado con área segura | Comparte fondo con la pantalla y usa controles de al menos 48 dp. |
 | `DatePickerField` | Selector de fecha nativo Android/iOS | Formatea en `America/El_Salvador` (`ADR-006`). |
 | `Seccion` | Encabezado de bloque con título, detalle y acción opcional | Separa bloques con `espaciados.md`. |

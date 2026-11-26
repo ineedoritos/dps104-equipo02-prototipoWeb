@@ -7,6 +7,7 @@
     "icon": "./assets/images/icon.png",
     "scheme": "registroactividades",
     "userInterfaceStyle": "light",
+    "backgroundColor": "#F7F7F5",
     "androidStatusBar": {
       "backgroundColor": "#F7F7F5",
       "barStyle": "dark-content"
@@ -34,9 +35,7 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#FFFFFF",
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "backgroundColor": "#F7F7F5"
         }
       ]
     ],

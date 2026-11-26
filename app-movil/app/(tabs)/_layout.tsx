@@ -12,6 +12,8 @@ export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
+        animation: 'none',
+        sceneStyle: { backgroundColor: colores.papel },
         headerShown: false,
         tabBarActiveTintColor: colores.tinta,
         tabBarInactiveTintColor: colores.tintaSuave,

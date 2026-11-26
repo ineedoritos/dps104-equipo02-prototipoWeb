@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Text,
   View,
+  useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -34,6 +35,8 @@ type EstadoVista = 'normal' | 'cargando' | 'error';
 
 export default function CrearOEditarJornadaScreen() {
   const router = useRouter();
+  const { width, fontScale } = useWindowDimensions();
+  const horasEnColumna = width < 380 || fontScale > 1.3;
   const { grupoId, jornadaId } = useLocalSearchParams<{
     grupoId: string;
     jornadaId?: string;
@@ -58,6 +61,7 @@ export default function CrearOEditarJornadaScreen() {
   );
   const [enviando, setEnviando] = useState(false);
   const [errorGeneral, setErrorGeneral] = useState('');
+  const [intentoGuardar, setIntentoGuardar] = useState(false);
   const [estadoVista, setEstadoVista] = useState<EstadoVista>('normal');
 
   if (!grupo || rol !== 'responsable' || (jornadaId && !jornadaExistente)) {
@@ -94,22 +98,8 @@ export default function CrearOEditarJornadaScreen() {
   const manejarGuardar = () => {
     setErrorGeneral('');
 
-    if (!titulo.trim()) {
-      setErrorGeneral('Ingresa un título para la jornada.');
-      return;
-    }
-    if (!descripcion.trim()) {
-      setErrorGeneral('Ingresa una descripción breve de la actividad.');
-      return;
-    }
-    if (!fecha.trim()) {
-      setErrorGeneral('Selecciona la fecha de la jornada.');
-      return;
-    }
-    if (errorHoraFin) {
-      setErrorGeneral(errorHoraFin);
-      return;
-    }
+    setIntentoGuardar(true);
+    if (!titulo.trim() || !descripcion.trim() || !fecha.trim() || errorHoraFin) return;
 
     setEnviando(true);
     try {
@@ -221,31 +211,38 @@ export default function CrearOEditarJornadaScreen() {
 
             {errorGeneral ? <Aviso texto={errorGeneral} tipo="error" /> : null}
 
-            <CampoTexto
-              etiqueta="Título"
-              onChangeText={setTitulo}
-              placeholder="Ej. Entrega de paquetes alimentarios"
-              value={titulo}
-            />
+            <View style={styles.panelFormulario}>
+              <CampoTexto
+                error={intentoGuardar && !titulo.trim() ? 'Ingresa un título para la jornada.' : undefined}
+                etiqueta="Título"
+                onChangeText={setTitulo}
+                placeholder="Ej. Entrega de paquetes alimentarios"
+                value={titulo}
+              />
 
-            <CampoTexto
-              etiqueta="Descripción"
-              multilinea
-              numberOfLines={3}
-              onChangeText={setDescripcion}
-              placeholder="Describe brevemente la actividad que se realizará"
-              value={descripcion}
-            />
+              <CampoTexto
+                error={intentoGuardar && !descripcion.trim() ? 'Describe la actividad en unas palabras.' : undefined}
+                etiqueta="Descripción"
+                multilinea
+                numberOfLines={3}
+                onChangeText={setDescripcion}
+                placeholder="Describe qué actividad se realizará"
+                value={descripcion}
+              />
+            </View>
 
-            <View style={styles.bloqueHorario}>
+            <View style={styles.panelFormulario}>
+              <Text accessibilityRole="header" style={styles.tituloSeccion}>Fecha y horario</Text>
               <DatePickerField
                 deshabilitado={horarioBloqueado}
-                label="Fecha (un solo día)"
+                error={intentoGuardar && !fecha.trim() ? 'Selecciona la fecha de la jornada.' : undefined}
+                label="Fecha"
                 onChange={setFecha}
+                permitirLimpiar={false}
                 value={fecha}
               />
 
-              <View style={styles.filaHoras}>
+              <View style={[styles.filaHoras, horasEnColumna && styles.horasEnColumna]}>
                 <View style={styles.colHora}>
                   <HoraPickerField
                     deshabilitado={horarioBloqueado}
@@ -257,7 +254,7 @@ export default function CrearOEditarJornadaScreen() {
                 <View style={styles.colHora}>
                   <HoraPickerField
                     deshabilitado={horarioBloqueado}
-                    error={errorHoraFin}
+                    error={intentoGuardar ? errorHoraFin : undefined}
                     label="Hora de fin"
                     onChange={setHoraFin}
                     value={horaFin}
@@ -268,7 +265,6 @@ export default function CrearOEditarJornadaScreen() {
 
             <Boton
               cargando={enviando}
-              icono={esEdicion ? 'guardar' : 'nueva'}
               onPress={manejarGuardar}
               titulo={esEdicion ? 'Guardar cambios' : 'Crear jornada'}
             />
@@ -288,6 +284,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   contenido: {
+    alignSelf: 'center',
+    maxWidth: 560,
+    width: '100%',
     gap: espaciados.lg,
     padding: espaciados.lg,
     paddingBottom: espaciados.xxxl,
@@ -350,12 +349,25 @@ const styles = StyleSheet.create({
     color: colores.tintaSuave,
     fontSize: tipografia.cuerpoSm,
   },
-  bloqueHorario: {
+  panelFormulario: {
+    backgroundColor: colores.superficie,
+    borderColor: colores.borde,
+    borderRadius: radios.tarjeta,
+    borderWidth: 1,
     gap: espaciados.md,
+    padding: espaciados.lg,
+  },
+  tituloSeccion: {
+    color: colores.tinta,
+    fontSize: tipografia.tituloSm,
+    fontWeight: pesos.fuerte,
   },
   filaHoras: {
     flexDirection: 'row',
     gap: espaciados.md,
+  },
+  horasEnColumna: {
+    flexDirection: 'column',
   },
   colHora: {
     flex: 1,

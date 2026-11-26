@@ -312,6 +312,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   contenido: {
+    alignSelf: 'center',
+    maxWidth: 560,
+    width: '100%',
     gap: espaciados.lg,
     padding: espaciados.lg,
     paddingBottom: espaciados.xxxl,

@@ -70,7 +70,6 @@ export default function CuentaScreen() {
             icono="salir"
             onPress={() => {
               cerrarSesion();
-              router.dismissAll();
               router.replace('/(auth)/login');
             }}
             titulo="Cerrar sesión"

@@ -51,7 +51,7 @@ export function Boton({
         styles.base,
         tamano === 'sm' ? styles.tamanoSm : styles.tamanoMd,
         { backgroundColor: paleta.fondo, borderColor: paleta.borde },
-        pressed && styles.presionado,
+        pressed && { backgroundColor: variante === 'primario' ? colores.grisTexto : colores.acentoSuave },
         deshabilitado && !cargando && styles.inactivo,
         estilo,
       ]}
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     paddingVertical: espaciados.sm,
   },
   tamanoMd: {
-    minHeight: 52,
+    minHeight: 56,
   },
   tamanoSm: {
     minHeight: 48,
@@ -109,9 +109,6 @@ const styles = StyleSheet.create({
   },
   textoSm: {
     fontSize: tipografia.cuerpoSm,
-  },
-  presionado: {
-    opacity: 0.82,
   },
   inactivo: {
     opacity: 0.45,

@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import type { ComponentRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Aviso } from '@/components/ui/Aviso';
@@ -16,6 +17,10 @@ const REGEX_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { width } = useWindowDimensions();
+  const anchoAmplio = width >= 600;
+  const correoRef = useRef<ComponentRef<typeof TextInput>>(null);
+  const contrasenaRef = useRef<ComponentRef<typeof TextInput>>(null);
 
   const [modoRegistro, setModoRegistro] = useState(false);
   const [nombre, setNombre] = useState('');
@@ -107,20 +112,16 @@ export default function LoginScreen() {
       >
         <ScrollView
           automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'}
-          contentContainerStyle={styles.contenido}
+          contentContainerStyle={[styles.contenido, anchoAmplio && styles.contenidoAmplio]}
           keyboardShouldPersistTaps="handled"
         >
-          <View style={styles.identidad}>
-            <View style={styles.marca}>
-              <Icono color={colores.superficie} nombre="lista" tamano={20} />
+          <View style={[styles.panel, anchoAmplio && styles.panelAmplio]}>
+            <View style={styles.encabezado}>
+              <Text accessibilityRole="header" style={styles.titulo}>
+                {modoRegistro ? 'Crear cuenta' : 'Iniciar sesión'}
+              </Text>
+              <Text style={styles.nombreApp}>Registro de actividades</Text>
             </View>
-            <Text style={styles.nombreApp}>Registro de actividades</Text>
-          </View>
-
-          <View style={styles.panel}>
-            <Text accessibilityRole="header" style={styles.titulo}>
-              {modoRegistro ? 'Crear cuenta' : 'Iniciar sesión'}
-            </Text>
 
             {errorGeneral ? <Aviso texto={errorGeneral} tipo="error" /> : null}
 
@@ -134,7 +135,10 @@ export default function LoginScreen() {
                     setNombre(valor);
                     if (errorNombre) setErrorNombre('');
                   }}
+                  onSubmitEditing={() => correoRef.current?.focus()}
                   placeholder="Ej. Carlos González"
+                  returnKeyType="next"
+                  submitBehavior="submit"
                   value={nombre}
                 />
               ) : null}
@@ -149,7 +153,11 @@ export default function LoginScreen() {
                   setCorreo(valor);
                   if (errorCorreo) setErrorCorreo('');
                 }}
+                onSubmitEditing={() => contrasenaRef.current?.focus()}
                 placeholder="correo@ejemplo.com"
+                ref={correoRef}
+                returnKeyType="next"
+                submitBehavior="submit"
                 value={correo}
               />
 
@@ -180,6 +188,7 @@ export default function LoginScreen() {
                 }}
                 onSubmitEditing={manejarEnvio}
                 placeholder={modoRegistro ? 'Mínimo 6 caracteres' : undefined}
+                ref={contrasenaRef}
                 returnKeyType="go"
                 secureTextEntry={!mostrarContrasena}
                 value={contrasena}
@@ -236,20 +245,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: espaciados.lg,
     paddingVertical: espaciados.xl,
   },
-  identidad: {
-    alignItems: 'center',
-    maxWidth: 440,
-    width: '100%',
-    flexDirection: 'row',
-    gap: espaciados.sm,
+  contenidoAmplio: {
+    padding: espaciados.xxl,
   },
-  marca: {
-    alignItems: 'center',
-    backgroundColor: colores.tinta,
-    borderRadius: radios.campo,
-    height: espaciados.xxxl,
-    justifyContent: 'center',
-    width: espaciados.xxxl,
+  encabezado: {
+    gap: espaciados.xs,
   },
   titulo: {
     color: colores.tinta,
@@ -258,10 +258,8 @@ const styles = StyleSheet.create({
     letterSpacing: -0.6,
   },
   nombreApp: {
-    color: colores.tinta,
-    flex: 1,
+    color: colores.tintaSuave,
     fontSize: tipografia.cuerpo,
-    fontWeight: pesos.fuerte,
   },
   panel: {
     backgroundColor: colores.superficie,
@@ -269,12 +267,15 @@ const styles = StyleSheet.create({
     borderRadius: radios.modal,
     borderWidth: 1,
     gap: espaciados.xl,
-    maxWidth: 440,
-    padding: espaciados.lg,
+    maxWidth: 480,
+    padding: espaciados.xl,
     width: '100%',
   },
+  panelAmplio: {
+    padding: espaciados.xxl,
+  },
   formulario: {
-    gap: espaciados.md,
+    gap: espaciados.lg,
   },
   botonVer: {
     alignItems: 'center',
