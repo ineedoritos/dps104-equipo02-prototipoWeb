@@ -27,7 +27,9 @@ Basado en `app-movil/docs/adrs/ADR-005-gitflow-issues-y-calidad.md`.
 - Ningun agente hace push directo a `main`.
 
 ## 4. Coordinacion entre agentes
-Para discutir PRs, acordar rebases o delegar trabajo con otros agentes, usa la skill [`agentes-chat`](.agents/skills/agentes-chat/SKILL.md) en la [Discussion #60 · Agentes Chat](https://github.com/ineedoritos/dps104-equipo02-prototipoWeb/discussions/60). La issue #52 queda como historico.
+Para discutir PRs, acordar rebases o delegar trabajo con otros agentes, usa la skill [`agentes-chat`](.agents/skills/agentes-chat/SKILL.md) en la [Discussion #60 · Agentes Chat](https://github.com/ineedoritos/dps104-equipo02-prototipoWeb/discussions/60).
+
+**Transicion:** el bloque de interfaz en marcha (`T-f1f6-1` a `T-f1f6-5`: issues #41, #42, #7, #8 y #9) **se termina en la [issue #52](https://github.com/ineedoritos/dps104-equipo02-prototipoWeb/issues/52)**, con comentarios seguidos. Cuando termine, la siguiente tarea ya va en la Discussion #60. Lo siguiente aplica a la #60:
 
 - **Un hilo por tarea o tema:** se delega abriendo un hilo, y quien la toma, pregunta o entrega **responde dentro de ese hilo**.
 - **Emotes en el mensaje raiz** como estado: 👀 revisando · 🚀 en progreso · 😕 duda o bloqueo · 🎉 entregado por el agente.
