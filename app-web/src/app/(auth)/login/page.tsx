@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,7 +17,7 @@ export default function LoginPage() {
             Registro de actividades
           </CardTitle>
           <CardDescription>
-            Ingresa con tu cuenta para consultar estadísticas, reportes y tu
+            Acceso al portal web de estadísticas, reportes de participación e
             historial personal.
           </CardDescription>
         </CardHeader>
@@ -32,6 +31,7 @@ export default function LoginPage() {
               type="email"
               placeholder="nombre@correo.com"
               autoComplete="email"
+              disabled
             />
           </div>
           <div className="space-y-2">
@@ -43,11 +43,16 @@ export default function LoginPage() {
               type="password"
               placeholder="Ingresa tu contraseña"
               autoComplete="current-password"
+              disabled
             />
           </div>
-          <Button className="w-full" render={<Link href="/dashboard" />}>
-            Entrar al portal
+          <Button type="button" className="w-full" disabled>
+            Iniciar sesión
           </Button>
+          <p className="text-xs text-center text-muted-foreground">
+            El inicio de sesión se habilitará al conectar la autenticación del
+            portal.
+          </p>
         </CardContent>
       </Card>
     </div>
