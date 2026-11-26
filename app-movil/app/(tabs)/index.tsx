@@ -1,4 +1,4 @@
-import { useFocusEffect, useRouter } from 'expo-router';
+import { type Href, useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -164,9 +164,7 @@ export default function MisGruposScreen() {
                 <Pressable
                   key={item.grupo.id}
                   accessibilityRole="button"
-                  onPress={() =>
-                    router.push({ pathname: '/grupos/[grupoId]/index', params: { grupoId: item.grupo.id } })
-                  }
+                  onPress={() => router.push(`/grupos/${item.grupo.id}` as Href)}
                   style={({ pressed }) => [styles.tarjeta, pressed && styles.tarjetaPresionada]}
                 >
                   <View style={styles.filaSuperior}>

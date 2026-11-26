@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { type Href, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -38,7 +38,7 @@ export default function CrearGrupoScreen() {
           descripcion,
         });
         setCargando(false);
-        router.replace({ pathname: '/grupos/[grupoId]/index', params: { grupoId: nuevo.id } });
+        router.replace(`/grupos/${nuevo.id}` as Href);
       } catch (err) {
         setCargando(false);
         if (err instanceof ErrorDominio) {
