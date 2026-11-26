@@ -128,7 +128,36 @@ export type CodigoErrorDominio =
   | 'ERR_SOLAPAMIENTO_HORAS'
   | 'ERR_MOTIVO_OBLIGATORIO'
   | 'ERR_JORNADA_CANCELADA'
+  | 'ERR_QR_INVALIDO'
   | 'ERR_VALIDACION';
+
+export type TipoConfirmacionQR = 'presencia' | 'entrada' | 'salida' | 'ya_completa';
+
+export interface ResultadoRegistroQR {
+  tipo: TipoConfirmacionQR;
+  horaTexto: string;
+  duracionMinutos: number | null;
+  asistencia: Asistencia;
+}
+
+export interface RegistroHistorial {
+  asistencia: Asistencia;
+  jornada: Jornada;
+  grupo: Grupo;
+  retiradoDelGrupo: boolean;
+}
+
+export interface ResumenMiHistorial {
+  registros: RegistroHistorial[];
+  presentes: number;
+  justificadas: number;
+  ausentes: number;
+  tasaAsistencia: number | null;
+  aplicaControlHoras: boolean;
+  minutosRegistrados: number;
+  minutosReconocidos: number;
+  minutosPendientes: number;
+}
 
 export class ErrorDominio extends Error {
   codigo: CodigoErrorDominio;

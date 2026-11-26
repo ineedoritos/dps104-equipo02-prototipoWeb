@@ -5,7 +5,7 @@ import gruposJson from '@/data/grupos.json';
 import integrantesJson from '@/data/integrantes.json';
 import jornadasJson from '@/data/jornadas.json';
 import usuariosJson from '@/data/usuarios.json';
-import { aISOConOffset, fechaEnZona, fechaHoraEnZona } from '@/lib/fecha';
+import { aISOConOffset, fechaEnZona, fechaHoraEnZona, horaEnZona } from '@/lib/fecha';
 import {
   ErrorDominio,
   type Asistencia,
@@ -18,7 +18,10 @@ import {
   type IntegranteGrupo,
   type Jornada,
   type ModalidadAsistencia,
+  type RegistroHistorial,
+  type ResultadoRegistroQR,
   type ResumenGrupoUsuario,
+  type ResumenMiHistorial,
   type ResumenReporteGrupo,
   type RolGrupo,
   type UsuarioCuenta,
@@ -990,5 +993,333 @@ export function obtenerReporteGrupo(
     totalJustificadas,
     totalAusentesSinMotivo,
     filas,
+  };
+}
+
+export function obtenerMiAsistenciaEnJornada(jornadaId: string): Asistencia | undefined {
+  if (!sesionActual) {
+    return undefined;
+  }
+  return asistencias.find(
+    (a) => a.jornada_id === jornadaId && a.participante_id === sesionActual?.id,
+  );
+}
+
+export function obtenerResponsableDeGrupo(grupoId: string): UsuarioCuenta | undefined {
+  const integrante = integrantes.find(
+    (i) => i.grupo_id === grupoId && i.rol === 'responsable' && i.retirado_en === null,
+  );
+  if (!integrante) {
+    return undefined;
+  }
+  return usuarios.find((u) => u.id === integrante.usuario_id);
+}
+
+export function obtenerMisGruposParaHistorial(): Array<{ grupo: Grupo; retirado: boolean }> {
+  if (!sesionActual) {
+    return [];
+  }
+
+  const porGrupo = new Map<string, { grupo: Grupo; retirado: boolean }>();
+  for (const membresia of integrantes) {
+    if (membresia.usuario_id !== sesionActual.id) {
+      continue;
+    }
+    const grupo = grupos.find((g) => g.id === membresia.grupo_id);
+    if (!grupo) {
+      continue;
+    }
+    const previo = porGrupo.get(grupo.id);
+    const retirado = membresia.retirado_en !== null;
+    if (!previo || (previo.retirado && !retirado)) {
+      porGrupo.set(grupo.id, { grupo, retirado });
+    }
+  }
+
+  return Array.from(porGrupo.values());
+}
+
+export function obtenerMiHistorial(grupoId?: string): ResumenMiHistorial {
+  if (!sesionActual) {
+    return {
+      registros: [],
+      presentes: 0,
+      justificadas: 0,
+      ausentes: 0,
+      tasaAsistencia: null,
+      aplicaControlHoras: false,
+      minutosRegistrados: 0,
+      minutosReconocidos: 0,
+      minutosPendientes: 0,
+    };
+  }
+
+  const misMembresias = integrantes.filter((i) => i.usuario_id === sesionActual?.id);
+  const retiradosPorGrupo = new Map<string, boolean>();
+  for (const m of misMembresias) {
+    const activo = m.retirado_en === null;
+    const previo = retiradosPorGrupo.get(m.grupo_id);
+    if (previo === undefined) {
+      retiradosPorGrupo.set(m.grupo_id, !activo);
+    } else if (activo) {
+      retiradosPorGrupo.set(m.grupo_id, false);
+    }
+  }
+
+  const registros: RegistroHistorial[] = asistencias
+    .filter((a) => a.participante_id === sesionActual?.id)
+    .map((asistencia) => {
+      const jornada = jornadas.find((j) => j.id === asistencia.jornada_id);
+      if (!jornada) {
+        return null;
+      }
+      if (grupoId && jornada.grupo_id !== grupoId) {
+        return null;
+      }
+      const grupo = grupos.find((g) => g.id === jornada.grupo_id);
+      if (!grupo) {
+        return null;
+      }
+      return {
+        asistencia,
+        jornada,
+        grupo,
+        retiradoDelGrupo: retiradosPorGrupo.get(grupo.id) ?? false,
+      };
+    })
+    .filter((item): item is RegistroHistorial => item !== null)
+    .sort((a, b) => b.jornada.inicio_en.localeCompare(a.jornada.inicio_en));
+
+  let presentes = 0;
+  let justificadas = 0;
+  let ausentes = 0;
+  let minutosRegistrados = 0;
+  let minutosReconocidos = 0;
+  let minutosPendientes = 0;
+  let aplicaControlHoras = false;
+
+  if (grupoId) {
+    const grupoSeleccionado = obtenerGrupoPorId(grupoId);
+    aplicaControlHoras = Boolean(grupoSeleccionado?.control_horas);
+  }
+
+  for (const item of registros) {
+    if (item.jornada.cancelada) {
+      continue;
+    }
+    if (item.jornada.control_horas) {
+      aplicaControlHoras = true;
+    }
+
+    const reg = item.asistencia;
+    if (reg.estado === 'presente') {
+      presentes += 1;
+      const registrados = reg.duracion_minutos ?? 0;
+      const reconocidos = reg.minutos_reconocidos ?? registrados;
+      minutosRegistrados += registrados;
+      if (reg.estado_validacion === 'pendiente') {
+        minutosPendientes += reconocidos;
+      } else {
+        minutosReconocidos += reconocidos;
+      }
+    } else if (reg.estado === 'justificada') {
+      justificadas += 1;
+    } else if (reg.estado === 'ausente') {
+      ausentes += 1;
+    }
+  }
+
+  const totalEvaluadas = presentes + justificadas + ausentes;
+  const tasaAsistencia =
+    totalEvaluadas > 0 ? Math.round((presentes / totalEvaluadas) * 100) : null;
+
+  return {
+    registros,
+    presentes,
+    justificadas,
+    ausentes,
+    tasaAsistencia,
+    aplicaControlHoras,
+    minutosRegistrados,
+    minutosReconocidos,
+    minutosPendientes,
+  };
+}
+
+export function registrarAsistenciaQR(
+  jornadaId: string,
+  codigoSimulado?: 'VALIDO' | 'EXPIRADO' | 'REVOCADO' | 'INVALIDO',
+): ResultadoRegistroQR {
+  if (!sesionActual) {
+    throw new ErrorDominio('ERR_NO_AUTORIZADO', 'Debes iniciar sesión para registrar asistencia.');
+  }
+
+  const jornada = obtenerJornadaPorId(jornadaId);
+  if (!jornada) {
+    throw new ErrorDominio('ERR_NO_AUTORIZADO', 'No se encontró la jornada solicitada.');
+  }
+
+  const membresia = integrantes.find(
+    (i) =>
+      i.grupo_id === jornada.grupo_id &&
+      i.usuario_id === sesionActual?.id &&
+      i.retirado_en === null,
+  );
+  if (!membresia) {
+    throw new ErrorDominio(
+      'ERR_NO_AUTORIZADO',
+      'Ya no eres integrante activo de este grupo.',
+    );
+  }
+
+  if (jornada.cancelada) {
+    throw new ErrorDominio(
+      'ERR_JORNADA_CANCELADA',
+      'Esta jornada fue cancelada y no admite registros.',
+    );
+  }
+
+  if (jornada.modalidad_asistencia !== 'qr') {
+    throw new ErrorDominio(
+      'ERR_VALIDACION',
+      'Esta jornada usa asistencia manual; pide al responsable que te registre.',
+    );
+  }
+
+  if (derivarEstadoJornada(jornada) !== 'en_curso') {
+    throw new ErrorDominio(
+      'ERR_VALIDACION',
+      'Solo puedes escanear el código mientras la jornada está en curso.',
+    );
+  }
+
+  if (codigoSimulado === 'EXPIRADO') {
+    throw new ErrorDominio(
+      'ERR_QR_INVALIDO',
+      'El código QR ha vencido. Pide al responsable que genere uno nuevo.',
+    );
+  }
+  if (codigoSimulado === 'REVOCADO') {
+    throw new ErrorDominio(
+      'ERR_QR_INVALIDO',
+      'Este código QR fue reemplazado por uno más reciente. Escanea el código vigente.',
+    );
+  }
+  if (codigoSimulado === 'INVALIDO') {
+    throw new ErrorDominio(
+      'ERR_QR_INVALIDO',
+      'El código leído no corresponde a esta jornada.',
+    );
+  }
+
+  const ahora = new Date();
+  const ahoraISO = aISOConOffset(ahora);
+  const horaTexto = horaEnZona(ahora).slice(0, 5);
+  const previa = asistencias.find(
+    (a) => a.jornada_id === jornadaId && a.participante_id === sesionActual?.id,
+  );
+
+  if (!jornada.control_horas) {
+    if (previa?.estado === 'presente') {
+      return {
+        tipo: 'ya_completa',
+        horaTexto,
+        duracionMinutos: null,
+        asistencia: previa,
+      };
+    }
+
+    const nueva: Asistencia = {
+      id: previa?.id ?? `asi-${Date.now()}-${sesionActual.id}`,
+      jornada_id: jornadaId,
+      participante_id: sesionActual.id,
+      estado: 'presente',
+      motivo_ausencia: null,
+      origen: 'qr',
+      hora_entrada: null,
+      hora_salida: null,
+      duracion_minutos: null,
+      minutos_reconocidos: null,
+      motivo_ajuste: null,
+      estado_validacion: jornada.requiere_validacion ? 'pendiente' : 'aprobado',
+      validado_por: null,
+      actualizado_por: sesionActual.id,
+      actualizado_en: ahoraISO,
+    };
+
+    asistencias = previa
+      ? asistencias.map((a) => (a.id === previa.id ? nueva : a))
+      : [...asistencias, nueva];
+    notificar();
+
+    return {
+      tipo: 'presencia',
+      horaTexto,
+      duracionMinutos: null,
+      asistencia: nueva,
+    };
+  }
+
+  // Con control de horas
+  if (previa?.estado === 'presente' && previa.hora_entrada && previa.hora_salida) {
+    return {
+      tipo: 'ya_completa',
+      horaTexto,
+      duracionMinutos: previa.duracion_minutos,
+      asistencia: previa,
+    };
+  }
+
+  if (previa?.estado === 'presente' && previa.hora_entrada && !previa.hora_salida) {
+    const entradaMs = new Date(previa.hora_entrada).getTime();
+    const diffMin = Math.max(1, Math.floor((ahora.getTime() - entradaMs) / 60000));
+    const actualizada: Asistencia = {
+      ...previa,
+      hora_salida: ahoraISO,
+      duracion_minutos: diffMin,
+      minutos_reconocidos: diffMin,
+      actualizado_por: sesionActual.id,
+      actualizado_en: ahoraISO,
+    };
+
+    asistencias = asistencias.map((a) => (a.id === previa.id ? actualizada : a));
+    notificar();
+
+    return {
+      tipo: 'salida',
+      horaTexto,
+      duracionMinutos: diffMin,
+      asistencia: actualizada,
+    };
+  }
+
+  const entrada: Asistencia = {
+    id: previa?.id ?? `asi-${Date.now()}-${sesionActual.id}`,
+    jornada_id: jornadaId,
+    participante_id: sesionActual.id,
+    estado: 'presente',
+    motivo_ausencia: null,
+    origen: 'qr',
+    hora_entrada: ahoraISO,
+    hora_salida: null,
+    duracion_minutos: null,
+    minutos_reconocidos: null,
+    motivo_ajuste: null,
+    estado_validacion: jornada.requiere_validacion ? 'pendiente' : 'aprobado',
+    validado_por: null,
+    actualizado_por: sesionActual.id,
+    actualizado_en: ahoraISO,
+  };
+
+  asistencias = previa
+    ? asistencias.map((a) => (a.id === previa.id ? entrada : a))
+    : [...asistencias, entrada];
+  notificar();
+
+  return {
+    tipo: 'entrada',
+    horaTexto,
+    duracionMinutos: null,
+    asistencia: entrada,
   };
 }

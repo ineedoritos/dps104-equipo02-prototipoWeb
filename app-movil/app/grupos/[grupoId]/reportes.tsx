@@ -130,7 +130,7 @@ export default function ReportesGrupoScreen() {
             accessibilityRole="button"
             onPress={() =>
               router.replace({
-                pathname: '/grupos/[grupoId]/index',
+                pathname: '/grupos/[grupoId]',
                 params: { grupoId: grupo.id },
               })
             }

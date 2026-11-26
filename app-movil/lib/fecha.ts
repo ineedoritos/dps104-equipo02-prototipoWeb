@@ -111,3 +111,20 @@ export function fechaHoraEnZona(fecha: string, hora: string): Date {
     )}T${String(horas).padStart(2, '0')}:${String(minutos).padStart(2, '0')}:00${OFFSET_EL_SALVADOR}`,
   );
 }
+
+/** Formatea una cantidad de minutos en texto legible (ej. "2 h 15 min"). */
+export function formatearDuracion(minutos: number | null | undefined): string {
+  if (minutos === null || minutos === undefined || Number.isNaN(minutos)) {
+    return '—';
+  }
+  const seguro = Math.max(0, Math.round(minutos));
+  const horas = Math.floor(seguro / 60);
+  const resto = seguro % 60;
+  if (horas === 0) {
+    return `${resto} min`;
+  }
+  if (resto === 0) {
+    return `${horas} h`;
+  }
+  return `${horas} h ${String(resto).padStart(2, '0')} min`;
+}

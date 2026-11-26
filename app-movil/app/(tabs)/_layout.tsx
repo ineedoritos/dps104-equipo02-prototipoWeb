@@ -46,6 +46,16 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="historial"
+        options={{
+          title: 'Mi historial',
+          headerShown: false,
+          tabBarIcon: ({ color }) => (
+            <Icono color={typeof color === 'string' ? color : colores.tintaTenue} nombre="reloj" tamano={24} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="cuenta"
         options={{
           title: 'Cuenta',

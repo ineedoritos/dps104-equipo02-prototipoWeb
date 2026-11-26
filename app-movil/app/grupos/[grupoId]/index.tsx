@@ -57,7 +57,6 @@ export default function GrupoDetalleScreen() {
   );
   const [estadoVista, setEstadoVista] = useState<EstadoVista>('normal');
   const [refrescando, setRefrescando] = useState(false);
-  const [avisoAccion, setAvisoAccion] = useState('');
 
   const recargar = useCallback(() => {
     if (!grupoId) {
@@ -102,14 +101,29 @@ export default function GrupoDetalleScreen() {
         <View style={styles.contenido}>
           <Aviso
             accion={
-              <Boton
-                onPress={() => router.replace('/(tabs)')}
-                tamano="sm"
-                titulo="Ir a Mis grupos"
-                variante="secundario"
-              />
+              <View style={styles.accionesErrorGrupo}>
+                {grupoId ? (
+                  <Boton
+                    onPress={() =>
+                      router.replace({
+                        pathname: '/(tabs)/historial',
+                        params: { grupoId },
+                      })
+                    }
+                    tamano="sm"
+                    titulo="Ir a Mi historial"
+                    variante="primario"
+                  />
+                ) : null}
+                <Boton
+                  onPress={() => router.replace('/(tabs)')}
+                  tamano="sm"
+                  titulo="Ir a Mis grupos"
+                  variante="secundario"
+                />
+              </View>
             }
-            texto="Ya no perteneces a este grupo o el grupo no está disponible."
+            texto="Ya no eres integrante activo de este grupo o no está disponible. Puedes consultar tus registros anteriores en Mi historial."
             tipo="error"
           />
         </View>
@@ -133,6 +147,11 @@ export default function GrupoDetalleScreen() {
       day: 'numeric',
       month: 'short',
     });
+    const esAhoraConQR =
+      !esResponsable &&
+      estado === 'en_curso' &&
+      jornada.modalidad_asistencia === 'qr' &&
+      !jornada.cancelada;
 
     return (
       <Pressable
@@ -145,10 +164,17 @@ export default function GrupoDetalleScreen() {
               params: { grupoId: grupo.id, jornadaId: jornada.id },
             });
           } else {
-            setAvisoAccion(`Jornada "${jornada.titulo}": la vista de participante se habilitará en el siguiente bloque.`);
+            router.push({
+              pathname: '/grupos/[grupoId]/jornadas/[jornadaId]/mi-registro',
+              params: { grupoId: grupo.id, jornadaId: jornada.id },
+            });
           }
         }}
-        style={({ pressed }) => [styles.tarjetaJornada, pressed && styles.tarjetaPresionada]}
+        style={({ pressed }) => [
+          styles.tarjetaJornada,
+          esAhoraConQR && styles.tarjetaDestacada,
+          pressed && styles.tarjetaPresionada,
+        ]}
       >
         <View style={styles.filaSuperior}>
           <Text style={styles.tituloJornada}>{jornada.titulo}</Text>
@@ -164,6 +190,22 @@ export default function GrupoDetalleScreen() {
 
         {jornada.cancelada ? (
           <Text style={styles.notaCancelada}>Sus registros no cuentan en los totales.</Text>
+        ) : null}
+
+        {esAhoraConQR ? (
+          <View style={styles.pieDestacado}>
+            <Boton
+              icono="camara"
+              onPress={() =>
+                router.push({
+                  pathname: '/grupos/[grupoId]/jornadas/[jornadaId]/escanear-qr',
+                  params: { grupoId: grupo.id, jornadaId: jornada.id },
+                })
+              }
+              tamano="sm"
+              titulo="Escanear QR"
+            />
+          </View>
         ) : null}
       </Pressable>
     );
@@ -270,13 +312,24 @@ export default function GrupoDetalleScreen() {
             </Pressable>
           </View>
         ) : (
-          <Aviso
-            texto="Perteneces a este grupo como participante. Tu vista de asistencia y escaneo se habilitará en el siguiente bloque."
-            tipo="info"
-          />
+          <View style={styles.tabsInternas}>
+            <View style={[styles.tabInterna, styles.tabInternaActiva]}>
+              <Text style={[styles.textoTab, styles.textoTabActiva]}>Jornadas</Text>
+            </View>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() =>
+                router.push({
+                  pathname: '/(tabs)/historial',
+                  params: { grupoId: grupo.id },
+                })
+              }
+              style={styles.tabInterna}
+            >
+              <Text style={styles.textoTab}>Mi historial</Text>
+            </Pressable>
+          </View>
         )}
-
-        {avisoAccion ? <Aviso texto={avisoAccion} tipo="info" /> : null}
 
         {__DEV__ ? (
           <View style={styles.barraEstados}>
@@ -340,7 +393,7 @@ export default function GrupoDetalleScreen() {
             }
             descripcion="Cuando se programe una jornada en este grupo aparecerá aquí."
             icono="calendario"
-            titulo="Este grupo aún no tiene jornadas"
+            titulo="Aún no hay jornadas publicadas en este grupo."
           />
         ) : null}
 
@@ -572,5 +625,17 @@ const styles = StyleSheet.create({
   notaCancelada: {
     color: colores.ausente,
     fontSize: tipografia.micro,
+  },
+  tarjetaDestacada: {
+    borderColor: colores.acentoBorde,
+    borderWidth: 1.5,
+  },
+  pieDestacado: {
+    marginTop: espaciados.xs,
+  },
+  accionesErrorGrupo: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: espaciados.sm,
   },
 });
