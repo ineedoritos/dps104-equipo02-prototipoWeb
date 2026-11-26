@@ -327,17 +327,18 @@ export default function AsistenciaManualScreen() {
                     <View style={styles.grupoBotonesEstado}>
                       {(
                         [
-                          { codigo: 'P', estado: 'presente' as const },
-                          { codigo: 'A', estado: 'ausente' as const },
-                          { codigo: 'J', estado: 'justificada' as const },
+                          { codigo: 'P', nombre: 'Presente', estado: 'presente' as const },
+                          { codigo: 'A', nombre: 'Ausente', estado: 'ausente' as const },
+                          { codigo: 'J', nombre: 'Justificada', estado: 'justificada' as const },
                         ] as const
                       ).map((item) => {
                         const activo = borrador.estado === item.estado;
                         return (
                           <Pressable
                             key={item.codigo}
-                            accessibilityLabel={`${item.codigo} para ${integrante.usuario.nombre}`}
+                            accessibilityLabel={`${item.nombre} para ${integrante.usuario.nombre}`}
                             accessibilityRole="button"
+                            accessibilityState={{ selected: activo }}
                             onPress={() => seleccionarEstado(integrante.usuario_id, item.estado)}
                             style={[
                               styles.botonLetra,
@@ -522,13 +523,9 @@ const styles = StyleSheet.create({
     padding: espaciados.lg,
   },
   filaParticipante: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: espaciados.sm,
-    justifyContent: 'space-between',
+    gap: espaciados.md,
   },
   infoParticipante: {
-    flex: 1,
     gap: 2,
   },
   nombreParticipante: {
@@ -542,7 +539,7 @@ const styles = StyleSheet.create({
   },
   grupoBotonesEstado: {
     flexDirection: 'row',
-    gap: espaciados.xs,
+    gap: espaciados.sm,
   },
   botonLetra: {
     alignItems: 'center',
@@ -550,13 +547,14 @@ const styles = StyleSheet.create({
     borderColor: colores.borde,
     borderRadius: radios.campo,
     borderWidth: 1,
-    height: 40,
+    flex: 1,
+    minHeight: 48,
     justifyContent: 'center',
-    width: 40,
+    paddingVertical: espaciados.sm,
   },
   botonPresente: {
     backgroundColor: colores.presenteSuave,
-    borderColor: colores.acentoBorde,
+    borderColor: colores.presente,
   },
   botonAusente: {
     backgroundColor: colores.ausenteSuave,

@@ -355,6 +355,8 @@ const styles = StyleSheet.create({
   filaDato: {
     alignItems: 'center',
     flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: espaciados.sm,
     justifyContent: 'space-between',
     paddingVertical: espaciados.md,
   },

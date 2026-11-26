@@ -133,7 +133,7 @@ export default function GrupoDetalleScreen() {
   const listaJornadas = estadoVista === 'vacio' ? [] : jornadas;
   const agrupadas = agruparJornadas(listaJornadas);
 
-  const renderTarjetaJornada = (jornada: Jornada) => {
+  const renderTarjetaJornada = (jornada: Jornada, indice: number, lista: Jornada[]) => {
     const estado = derivarEstadoJornada(jornada);
     const metaEstado = MAPA_ESTADO_JORNADA[estado];
     const fechaTexto = formatearDia(fechaEnZona(jornada.inicio_en), {
@@ -148,7 +148,7 @@ export default function GrupoDetalleScreen() {
       !jornada.cancelada;
 
     return (
-      <View key={jornada.id} style={styles.filaJornada}>
+      <View key={jornada.id} style={indice < lista.length - 1 ? styles.divisor : undefined}>
         <Pressable
           accessibilityRole="button"
           onPress={() => {
@@ -466,16 +466,20 @@ const styles = StyleSheet.create({
     gap: espaciados.lg,
   },
   lista: {
-    borderTopColor: colores.borde,
-    borderTopWidth: StyleSheet.hairlineWidth,
+    backgroundColor: colores.superficie,
+    borderColor: colores.borde,
+    borderRadius: radios.tarjeta,
+    borderWidth: 1,
+    overflow: 'hidden',
   },
-  filaJornada: {
+  divisor: {
     borderBottomColor: colores.borde,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   detalleTocable: {
     gap: espaciados.sm,
-    minHeight: 64,
+    minHeight: 72,
+    paddingHorizontal: espaciados.lg,
     paddingVertical: espaciados.md,
   },
   tarjetaPresionada: {

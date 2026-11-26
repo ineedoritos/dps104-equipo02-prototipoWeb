@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     aspectRatio: 1,
     backgroundColor: colores.tinta,
-    borderRadius: radios.tarjeta,
+    borderRadius: radios.modal,
     justifyContent: 'center',
     padding: espaciados.xl,
   },
@@ -347,7 +347,7 @@ const styles = StyleSheet.create({
   },
   textoVisor: {
     color: colores.superficie,
-    fontSize: tipografia.cuerpo,
+    fontSize: tipografia.cuerpoSm,
     fontWeight: pesos.medio,
     textAlign: 'center',
   },

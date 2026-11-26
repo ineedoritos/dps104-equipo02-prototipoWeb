@@ -223,30 +223,33 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  marco: { backgroundColor: colores.superficie, flex: 1 },
+  marco: { backgroundColor: colores.papel, flex: 1 },
   pantalla: {
     backgroundColor: colores.papel,
     flex: 1,
   },
   contenido: {
     flexGrow: 1,
-    gap: espaciados.xl,
+    alignItems: 'center',
+    gap: espaciados.lg,
     justifyContent: 'center',
-    paddingHorizontal: espaciados.xl,
+    paddingHorizontal: espaciados.lg,
     paddingVertical: espaciados.xl,
   },
   identidad: {
     alignItems: 'center',
+    maxWidth: 440,
+    width: '100%',
     flexDirection: 'row',
     gap: espaciados.sm,
   },
   marca: {
     alignItems: 'center',
     backgroundColor: colores.tinta,
-    borderRadius: radios.sm,
-    height: espaciados.xxl,
+    borderRadius: radios.campo,
+    height: espaciados.xxxl,
     justifyContent: 'center',
-    width: espaciados.xxl,
+    width: espaciados.xxxl,
   },
   titulo: {
     color: colores.tinta,
@@ -261,7 +264,14 @@ const styles = StyleSheet.create({
     fontWeight: pesos.fuerte,
   },
   panel: {
-    gap: espaciados.lg,
+    backgroundColor: colores.superficie,
+    borderColor: colores.borde,
+    borderRadius: radios.modal,
+    borderWidth: 1,
+    gap: espaciados.xl,
+    maxWidth: 440,
+    padding: espaciados.lg,
+    width: '100%',
   },
   formulario: {
     gap: espaciados.md,

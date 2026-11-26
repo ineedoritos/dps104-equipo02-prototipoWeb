@@ -71,7 +71,7 @@ export default function CuentaScreen() {
             onPress={() => {
               cerrarSesion();
               router.dismissAll();
-            router.replace('/(auth)/login');
+              router.replace('/(auth)/login');
             }}
             titulo="Cerrar sesión"
             variante="secundario"
@@ -93,9 +93,13 @@ const styles = StyleSheet.create({
   },
   perfil: {
     alignItems: 'center',
+    backgroundColor: colores.superficie,
+    borderColor: colores.borde,
+    borderRadius: radios.tarjeta,
+    borderWidth: 1,
     flexDirection: 'row',
     gap: espaciados.md,
-    paddingVertical: espaciados.sm,
+    padding: espaciados.lg,
   },
   avatar: {
     alignItems: 'center',

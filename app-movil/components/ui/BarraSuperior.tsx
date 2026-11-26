@@ -14,10 +14,6 @@ interface BarraSuperiorProps {
   mostrarVolver?: boolean;
 }
 
-/**
- * Encabezado blanco unificado con `SafeAreaView` superior blanco para que la
- * barra de estado y el header mantengan consistencia visual en todas las vistas.
- */
 export function BarraSuperior({
   titulo,
   onVolver,
@@ -60,13 +56,11 @@ export function BarraSuperior({
 
 const styles = StyleSheet.create({
   fondo: {
-    backgroundColor: colores.superficie,
+    backgroundColor: colores.papel,
   },
   barra: {
     alignItems: 'center',
-    backgroundColor: colores.superficie,
-    borderBottomColor: colores.borde,
-    borderBottomWidth: 1,
+    backgroundColor: colores.papel,
     flexDirection: 'row',
     justifyContent: 'space-between',
     minHeight: 56,
@@ -78,24 +72,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: radios.pill,
     height: 48,
-    marginLeft: -espaciados.sm,
+    backgroundColor: colores.superficie,
+    borderColor: colores.borde,
+    borderWidth: 1,
     justifyContent: 'center',
     width: 48,
   },
   presionado: {
-    opacity: 0.7,
+    backgroundColor: colores.acentoSuave,
   },
   titulo: {
     color: colores.tinta,
     flex: 1,
     fontSize: tipografia.tituloSm,
-    fontWeight: pesos.fuerte,
+    fontWeight: pesos.encabezado,
     paddingVertical: espaciados.xs,
   },
   tituloRaiz: {
     fontSize: tipografia.display,
     fontWeight: pesos.encabezado,
-    letterSpacing: -0.6,
+    letterSpacing: -0.8,
   },
   derecha: {
     alignItems: 'flex-end',

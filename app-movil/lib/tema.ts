@@ -12,26 +12,26 @@
 
 export const colores = {
   // Superficies
-  papel: '#FFFFFF',
+  papel: '#F7F7F5',
   superficie: '#FFFFFF',
-  superficieAlt: '#F5F5F5',
+  superficieAlt: '#F1F1EE',
 
   // Texto
-  tinta: '#181818',
-  tintaSuave: '#525252',
-  tintaTenue: '#666666',
+  tinta: '#191A19',
+  tintaSuave: '#535550',
+  tintaTenue: '#62645F',
 
   // Líneas
-  borde: '#E4E4E4',
-  bordeFuerte: '#858585',
+  borde: '#E2E3DE',
+  bordeFuerte: '#82847C',
 
   // Acciones y selecciones (neutras)
-  acento: '#181818',
-  acentoSuave: '#F1F1F1',
-  acentoBorde: '#CFCFCF',
+  acento: '#191A19',
+  acentoSuave: '#EEEFEA',
+  acentoBorde: '#D3D5CE',
 
   // Velo neutro de modales.
-  velo: 'rgba(24, 24, 24, 0.45)',
+  velo: 'rgba(25, 26, 25, 0.42)',
 
   // Estados de asistencia
   presente: '#186246',
@@ -41,15 +41,15 @@ export const colores = {
   justificada: '#785014',
   justificadaSuave: '#FAF0DC',
   sinRegistro: '#595959',
-  sinRegistroSuave: '#F1F1F1',
+  sinRegistroSuave: '#EEEFEA',
 
   // Estado de jornada
   enCurso: '#186246',
   enCursoSuave: '#E7F4EC',
   programada: '#504280',
   programadaSuave: '#F0EDF9',
-  completada: '#525252',
-  completadaSuave: '#F5F5F5',
+  completada: '#535550',
+  completadaSuave: '#F1F1EE',
   cancelada: '#A02E32',
   canceladaSuave: '#FBECEE',
 
@@ -57,19 +57,19 @@ export const colores = {
   infoSuave: '#EDF2F8',
 
   // Alias heredados: mantienen el mismo significado para no romper referencias.
-  fondo: '#FFFFFF',
-  texto: '#181818',
-  textoSuave: '#525252',
-  primario: '#181818',
-  primarioSuave: '#F1F1F1',
+  fondo: '#F7F7F5',
+  texto: '#191A19',
+  textoSuave: '#535550',
+  primario: '#191A19',
+  primarioSuave: '#EEEFEA',
   exito: '#186246',
   exitoSuave: '#E7F4EC',
   exitoBorde: '#C0DCCB',
   exitoPunto: '#186246',
   azulBorde: '#CDD8E6',
   azulPunto: '#384D6A',
-  grisSuave: '#F5F5F5',
-  grisPunto: '#666666',
+  grisSuave: '#F1F1EE',
+  grisPunto: '#62645F',
   grisTexto: '#484848',
 } as const;
 
@@ -85,8 +85,9 @@ export const espaciados = {
 } as const;
 
 export const radios = {
-  campo: 12,
-  tarjeta: 16,
+  campo: 16,
+  tarjeta: 20,
+  modal: 24,
   pill: 999,
   sm: 8,
   md: 12,
@@ -96,12 +97,12 @@ export const radios = {
 
 /** Seis pasos. Ningún tamaño fuera de esta escala. */
 export const tipografia = {
-  micro: 11,
-  cuerpoSm: 13,
-  cuerpo: 15,
-  tituloSm: 17,
-  titulo: 20,
-  display: 28,
+  micro: 12,
+  cuerpoSm: 14,
+  cuerpo: 16,
+  tituloSm: 18,
+  titulo: 22,
+  display: 32,
 } as const;
 
 export const interlineado = {
@@ -110,7 +111,7 @@ export const interlineado = {
   cuerpo: 22,
   tituloSm: 24,
   titulo: 26,
-  display: 34,
+  display: 38,
 } as const;
 
 /** El peso de encabezado se reserva para títulos y cifras principales. */
@@ -127,7 +128,7 @@ export const cifrasTabulares = { fontVariant: ['tabular-nums'] } as const;
 /** Único caso de elevación: el botón flotante y el panel del QR. */
 export const sombras = {
   flotante: {
-    shadowColor: '#181818',
+    shadowColor: '#191A19',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 8,

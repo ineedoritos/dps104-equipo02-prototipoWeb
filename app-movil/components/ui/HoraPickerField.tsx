@@ -5,6 +5,7 @@ import { Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native
 
 import { Boton } from '@/components/ui/Boton';
 import { Icono } from '@/components/ui/Icono';
+import { alturaInteriorCampo, estilosCampo } from '@/components/ui/estilosCampo';
 import { cifrasTabulares, colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
 
 interface HoraPickerFieldProps {
@@ -52,14 +53,15 @@ export function HoraPickerField({
   };
 
   return (
-    <View style={styles.contenedor}>
-      <Text style={styles.etiqueta}>{label}</Text>
+    <View style={estilosCampo.contenedor}>
+      <Text style={estilosCampo.etiqueta}>{label}</Text>
 
       <View
         style={[
-          styles.campoContenedor,
-          error ? styles.campoConError : null,
-          deshabilitado ? styles.campoDeshabilitado : null,
+          estilosCampo.marco,
+          abierto && estilosCampo.enfocado,
+          error ? estilosCampo.conError : null,
+          deshabilitado ? estilosCampo.deshabilitado : null,
         ]}
       >
         <Pressable
@@ -80,7 +82,7 @@ export function HoraPickerField({
         </Pressable>
       </View>
 
-      {error ? <Text style={styles.textoError}>{error}</Text> : null}
+      {error ? <Text accessibilityLiveRegion="polite" style={estilosCampo.textoError}>{error}</Text> : null}
 
       {abierto && Platform.OS === 'android' ? (
         <DateTimePicker
@@ -119,40 +121,19 @@ export function HoraPickerField({
 }
 
 const styles = StyleSheet.create({
-  contenedor: {
-    gap: espaciados.xs,
-  },
-  etiqueta: {
-    color: colores.tintaSuave,
-    fontSize: tipografia.micro,
-    fontWeight: pesos.fuerte,
-    letterSpacing: 0.2,
-  },
-  campoContenedor: {
-    alignItems: 'center',
-    backgroundColor: colores.superficieAlt,
-    borderColor: colores.bordeFuerte,
-    borderRadius: radios.campo,
-    borderWidth: 1,
-    flexDirection: 'row',
-    minHeight: 48,
-  },
-  campoConError: {
-    borderColor: colores.ausente,
-  },
-  campoDeshabilitado: {
-    opacity: 0.6,
-  },
   campo: {
     alignItems: 'center',
     flex: 1,
+    minWidth: 0,
+    borderRadius: radios.campo,
     flexDirection: 'row',
     gap: espaciados.sm,
-    minHeight: 46,
+    minHeight: alturaInteriorCampo,
+    paddingVertical: espaciados.sm,
     paddingHorizontal: espaciados.md,
   },
   campoPresionado: {
-    opacity: 0.75,
+    backgroundColor: colores.acentoSuave,
   },
   campoTexto: {
     ...cifrasTabulares,
@@ -161,12 +142,7 @@ const styles = StyleSheet.create({
     fontSize: tipografia.cuerpo,
   },
   placeholder: {
-    color: colores.tintaTenue,
-  },
-  textoError: {
-    color: colores.ausente,
-    fontSize: tipografia.micro,
-    lineHeight: 15,
+    color: colores.tintaSuave,
   },
   overlay: {
     alignItems: 'center',
@@ -178,10 +154,11 @@ const styles = StyleSheet.create({
   modalTarjeta: {
     backgroundColor: colores.superficie,
     borderColor: colores.borde,
-    borderRadius: radios.tarjeta,
+    borderRadius: radios.modal,
     borderWidth: 1,
     gap: espaciados.md,
     padding: espaciados.lg,
+    maxWidth: 400,
     width: '100%',
   },
   tituloModal: {

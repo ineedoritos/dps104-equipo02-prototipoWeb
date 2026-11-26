@@ -21,7 +21,7 @@ export interface BotonProps {
 
 const COLORES_VARIANTE: Record<VarianteBoton, { fondo: string; texto: string; borde: string }> = {
   primario: { fondo: colores.acento, texto: colores.superficie, borde: colores.acento },
-  secundario: { fondo: colores.superficie, texto: colores.tinta, borde: colores.bordeFuerte },
+  secundario: { fondo: colores.superficie, texto: colores.tinta, borde: colores.acentoBorde },
   fantasma: { fondo: 'transparent', texto: colores.acento, borde: 'transparent' },
   peligro: { fondo: colores.ausenteSuave, texto: colores.ausente, borde: colores.ausenteSuave },
 };
@@ -52,7 +52,7 @@ export function Boton({
         tamano === 'sm' ? styles.tamanoSm : styles.tamanoMd,
         { backgroundColor: paleta.fondo, borderColor: paleta.borde },
         pressed && styles.presionado,
-        inactivo && styles.inactivo,
+        deshabilitado && !cargando && styles.inactivo,
         estilo,
       ]}
     >
@@ -82,11 +82,11 @@ const styles = StyleSheet.create({
     borderRadius: radios.pill,
     borderWidth: 1,
     justifyContent: 'center',
-    paddingHorizontal: espaciados.md,
+    paddingHorizontal: espaciados.lg,
     paddingVertical: espaciados.sm,
   },
   tamanoMd: {
-    minHeight: 48,
+    minHeight: 52,
   },
   tamanoSm: {
     minHeight: 48,

@@ -3,7 +3,8 @@ import type { ReactNode } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import type { StyleProp, TextInputProps, ViewStyle } from 'react-native';
 
-import { colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
+import { alturaInteriorCampo, estilosCampo } from '@/components/ui/estilosCampo';
+import { colores, espaciados, tipografia } from '@/lib/tema';
 
 export interface CampoTextoProps extends Omit<TextInputProps, 'style'> {
   etiqueta: string;
@@ -26,18 +27,21 @@ export function CampoTexto({
   const [enfocado, setEnfocado] = useState(false);
 
   return (
-    <View style={[styles.contenedor, estilo]}>
-      <Text style={styles.etiqueta}>{etiqueta}</Text>
+    <View style={[estilosCampo.contenedor, estilo]}>
+      <Text style={estilosCampo.etiqueta}>{etiqueta}</Text>
 
       <View
         style={[
-          styles.campoContenedor,
-          enfocado && styles.campoEnfocado,
-          error ? styles.campoConError : null,
+          estilosCampo.marco,
+          enfocado && estilosCampo.enfocado,
+          error ? estilosCampo.conError : null,
+          propiedades.editable === false && estilosCampo.deshabilitado,
         ]}
       >
         <TextInput
           accessibilityLabel={etiqueta}
+          selectionColor={colores.acentoBorde}
+          cursorColor={colores.acento}
           {...propiedades}
           multiline={multilinea}
           onBlur={(evento) => {
@@ -56,52 +60,23 @@ export function CampoTexto({
         {accesorio}
       </View>
 
-      {error ? <Text accessibilityLiveRegion="polite" style={styles.textoError}>{error}</Text> : null}
+      {error ? <Text accessibilityLiveRegion="polite" style={estilosCampo.textoError}>{error}</Text> : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  contenedor: {
-    gap: espaciados.xs,
-  },
-  etiqueta: {
-    color: colores.tintaSuave,
-    fontSize: tipografia.micro,
-    fontWeight: pesos.fuerte,
-    letterSpacing: 0.2,
-  },
-  campoContenedor: {
-    alignItems: 'center',
-    backgroundColor: colores.superficieAlt,
-    borderColor: colores.bordeFuerte,
-    borderRadius: radios.campo,
-    borderWidth: 1,
-    flexDirection: 'row',
-    minHeight: 48,
-  },
-  campoEnfocado: {
-    backgroundColor: colores.superficie,
-    borderColor: colores.acento,
-  },
-  campoConError: {
-    borderColor: colores.ausente,
-  },
   campo: {
     color: colores.tinta,
     flex: 1,
+    minWidth: 0,
     fontSize: tipografia.cuerpo,
-    minHeight: 46,
+    minHeight: alturaInteriorCampo,
     paddingHorizontal: espaciados.md,
     paddingVertical: espaciados.sm,
   },
   campoMultilinea: {
     minHeight: 96,
     paddingTop: espaciados.md,
-  },
-  textoError: {
-    color: colores.ausente,
-    fontSize: tipografia.micro,
-    lineHeight: 15,
   },
 });

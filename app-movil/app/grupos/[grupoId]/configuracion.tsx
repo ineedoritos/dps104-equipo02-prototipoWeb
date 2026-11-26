@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
   tituloBloque: {
     color: colores.tinta,
     fontSize: tipografia.tituloSm,
-    fontWeight: pesos.fuerte,
+    fontWeight: pesos.encabezado,
   },
   opcion: {
     alignItems: 'flex-start',
@@ -275,8 +275,8 @@ const styles = StyleSheet.create({
     padding: espaciados.md,
   },
   opcionActiva: {
-    backgroundColor: colores.acentoSuave,
-    borderColor: colores.acentoBorde,
+    backgroundColor: colores.superficie,
+    borderColor: colores.bordeFuerte,
   },
   radio: {
     alignItems: 'center',
@@ -322,6 +322,8 @@ const styles = StyleSheet.create({
   encabezadoOpcional: {
     alignItems: 'center',
     flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: espaciados.sm,
     justifyContent: 'space-between',
   },
   etiquetaProximamente: {

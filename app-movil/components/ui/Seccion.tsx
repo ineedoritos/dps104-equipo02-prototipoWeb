@@ -46,11 +46,11 @@ const styles = StyleSheet.create({
   titulo: {
     color: colores.tinta,
     fontSize: tipografia.tituloSm,
-    fontWeight: pesos.fuerte,
+    fontWeight: pesos.encabezado,
   },
   detalle: {
     color: colores.tintaSuave,
-    fontSize: tipografia.micro,
-    lineHeight: 15,
+    fontSize: tipografia.cuerpoSm,
+    lineHeight: 19,
   },
 });

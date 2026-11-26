@@ -237,8 +237,9 @@ export default function CrearOEditarJornadaScreen() {
               value={descripcion}
             />
 
-            <View style={horarioBloqueado ? styles.bloqueDeshabilitado : undefined} pointerEvents={horarioBloqueado ? 'none' : 'auto'}>
+            <View style={styles.bloqueHorario}>
               <DatePickerField
+                deshabilitado={horarioBloqueado}
                 label="Fecha (un solo día)"
                 onChange={setFecha}
                 value={fecha}
@@ -349,14 +350,12 @@ const styles = StyleSheet.create({
     color: colores.tintaSuave,
     fontSize: tipografia.cuerpoSm,
   },
-  bloqueDeshabilitado: {
-    gap: espaciados.lg,
-    opacity: 0.65,
+  bloqueHorario: {
+    gap: espaciados.md,
   },
   filaHoras: {
     flexDirection: 'row',
     gap: espaciados.md,
-    marginTop: espaciados.md,
   },
   colHora: {
     flex: 1,

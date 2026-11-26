@@ -67,8 +67,10 @@ export function BarraApilada({
 
 const styles = StyleSheet.create({
   tarjeta: {
-    backgroundColor: colores.superficieAlt,
+    backgroundColor: colores.superficie,
+    borderColor: colores.borde,
     borderRadius: radios.tarjeta,
+    borderWidth: 1,
     gap: espaciados.md,
     padding: espaciados.lg,
   },
@@ -113,7 +115,7 @@ const styles = StyleSheet.create({
     width: 10,
   },
   textoLeyenda: {
-    color: colores.tintaSuave,
+    color: colores.tinta,
     fontSize: tipografia.cuerpoSm,
     fontWeight: pesos.medio,
   },

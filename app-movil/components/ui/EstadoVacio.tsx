@@ -29,9 +29,13 @@ export function EstadoVacio({ icono, titulo, descripcion, accion }: EstadoVacioP
 
 const styles = StyleSheet.create({
   contenedor: {
-    alignItems: 'flex-start',
+    alignItems: 'center',
+    backgroundColor: colores.superficie,
+    borderColor: colores.borde,
+    borderRadius: radios.tarjeta,
+    borderWidth: 1,
     gap: espaciados.sm,
-    paddingVertical: espaciados.xl,
+    padding: espaciados.xl,
   },
   iconoFondo: {
     alignItems: 'center',
@@ -46,14 +50,17 @@ const styles = StyleSheet.create({
     color: colores.tinta,
     fontSize: tipografia.titulo,
     fontWeight: pesos.encabezado,
+    textAlign: 'center',
   },
   descripcion: {
     color: colores.tintaSuave,
     fontSize: tipografia.cuerpo,
     lineHeight: 22,
+    maxWidth: 340,
+    textAlign: 'center',
   },
   accion: {
     alignSelf: 'stretch',
-    marginTop: espaciados.sm,
+    marginTop: espaciados.md,
   },
 });

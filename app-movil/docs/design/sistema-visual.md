@@ -8,8 +8,8 @@ Documento rector de estética, tokens y reglas de interfaz para **Registro de ac
 
 ## 1. Principios de diseño (anti-"AI-like")
 
-1. **Fondo blanco, superficies grises y divisores finos:**
-   - Las pantallas y los encabezados son blancos. El gris claro agrupa resúmenes y distingue campos en reposo. Las listas usan divisores finos y los campos interactivos tienen un borde de mayor contraste.
+1. **Fondo gris claro, paneles blancos y divisores finos:**
+   - Las pantallas y los encabezados comparten el fondo gris claro. El blanco agrupa contenido y el gris suave distingue campos en reposo. Las listas usan divisores finos y los campos interactivos tienen un borde de mayor contraste.
    - **Prohibido** usar gradientes lineales/radiales, efectos *glassmorphism* o brillos de fondo.
    - **Sombras solo cuando flotan:** `sombras.flotante` se reserva exclusivamente para el botón flotante principal y el panel/modal de código QR. Las tarjetas en flujo normal no llevan sombra.
 
@@ -18,7 +18,7 @@ Documento rector de estética, tokens y reglas de interfaz para **Registro de ac
    - El verde identifica presencia o una jornada en curso. Violeta, ámbar, rojo y azul apagado indican programación, justificación, ausencia/error o información. Los indicadores y las leyendas de gráfico incluyen texto.
 
 3. **Jerarquía por tamaño, peso y aire — no por más colores:**
-   - Escala tipográfica cerrada de **6 pasos** (`micro: 11`, `cuerpoSm: 13`, `cuerpo: 15`, `tituloSm: 17`, `titulo: 20`, `display: 28`).
+   - Escala tipográfica cerrada de **6 pasos** (`micro: 12`, `cuerpoSm: 14`, `cuerpo: 16`, `tituloSm: 18`, `titulo: 22`, `display: 32`).
    - Usa peso 700 en títulos y cifras principales. Etiquetas, filas y acciones mantienen los pesos 400, 500 o 600.
 
 4. **Cifras tabulares obligatorias (`cifrasTabulares`):**
@@ -47,42 +47,42 @@ Ningún componente o pantalla debe definir colores, radios, espaciados o tamaño
 
 | Grupo | Token | Valor | Uso |
 |---|---|---|---|
-| Superficies | `papel` | `#FFFFFF` | Fondo base de pantallas |
+| Superficies | `papel` | `#F7F7F5` | Fondo base de pantallas |
 | Superficies | `superficie` | `#FFFFFF` | Tarjetas, modales, barra de pestañas |
-| Superficies | `superficieAlt` | `#F5F5F5` | Superficies secundarias / campos en reposo |
-| Texto | `tinta` | `#181818` | Títulos y texto principal |
-| Texto | `tintaSuave` | `#525252` | Subtítulos, metadatos, etiquetas |
-| Texto | `tintaTenue` | `#666666` | Placeholders, iconos inactivos |
-| Líneas | `borde` | `#E4E4E4` | Divisores y bordes de superficies |
-| Líneas | `bordeFuerte` | `#858585` | Bordes de inputs y botones secundarios |
-| Acento | `acento` | `#181818` | Acción primaria y selección activa |
-| Acento | `acentoSuave` | `#F1F1F1` | Fondo de selección neutra |
-| Acento | `acentoBorde` | `#CFCFCF` | Borde de superficie resaltada |
-| Velo | `velo` | `rgba(24, 24, 24, 0.45)` | Backdrop de modales (nunca gris azulado) |
+| Superficies | `superficieAlt` | `#F1F1EE` | Superficies secundarias / campos en reposo |
+| Texto | `tinta` | `#191A19` | Títulos y texto principal |
+| Texto | `tintaSuave` | `#535550` | Subtítulos, metadatos, etiquetas |
+| Texto | `tintaTenue` | `#62645F` | Placeholders, iconos inactivos |
+| Líneas | `borde` | `#E2E3DE` | Divisores y bordes de superficies |
+| Líneas | `bordeFuerte` | `#82847C` | Bordes de campos y filtros seleccionados |
+| Acento | `acento` | `#191A19` | Acción primaria y selección activa |
+| Acento | `acentoSuave` | `#EEEFEA` | Fondo de selección neutra |
+| Acento | `acentoBorde` | `#D3D5CE` | Borde de superficie resaltada |
+| Velo | `velo` | `rgba(25, 26, 25, 0.42)` | Backdrop de modales (nunca gris azulado) |
 | Estados | `ausente` / `ausenteSuave` | `#A02E32` / `#FBECEE` | Ausencia, cancelación, error o acción destructiva |
 | Estados | `justificada` / `justificadaSuave` | `#785014` / `#FAF0DC` | Ausencia justificada o advertencia |
 | Estados | `programada` / `programadaSuave` | `#504280` / `#F0EDF9` | Jornada programada |
-| Estados | `completada` / `completadaSuave` | `#525252` / `#F5F5F5` | Jornada finalizada |
-| Estados | `sinRegistro` / `sinRegistroSuave` | `#595959` / `#F1F1F1` | Participante sin marca registrada |
+| Estados | `completada` / `completadaSuave` | `#535550` / `#F1F1EE` | Jornada finalizada |
+| Estados | `sinRegistro` / `sinRegistroSuave` | `#595959` / `#EEEFEA` | Participante sin marca registrada |
 | Estados | `info` / `infoSuave` | `#384D6A` / `#EDF2F8` | Aviso informativo |
 
 ### 2.2 Escala tipográfica y pesos
 
-| Token | Tamaño (`px`) | Interlineado (`px`) | Uso recomendado |
+| Token | Tamaño (`sp`) | Interlineado (`sp`) | Uso recomendado |
 |---|---|---|---|
-| `micro` | `11` | `16` | Etiquetas de pestaña, micro-metadatos, badges |
-| `cuerpoSm` | `13` | `19` | Texto secundario, descripciones de apoyo |
-| `cuerpo` | `15` | `22` | Texto principal, valores de inputs |
-| `tituloSm` | `17` | `24` | Títulos de sección y encabezado de pantalla |
-| `titulo` | `20` | `26` | Títulos principales de vista o modal |
-| `display` | `28` | `34` | Cifras resumen o encabezados de portada |
+| `micro` | `12` | `16` | Etiquetas de pestaña, micro-metadatos, badges |
+| `cuerpoSm` | `14` | `19` | Texto secundario, descripciones de apoyo |
+| `cuerpo` | `16` | `22` | Texto principal, valores de inputs |
+| `tituloSm` | `18` | `24` | Títulos de sección y encabezado de pantalla |
+| `titulo` | `22` | `26` | Títulos principales de vista o modal |
+| `display` | `32` | `38` | Cifras resumen o encabezados de portada |
 
 Pesos: normal (400), medio (500), fuerte (600) y encabezado (700).
 
 ### 2.3 Espaciado y radios
 
 - **Espaciados (base 4):** `xs: 4`, `sm: 8`, `md: 12`, `lg: 16`, `xl: 24`, `xxl: 32`, `xxxl: 48`.
-- **Radios por tipo de superficie:** `sm: 8` (badges/elementos internos), `campo: 12` (inputs), `tarjeta: 16` (contenedores y modales), `pill: 999` (botones y chips).
+- **Radios por tipo de superficie:** `sm: 8` (badges/elementos internos), `campo: 16` (controles), `tarjeta: 20` (paneles), `modal: 24` (diálogos), `pill: 999` (botones y chips).
 
 ---
 
@@ -93,7 +93,8 @@ Toda pantalla nueva o refactorizada debe componer estos primitivos antes de crea
 | Componente | Responsabilidad | Regla clave |
 |---|---|---|
 | `Boton` | Acción táctil (`primario`, `secundario`, `fantasma`, `peligro`) | Acción primaria negra, forma de cápsula y estados de carga y deshabilitado. |
-| `CampoTexto` | Entrada de texto con etiqueta y error | Borde de `1 px`, radio `radios.campo`, error visible debajo. |
+| `CampoTexto` | Entrada de texto con etiqueta y error | Comparte marco, etiqueta y error con los selectores de fecha y hora en `estilosCampo`. Altura mínima de 52 dp. |
+| `BarraSuperior` | Encabezado con área segura | Comparte fondo con la pantalla y usa controles de al menos 48 dp. |
 | `DatePickerField` | Selector de fecha nativo Android/iOS | Formatea en `America/El_Salvador` (`ADR-006`). |
 | `Seccion` | Encabezado de bloque con título, detalle y acción opcional | Separa bloques con `espaciados.md`. |
 | `Estado` | Píldora semántica de jornada o asistencia | Mapeo único vía `ESTADO_JORNADA` y `ESTADO_ASISTENCIA`. |

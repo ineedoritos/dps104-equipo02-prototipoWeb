@@ -292,7 +292,7 @@ export default function MiHistorialScreen() {
               {meses.map((mes) => (
                 <Seccion key={mes.clave} titulo={mes.titulo}>
                   <View style={styles.listaRegistros}>
-                    {mes.items.map((item) => {
+                    {mes.items.map((item, indice) => {
                       const badge = obtenerBadgeRegistro(item);
                       const fechaTexto = formatearDia(fechaEnZona(item.jornada.inicio_en), {
                         weekday: 'short',
@@ -322,6 +322,7 @@ export default function MiHistorialScreen() {
                           }
                           style={({ pressed }) => [
                             styles.tarjetaRegistro,
+                            indice < mes.items.length - 1 && styles.divisor,
                             pressed && styles.tarjetaPresionada,
                           ]}
                         >
@@ -433,7 +434,9 @@ const styles = StyleSheet.create({
     fontSize: tipografia.cuerpoSm,
   },
   gridResumen: {
-    backgroundColor: colores.superficieAlt,
+    backgroundColor: colores.superficie,
+    borderColor: colores.borde,
+    borderWidth: 1,
     borderRadius: radios.tarjeta,
     paddingHorizontal: espaciados.lg,
   },
@@ -481,12 +484,15 @@ const styles = StyleSheet.create({
     gap: espaciados.lg,
   },
   listaRegistros: {
-    borderTopColor: colores.borde,
-    borderTopWidth: StyleSheet.hairlineWidth,
+    backgroundColor: colores.superficie,
+    borderColor: colores.borde,
+    borderRadius: radios.tarjeta,
+    borderWidth: 1,
+    overflow: 'hidden',
   },
+  divisor: { borderBottomColor: colores.borde, borderBottomWidth: StyleSheet.hairlineWidth },
   tarjetaRegistro: {
-    borderBottomColor: colores.borde,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: espaciados.lg,
     gap: espaciados.xs,
     minHeight: 48,
     paddingVertical: espaciados.md,

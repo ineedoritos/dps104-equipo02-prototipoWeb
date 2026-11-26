@@ -137,14 +137,18 @@ export default function MisGruposScreen() {
 
         {estadoVista === 'normal' && listaVisible.length > 0 ? (
           <View style={styles.lista}>
-            {listaVisible.map((item) => {
+            {listaVisible.map((item, indice) => {
               const esResponsable = item.rol === 'responsable';
               return (
                 <Pressable
                   key={item.grupo.id}
                   accessibilityRole="button"
                   onPress={() => router.push(`/grupos/${item.grupo.id}` as Href)}
-                  style={({ pressed }) => [styles.tarjeta, pressed && styles.tarjetaPresionada]}
+                  style={({ pressed }) => [
+                    styles.tarjeta,
+                    indice < listaVisible.length - 1 && styles.divisor,
+                    pressed && styles.tarjetaPresionada,
+                  ]}
                 >
                   <View style={styles.detalleGrupo}>
                     <Text style={styles.nombreGrupo}>{item.grupo.nombre}</Text>
@@ -177,7 +181,7 @@ export default function MisGruposScreen() {
 
 const styles = StyleSheet.create({
   pantalla: {
-    backgroundColor: colores.superficie,
+    backgroundColor: colores.papel,
     flex: 1,
   },
   contenido: {
@@ -223,18 +227,21 @@ const styles = StyleSheet.create({
     fontSize: tipografia.cuerpoSm,
   },
   lista: {
-    borderTopColor: colores.borde,
-    borderTopWidth: StyleSheet.hairlineWidth,
+    backgroundColor: colores.superficie,
+    borderColor: colores.borde,
+    borderRadius: radios.tarjeta,
+    borderWidth: 1,
+    overflow: 'hidden',
   },
   tarjeta: {
     alignItems: 'center',
-    borderBottomColor: colores.borde,
-    borderBottomWidth: StyleSheet.hairlineWidth,
     flexDirection: 'row',
     gap: espaciados.md,
     minHeight: 64,
+    paddingHorizontal: espaciados.lg,
     paddingVertical: espaciados.lg,
   },
+  divisor: { borderBottomColor: colores.borde, borderBottomWidth: StyleSheet.hairlineWidth },
   tarjetaPresionada: {
     backgroundColor: colores.superficieAlt,
   },

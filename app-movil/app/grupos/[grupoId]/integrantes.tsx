@@ -537,7 +537,7 @@ const styles = StyleSheet.create({
     maxHeight: '100%',
     backgroundColor: colores.superficie,
     borderColor: colores.borde,
-    borderRadius: radios.tarjeta,
+    borderRadius: radios.modal,
     borderWidth: 1,
     gap: espaciados.md,
     padding: espaciados.lg,

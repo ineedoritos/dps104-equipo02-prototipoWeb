@@ -216,7 +216,7 @@ export default function ReportesGrupoScreen() {
               presentes={reporte.totalPresentes}
             />
 
-            <View>
+            <View style={styles.tabla}>
               <Text accessibilityRole="header" style={styles.encabezadoTabla}>Por integrante</Text>
 
               {reporte.filas.map((fila) => {
@@ -352,8 +352,8 @@ const styles = StyleSheet.create({
     paddingVertical: espaciados.sm,
   },
   chipPeriodoActivo: {
-    backgroundColor: colores.tinta,
-    borderColor: colores.tinta,
+    backgroundColor: colores.superficie,
+    borderColor: colores.bordeFuerte,
   },
   textoPeriodo: {
     color: colores.tintaSuave,
@@ -362,7 +362,7 @@ const styles = StyleSheet.create({
     fontWeight: pesos.medio,
   },
   textoPeriodoActivo: {
-    color: colores.superficie,
+    color: colores.tinta,
     fontWeight: pesos.fuerte,
   },
   fechas: { gap: espaciados.sm },
@@ -379,17 +379,26 @@ const styles = StyleSheet.create({
     color: colores.tintaSuave,
     fontSize: tipografia.cuerpoSm,
   },
+  tabla: {
+    backgroundColor: colores.superficie,
+    borderColor: colores.borde,
+    borderRadius: radios.tarjeta,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
   encabezadoTabla: {
     color: colores.tinta,
     fontSize: tipografia.tituloSm,
     fontWeight: pesos.encabezado,
-    paddingBottom: espaciados.md,
+    paddingHorizontal: espaciados.lg,
+    paddingVertical: espaciados.md,
   },
   filaTabla: {
     borderTopColor: colores.borde,
     borderTopWidth: StyleSheet.hairlineWidth,
     gap: espaciados.xs,
     minHeight: 48,
+    paddingHorizontal: espaciados.lg,
     paddingVertical: espaciados.md,
   },
   filaPresionada: { backgroundColor: colores.superficieAlt },

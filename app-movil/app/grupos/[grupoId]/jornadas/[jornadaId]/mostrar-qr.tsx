@@ -235,6 +235,7 @@ export default function MostrarQRScreen() {
                     <Pressable
                       key={min}
                       accessibilityRole="button"
+                      accessibilityState={{ selected: activo }}
                       onPress={() => setCaducidad(min)}
                       style={[styles.chipCaducidad, activo && styles.chipCaducidadActivo]}
                     >
@@ -275,7 +276,7 @@ export default function MostrarQRScreen() {
               <Text style={[styles.contadorTexto, cifrasTabulares]}>
                 Han escaneado {resumen.presentes} de {resumen.totalParticipantes} participantes
               </Text>
-              <Pressable accessibilityRole="button" onPress={sincronizar}>
+              <Pressable accessibilityRole="button" onPress={sincronizar} style={styles.accionRefrescar}>
                 <Text style={styles.textoRefrescar}>Actualizar</Text>
               </Pressable>
             </View>
@@ -396,6 +397,8 @@ const styles = StyleSheet.create({
     borderRadius: radios.pill,
     borderWidth: 1,
     flex: 1,
+    justifyContent: 'center',
+    minHeight: 48,
     paddingVertical: espaciados.sm,
   },
   chipCaducidadActivo: {
@@ -413,7 +416,12 @@ const styles = StyleSheet.create({
   },
   panelQR: {
     alignItems: 'center',
+    backgroundColor: colores.superficie,
+    borderColor: colores.borde,
+    borderRadius: radios.tarjeta,
+    borderWidth: 1,
     gap: espaciados.md,
+    padding: espaciados.md,
   },
   temporizador: {
     color: colores.tintaSuave,
@@ -432,6 +440,7 @@ const styles = StyleSheet.create({
     borderRadius: radios.tarjeta,
     borderWidth: 1,
     flexDirection: 'row',
+    gap: espaciados.md,
     justifyContent: 'space-between',
     padding: espaciados.lg,
   },
@@ -440,6 +449,10 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: tipografia.cuerpoSm,
     fontWeight: pesos.fuerte,
+  },
+  accionRefrescar: {
+    justifyContent: 'center',
+    minHeight: 48,
   },
   textoRefrescar: {
     color: colores.acento,

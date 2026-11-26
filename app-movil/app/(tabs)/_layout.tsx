@@ -23,9 +23,9 @@ export default function TabsLayout() {
         tabBarStyle: {
           backgroundColor: colores.superficie,
           borderTopColor: colores.borde,
-          height: 64 + bottomInset,
+          height: 68 + bottomInset,
           paddingBottom: bottomInset,
-          paddingTop: espaciados.xs,
+          paddingTop: espaciados.sm,
         },
       }}
     >
@@ -63,7 +63,7 @@ export default function TabsLayout() {
 function IconoPestana({ activo, nombre }: { activo: boolean; nombre: NombreIcono }) {
   return (
     <View style={[styles.iconoPestana, activo && styles.iconoActivo]}>
-      <Icono color={activo ? colores.superficie : colores.tintaSuave} nombre={nombre} tamano={22} />
+      <Icono color={activo ? colores.tinta : colores.tintaSuave} nombre={nombre} tamano={22} />
     </View>
   );
 }
@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
     borderRadius: radios.pill,
     height: espaciados.xxl,
     justifyContent: 'center',
-    width: espaciados.xxxl,
+    width: 56,
   },
-  iconoActivo: { backgroundColor: colores.tinta },
+  iconoActivo: { backgroundColor: colores.acentoSuave },
 });

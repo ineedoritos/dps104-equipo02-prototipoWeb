@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { colores, espaciados, pesos, tipografia } from '@/lib/tema';
+import { colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
 
 const SECCIONES = [
   { id: 'jornadas', titulo: 'Jornadas', ruta: '/grupos/[grupoId]' },
@@ -62,23 +62,28 @@ export function PestanasGrupo({
 
 const styles = StyleSheet.create({
   barra: {
-    backgroundColor: colores.superficie,
-    borderBottomColor: colores.borde,
-    borderBottomWidth: 1,
+    backgroundColor: colores.superficieAlt,
+    borderColor: colores.borde,
+    borderRadius: radios.tarjeta,
+    borderWidth: 1,
     flexDirection: 'row',
-    paddingHorizontal: espaciados.sm,
+    gap: espaciados.xs,
+    marginHorizontal: espaciados.lg,
+    marginTop: espaciados.xs,
+    padding: espaciados.xs,
   },
   pestana: {
     alignItems: 'center',
-    borderBottomColor: 'transparent',
-    borderBottomWidth: 2,
+    borderColor: 'transparent',
+    borderRadius: radios.campo,
+    borderWidth: 1,
     flex: 1,
     justifyContent: 'center',
     minHeight: 48,
     paddingHorizontal: espaciados.xs,
     paddingVertical: espaciados.sm,
   },
-  activa: { borderBottomColor: colores.acento },
+  activa: { backgroundColor: colores.superficie, borderColor: colores.acentoBorde },
   presionada: { backgroundColor: colores.acentoSuave },
   titulo: {
     color: colores.tintaSuave,
