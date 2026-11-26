@@ -156,10 +156,11 @@ export default function ReportesPage() {
           descripcion="Cambia de grupo para ver el reporte completo o consulta tu historial personal en Mi reporte."
           accion={
             <div className="flex flex-wrap justify-center gap-2">
-              <Button render={<Link href="/grupos" />} size="sm">
+              <Button nativeButton={false} render={<Link href="/grupos" />} size="sm">
                 Ir a Grupos
               </Button>
               <Button
+                nativeButton={false}
                 render={<Link href="/mi-reporte" />}
                 variant="outline"
                 size="sm"

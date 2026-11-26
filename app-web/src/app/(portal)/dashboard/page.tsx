@@ -57,10 +57,11 @@ export default function DashboardPage() {
           descripcion="Puedes elegir otro grupo desde el selector o consultar tu historial personal en Mi reporte."
           accion={
             <div className="flex flex-wrap justify-center gap-2">
-              <Button render={<Link href="/grupos" />} size="sm">
+              <Button nativeButton={false} render={<Link href="/grupos" />} size="sm">
                 Ir a Grupos
               </Button>
               <Button
+                nativeButton={false}
                 render={<Link href="/mi-reporte" />}
                 variant="outline"
                 size="sm"
@@ -104,6 +105,7 @@ export default function DashboardPage() {
 
         <div className="flex flex-wrap items-center gap-2">
           <Button
+            nativeButton={false}
             render={<Link href="/reportes" />}
             variant="outline"
             size="sm"
@@ -114,6 +116,7 @@ export default function DashboardPage() {
             <ArrowRight className="h-3.5 w-3.5" />
           </Button>
           <Button
+            nativeButton={false}
             render={<Link href="/jornadas" />}
             variant="outline"
             size="sm"

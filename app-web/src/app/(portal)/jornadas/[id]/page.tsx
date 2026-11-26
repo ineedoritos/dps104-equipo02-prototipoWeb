@@ -79,6 +79,7 @@ export default function DetalleJornadaPage({
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <Button
+          nativeButton={false}
           render={<Link href="/jornadas" />}
           variant="ghost"
           size="sm"

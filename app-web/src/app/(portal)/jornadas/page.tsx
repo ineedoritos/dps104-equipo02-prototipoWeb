@@ -86,7 +86,7 @@ export default function JornadasPage() {
           titulo="Selecciona un grupo donde seas responsable"
           descripcion="Cambia de grupo para explorar el historial de jornadas o consulta tus registros en Mi reporte."
           accion={
-            <Button render={<Link href="/grupos" />} size="sm">
+            <Button nativeButton={false} render={<Link href="/grupos" />} size="sm">
               Ir a Grupos
             </Button>
           }
@@ -261,6 +261,7 @@ export default function JornadasPage() {
                     </div>
 
                     <Button
+                      nativeButton={false}
                       render={<Link href={`/jornadas/${jornada.id}`} />}
                       variant="outline"
                       size="sm"
