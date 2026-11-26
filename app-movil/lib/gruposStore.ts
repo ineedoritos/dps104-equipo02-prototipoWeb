@@ -1,19 +1,25 @@
 import dayjs from 'dayjs';
 
+import asistenciasJson from '@/data/asistenciasGrupo.json';
 import gruposJson from '@/data/grupos.json';
 import integrantesJson from '@/data/integrantes.json';
 import jornadasJson from '@/data/jornadas.json';
 import usuariosJson from '@/data/usuarios.json';
-import { fechaEnZona } from '@/lib/fecha';
+import { aISOConOffset, fechaEnZona, fechaHoraEnZona } from '@/lib/fecha';
 import {
   ErrorDominio,
+  type Asistencia,
+  type CodigoQR,
+  type EstadoAsistencia,
   type EstadoJornada,
+  type FilaReporteGrupo,
   type Grupo,
   type IntegranteConUsuario,
   type IntegranteGrupo,
   type Jornada,
   type ModalidadAsistencia,
   type ResumenGrupoUsuario,
+  type ResumenReporteGrupo,
   type RolGrupo,
   type UsuarioCuenta,
 } from '@/types/dominio';
@@ -21,7 +27,9 @@ import {
 let usuarios: UsuarioCuenta[] = (usuariosJson as UsuarioCuenta[]).map((u) => ({ ...u }));
 let grupos: Grupo[] = (gruposJson as Grupo[]).map((g) => ({ ...g }));
 let integrantes: IntegranteGrupo[] = (integrantesJson as IntegranteGrupo[]).map((i) => ({ ...i }));
-const jornadas: Jornada[] = (jornadasJson as Jornada[]).map((j) => ({ ...j }));
+let jornadas: Jornada[] = (jornadasJson as Jornada[]).map((j) => ({ ...j }));
+let asistencias: Asistencia[] = (asistenciasJson as Asistencia[]).map((a) => ({ ...a }));
+let codigosQR: CodigoQR[] = [];
 
 let sesionActual: UsuarioCuenta | null = null;
 
@@ -390,4 +398,597 @@ export function agruparJornadas(lista: Jornada[]): {
   }
 
   return { hoy, proximas, anteriores };
+}
+
+export function obtenerJornadaPorId(jornadaId: string): Jornada | undefined {
+  return jornadas.find((j) => j.id === jornadaId);
+}
+
+export function jornadaTieneRegistros(jornadaId: string): boolean {
+  return asistencias.some((a) => a.jornada_id === jornadaId);
+}
+
+function validarRangoHorarioJornada(fecha: string, horaInicio: string, horaFin: string): {
+  inicioISO: string;
+  finISO: string;
+} {
+  let inicio: Date;
+  let fin: Date;
+
+  try {
+    inicio = fechaHoraEnZona(fecha, horaInicio);
+    fin = fechaHoraEnZona(fecha, horaFin);
+  } catch {
+    throw new ErrorDominio(
+      'ERR_HORA_INVALIDA',
+      'Ingresa una fecha (AAAA-MM-DD) y horas válidas (HH:mm).',
+    );
+  }
+
+  if (Number.isNaN(inicio.getTime()) || Number.isNaN(fin.getTime())) {
+    throw new ErrorDominio(
+      'ERR_HORA_INVALIDA',
+      'La fecha o las horas ingresadas no tienen un formato válido.',
+    );
+  }
+
+  if (fechaEnZona(inicio) !== fechaEnZona(fin)) {
+    throw new ErrorDominio(
+      'ERR_HORA_INVALIDA',
+      'La jornada debe iniciar y finalizar el mismo día calendario.',
+    );
+  }
+
+  if (fin.getTime() <= inicio.getTime()) {
+    throw new ErrorDominio(
+      'ERR_HORA_INVALIDA',
+      'La hora de fin debe ser posterior a la hora de inicio.',
+    );
+  }
+
+  return {
+    inicioISO: aISOConOffset(inicio),
+    finISO: aISOConOffset(fin),
+  };
+}
+
+export function crearJornada(
+  grupoId: string,
+  datos: {
+    titulo: string;
+    descripcion: string;
+    fecha: string;
+    horaInicio: string;
+    horaFin: string;
+  },
+): Jornada {
+  const actual = exigirResponsable(grupoId);
+  const grupo = obtenerGrupoPorId(grupoId);
+  if (!grupo) {
+    throw new ErrorDominio('ERR_NO_AUTORIZADO', 'No se encontró el grupo solicitado.');
+  }
+
+  const tituloLimpio = datos.titulo.trim();
+  const descripcionLimpia = datos.descripcion.trim();
+  if (!tituloLimpio || !descripcionLimpia) {
+    throw new ErrorDominio('ERR_VALIDACION', 'El título y la descripción son obligatorios.');
+  }
+
+  const { inicioISO, finISO } = validarRangoHorarioJornada(
+    datos.fecha,
+    datos.horaInicio,
+    datos.horaFin,
+  );
+
+  const nueva: Jornada = {
+    id: `jor-${String(jornadas.length + 1).padStart(2, '0')}`,
+    grupo_id: grupoId,
+    titulo: tituloLimpio,
+    descripcion: descripcionLimpia,
+    inicio_en: inicioISO,
+    fin_en: finISO,
+    cancelada: false,
+    modalidad_asistencia: grupo.modalidad_asistencia,
+    control_horas: grupo.control_horas,
+    gps_habilitado: grupo.gps_habilitado,
+    fotos_habilitadas: grupo.fotos_habilitadas,
+    requiere_validacion: grupo.requiere_validacion,
+    notificaciones_habilitadas: grupo.notificaciones_habilitadas,
+    creado_por: actual.id,
+    creado_en: aISOConOffset(),
+  };
+
+  jornadas = [nueva, ...jornadas];
+  notificar();
+  return nueva;
+}
+
+export function editarJornada(
+  jornadaId: string,
+  datos: {
+    titulo: string;
+    descripcion: string;
+    fecha: string;
+    horaInicio: string;
+    horaFin: string;
+  },
+): Jornada {
+  const existente = obtenerJornadaPorId(jornadaId);
+  if (!existente) {
+    throw new ErrorDominio('ERR_NO_AUTORIZADO', 'No se encontró la jornada solicitada.');
+  }
+
+  exigirResponsable(existente.grupo_id);
+
+  if (existente.cancelada) {
+    throw new ErrorDominio(
+      'ERR_JORNADA_CANCELADA',
+      'No se puede editar una jornada que ya fue cancelada.',
+    );
+  }
+
+  const tituloLimpio = datos.titulo.trim();
+  const descripcionLimpia = datos.descripcion.trim();
+  if (!tituloLimpio || !descripcionLimpia) {
+    throw new ErrorDominio('ERR_VALIDACION', 'El título y la descripción son obligatorios.');
+  }
+
+  const { inicioISO, finISO } = validarRangoHorarioJornada(
+    datos.fecha,
+    datos.horaInicio,
+    datos.horaFin,
+  );
+
+  const cambioHorario = inicioISO !== existente.inicio_en || finISO !== existente.fin_en;
+  if (cambioHorario && jornadaTieneRegistros(jornadaId)) {
+    throw new ErrorDominio(
+      'ERR_HORARIO_BLOQUEADO',
+      'Ya existen registros de asistencia en esta jornada; el horario quedó fijo.',
+    );
+  }
+
+  const actualizada: Jornada = {
+    ...existente,
+    titulo: tituloLimpio,
+    descripcion: descripcionLimpia,
+    inicio_en: inicioISO,
+    fin_en: finISO,
+  };
+
+  jornadas = jornadas.map((j) => (j.id === jornadaId ? actualizada : j));
+  notificar();
+  return actualizada;
+}
+
+export function cancelarJornada(jornadaId: string): Jornada {
+  const existente = obtenerJornadaPorId(jornadaId);
+  if (!existente) {
+    throw new ErrorDominio('ERR_NO_AUTORIZADO', 'No se encontró la jornada solicitada.');
+  }
+
+  exigirResponsable(existente.grupo_id);
+
+  const actualizada: Jornada = { ...existente, cancelada: true };
+  jornadas = jornadas.map((j) => (j.id === jornadaId ? actualizada : j));
+  notificar();
+  return actualizada;
+}
+
+export function obtenerParticipantesActivos(grupoId: string): IntegranteConUsuario[] {
+  return obtenerIntegrantesActivos(grupoId).filter((i) => i.rol === 'participante');
+}
+
+export function obtenerAsistenciasDeJornada(jornadaId: string): Asistencia[] {
+  return asistencias.filter((a) => a.jornada_id === jornadaId);
+}
+
+export function obtenerResumenAsistenciaJornada(jornadaId: string): {
+  presentes: number;
+  ausentesJustificadas: number;
+  sinRegistrar: number;
+  totalParticipantes: number;
+} {
+  const jornada = obtenerJornadaPorId(jornadaId);
+  if (!jornada) {
+    return { presentes: 0, ausentesJustificadas: 0, sinRegistrar: 0, totalParticipantes: 0 };
+  }
+
+  const participantes = obtenerParticipantesActivos(jornada.grupo_id);
+  const mapaAsistencias = new Map(
+    obtenerAsistenciasDeJornada(jornadaId).map((a) => [a.participante_id, a]),
+  );
+
+  let presentes = 0;
+  let ausentesJustificadas = 0;
+
+  for (const participante of participantes) {
+    const registro = mapaAsistencias.get(participante.usuario_id);
+    if (registro?.estado === 'presente') {
+      presentes += 1;
+    } else if (registro?.estado === 'ausente' || registro?.estado === 'justificada') {
+      ausentesJustificadas += 1;
+    }
+  }
+
+  const totalParticipantes = participantes.length;
+  const sinRegistrar = Math.max(0, totalParticipantes - presentes - ausentesJustificadas);
+
+  return { presentes, ausentesJustificadas, sinRegistrar, totalParticipantes };
+}
+
+export function guardarAsistenciasManual(
+  jornadaId: string,
+  cambios: Array<{
+    participanteId: string;
+    estado: EstadoAsistencia | null;
+    motivoAusencia?: string | null;
+  }>,
+): void {
+  const jornada = obtenerJornadaPorId(jornadaId);
+  if (!jornada) {
+    throw new ErrorDominio('ERR_NO_AUTORIZADO', 'No se encontró la jornada solicitada.');
+  }
+
+  const actual = exigirResponsable(jornada.grupo_id);
+
+  if (jornada.cancelada) {
+    throw new ErrorDominio(
+      'ERR_JORNADA_CANCELADA',
+      'No es posible registrar asistencia en una jornada cancelada.',
+    );
+  }
+
+  for (const cambio of cambios) {
+    if (cambio.estado === 'justificada' && !cambio.motivoAusencia?.trim()) {
+      throw new ErrorDominio(
+        'ERR_MOTIVO_OBLIGATORIO',
+        'Toda ausencia justificada debe incluir un motivo.',
+      );
+    }
+  }
+
+  const ahoraISO = aISOConOffset();
+  const siguientes = new Map(
+    asistencias
+      .filter((a) => a.jornada_id === jornadaId)
+      .map((a) => [a.participante_id, a]),
+  );
+
+  for (const cambio of cambios) {
+    if (cambio.estado === null) {
+      siguientes.delete(cambio.participanteId);
+      continue;
+    }
+
+    const previa = siguientes.get(cambio.participanteId);
+    const esPresente = cambio.estado === 'presente';
+
+    siguientes.set(cambio.participanteId, {
+      id: previa?.id ?? `asi-${Date.now()}-${cambio.participanteId}`,
+      jornada_id: jornadaId,
+      participante_id: cambio.participanteId,
+      estado: cambio.estado,
+      motivo_ausencia:
+        cambio.estado === 'justificada' ? (cambio.motivoAusencia?.trim() ?? null) : null,
+      origen: previa?.origen ?? 'manual',
+      hora_entrada: esPresente && jornada.control_horas ? (previa?.hora_entrada ?? null) : null,
+      hora_salida: esPresente && jornada.control_horas ? (previa?.hora_salida ?? null) : null,
+      duracion_minutos:
+        esPresente && jornada.control_horas ? (previa?.duracion_minutos ?? null) : null,
+      minutos_reconocidos:
+        esPresente && jornada.control_horas ? (previa?.minutos_reconocidos ?? null) : null,
+      motivo_ajuste:
+        esPresente && jornada.control_horas ? (previa?.motivo_ajuste ?? null) : null,
+      estado_validacion: previa?.estado_validacion ?? 'aprobado',
+      validado_por: actual.id,
+      actualizado_por: actual.id,
+      actualizado_en: ahoraISO,
+    });
+  }
+
+  asistencias = [
+    ...asistencias.filter((a) => a.jornada_id !== jornadaId),
+    ...Array.from(siguientes.values()),
+  ];
+  notificar();
+}
+
+export function ajustarHorasAsistencia(
+  jornadaId: string,
+  participanteId: string,
+  datos: {
+    horaEntrada: string;
+    horaSalida: string;
+    minutosReconocidos: number;
+    motivoAjuste?: string;
+  },
+): Asistencia {
+  const jornada = obtenerJornadaPorId(jornadaId);
+  if (!jornada) {
+    throw new ErrorDominio('ERR_NO_AUTORIZADO', 'No se encontró la jornada solicitada.');
+  }
+
+  const actual = exigirResponsable(jornada.grupo_id);
+
+  if (jornada.cancelada) {
+    throw new ErrorDominio(
+      'ERR_JORNADA_CANCELADA',
+      'No se pueden ajustar horas en una jornada cancelada.',
+    );
+  }
+  if (!jornada.control_horas) {
+    throw new ErrorDominio(
+      'ERR_VALIDACION',
+      'Esta jornada no tiene habilitado el control de horas.',
+    );
+  }
+
+  const fechaJornada = fechaEnZona(jornada.inicio_en);
+  let entrada: Date;
+  let salida: Date;
+
+  try {
+    entrada = fechaHoraEnZona(fechaJornada, datos.horaEntrada);
+    salida = fechaHoraEnZona(fechaJornada, datos.horaSalida);
+  } catch {
+    throw new ErrorDominio('ERR_HORA_INVALIDA', 'Ingresa horas válidas en formato HH:mm.');
+  }
+
+  const inicioJornada = new Date(jornada.inicio_en).getTime();
+  const finJornada = new Date(jornada.fin_en).getTime();
+  const ahoraMs = Date.now();
+
+  if (salida.getTime() <= entrada.getTime()) {
+    throw new ErrorDominio(
+      'ERR_HORA_INVALIDA',
+      'La hora de salida debe ser posterior a la hora de entrada.',
+    );
+  }
+
+  if (entrada.getTime() < inicioJornada || salida.getTime() > finJornada) {
+    throw new ErrorDominio(
+      'ERR_HORA_INVALIDA',
+      'Las horas deben estar dentro del intervalo de la jornada.',
+    );
+  }
+
+  if (entrada.getTime() > ahoraMs || salida.getTime() > ahoraMs) {
+    throw new ErrorDominio('ERR_HORA_INVALIDA', 'No puedes registrar horas futuras.');
+  }
+
+  const solapa = asistencias.some((otra) => {
+    if (
+      otra.jornada_id === jornadaId ||
+      otra.participante_id !== participanteId ||
+      otra.estado !== 'presente' ||
+      !otra.hora_entrada ||
+      !otra.hora_salida
+    ) {
+      return false;
+    }
+    const otraJornada = obtenerJornadaPorId(otra.jornada_id);
+    if (!otraJornada || otraJornada.cancelada) {
+      return false;
+    }
+    const oIni = new Date(otra.hora_entrada).getTime();
+    const oFin = new Date(otra.hora_salida).getTime();
+    return entrada.getTime() < oFin && salida.getTime() > oIni;
+  });
+
+  if (solapa) {
+    throw new ErrorDominio(
+      'ERR_SOLAPAMIENTO_HORAS',
+      'El horario ingresado se solapa con otra jornada del mismo participante.',
+    );
+  }
+
+  const duracionMinutos = Math.floor((salida.getTime() - entrada.getTime()) / 60000);
+  if (
+    Number.isNaN(datos.minutosReconocidos) ||
+    datos.minutosReconocidos < 0 ||
+    datos.minutosReconocidos > duracionMinutos
+  ) {
+    throw new ErrorDominio(
+      'ERR_VALIDACION',
+      `El tiempo reconocido debe estar entre 0 y ${duracionMinutos} minutos.`,
+    );
+  }
+
+  const motivoLimpio = datos.motivoAjuste?.trim() ?? '';
+  if (datos.minutosReconocidos < duracionMinutos && !motivoLimpio) {
+    throw new ErrorDominio(
+      'ERR_MOTIVO_OBLIGATORIO',
+      'Debes indicar el motivo cuando el tiempo reconocido sea menor a la duración calculada.',
+    );
+  }
+
+  const previa = asistencias.find(
+    (a) => a.jornada_id === jornadaId && a.participante_id === participanteId,
+  );
+  const ahoraISO = aISOConOffset();
+
+  const actualizada: Asistencia = {
+    id: previa?.id ?? `asi-${Date.now()}-${participanteId}`,
+    jornada_id: jornadaId,
+    participante_id: participanteId,
+    estado: 'presente',
+    motivo_ausencia: null,
+    origen: previa?.origen ?? 'manual',
+    hora_entrada: aISOConOffset(entrada),
+    hora_salida: aISOConOffset(salida),
+    duracion_minutos: duracionMinutos,
+    minutos_reconocidos: datos.minutosReconocidos,
+    motivo_ajuste: datos.minutosReconocidos < duracionMinutos ? motivoLimpio : null,
+    estado_validacion: previa?.estado_validacion ?? 'aprobado',
+    validado_por: actual.id,
+    actualizado_por: actual.id,
+    actualizado_en: ahoraISO,
+  };
+
+  if (previa) {
+    asistencias = asistencias.map((a) => (a.id === previa.id ? actualizada : a));
+  } else {
+    asistencias = [...asistencias, actualizada];
+  }
+
+  notificar();
+  return actualizada;
+}
+
+export function obtenerCodigoQRVigente(jornadaId: string): CodigoQR | undefined {
+  return codigosQR.find(
+    (c) => c.jornada_id === jornadaId && c.revocado_en === null,
+  );
+}
+
+export function generarCodigoQR(jornadaId: string, caducidadMinutos: 5 | 10 | 15 | 30): CodigoQR {
+  const jornada = obtenerJornadaPorId(jornadaId);
+  if (!jornada) {
+    throw new ErrorDominio('ERR_NO_AUTORIZADO', 'No se encontró la jornada solicitada.');
+  }
+
+  const actual = exigirResponsable(jornada.grupo_id);
+
+  if (jornada.cancelada) {
+    throw new ErrorDominio(
+      'ERR_JORNADA_CANCELADA',
+      'No se puede generar un código QR para una jornada cancelada.',
+    );
+  }
+
+  const estado = derivarEstadoJornada(jornada);
+  if (estado !== 'en_curso') {
+    throw new ErrorDominio(
+      'ERR_VALIDACION',
+      'Solo puedes generar un código QR mientras la jornada está en curso.',
+    );
+  }
+
+  const ahora = new Date();
+  const ahoraISO = aISOConOffset(ahora);
+  const expiraCandidato = new Date(ahora.getTime() + caducidadMinutos * 60000);
+  const finJornada = new Date(jornada.fin_en);
+  const expiraFinal = expiraCandidato.getTime() <= finJornada.getTime() ? expiraCandidato : finJornada;
+
+  codigosQR = codigosQR.map((c) =>
+    c.jornada_id === jornadaId && c.revocado_en === null ? { ...c, revocado_en: ahoraISO } : c,
+  );
+
+  const sufijo = Math.random().toString(16).slice(2, 10).toUpperCase();
+  const nuevo: CodigoQR = {
+    id: `qr-${Date.now()}`,
+    jornada_id: jornadaId,
+    codigo_hash: `RA-${jornadaId.toUpperCase()}-${sufijo}`,
+    expira_en: aISOConOffset(expiraFinal),
+    revocado_en: null,
+    generado_por: actual.id,
+    creado_en: ahoraISO,
+  };
+
+  codigosQR = [nuevo, ...codigosQR];
+  notificar();
+  return nuevo;
+}
+
+export type PeriodoReporte = '7d' | 'mes' | 'todo' | 'personalizado';
+
+export function obtenerReporteGrupo(
+  grupoId: string,
+  filtro: {
+    periodo: PeriodoReporte;
+    desde?: string;
+    hasta?: string;
+  },
+): ResumenReporteGrupo {
+  exigirResponsable(grupoId);
+
+  const hoy = fechaEnZona();
+  let fechaDesde: string | null = null;
+  let fechaHasta: string | null = null;
+
+  if (filtro.periodo === '7d') {
+    fechaDesde = dayjs(hoy).subtract(6, 'day').format('YYYY-MM-DD');
+    fechaHasta = hoy;
+  } else if (filtro.periodo === 'mes') {
+    fechaDesde = `${hoy.slice(0, 7)}-01`;
+    fechaHasta = hoy;
+  } else if (filtro.periodo === 'personalizado') {
+    fechaDesde = filtro.desde?.trim() || null;
+    fechaHasta = filtro.hasta?.trim() || null;
+  }
+
+  const jornadasValidas = jornadas.filter((j) => {
+    if (j.grupo_id !== grupoId || j.cancelada) {
+      return false;
+    }
+    const fechaJ = fechaEnZona(j.inicio_en);
+    if (fechaDesde && fechaJ < fechaDesde) {
+      return false;
+    }
+    if (fechaHasta && fechaJ > fechaHasta) {
+      return false;
+    }
+    return true;
+  });
+
+  const idsJornadas = new Set(jornadasValidas.map((j) => j.id));
+  const participantes = obtenerParticipantesActivos(grupoId);
+
+  let totalPresentes = 0;
+  let totalJustificadas = 0;
+  let totalAusentesSinMotivo = 0;
+
+  const filas: FilaReporteGrupo[] = participantes.map((integrante) => {
+    const registros = asistencias.filter(
+      (a) => a.participante_id === integrante.usuario_id && idsJornadas.has(a.jornada_id),
+    );
+
+    let presentes = 0;
+    let ausentesSinMotivo = 0;
+    let justificadas = 0;
+    const motivosJustificadas: string[] = [];
+    let minutosRegistrados = 0;
+    let minutosReconocidos = 0;
+
+    for (const reg of registros) {
+      if (reg.estado === 'presente') {
+        presentes += 1;
+        minutosRegistrados += reg.duracion_minutos ?? 0;
+        minutosReconocidos += reg.minutos_reconocidos ?? reg.duracion_minutos ?? 0;
+      } else if (reg.estado === 'justificada') {
+        justificadas += 1;
+        if (reg.motivo_ausencia?.trim()) {
+          motivosJustificadas.push(reg.motivo_ausencia.trim());
+        }
+      } else if (reg.estado === 'ausente') {
+        ausentesSinMotivo += 1;
+      }
+    }
+
+    totalPresentes += presentes;
+    totalJustificadas += justificadas;
+    totalAusentesSinMotivo += ausentesSinMotivo;
+
+    const totalEvaluadas = presentes + justificadas + ausentesSinMotivo;
+    const tasaAsistencia =
+      totalEvaluadas > 0 ? Math.round((presentes / totalEvaluadas) * 100) : null;
+
+    return {
+      participante: integrante.usuario,
+      presentes,
+      ausentesSinMotivo,
+      justificadas,
+      motivosJustificadas,
+      tasaAsistencia,
+      minutosRegistrados,
+      minutosReconocidos,
+    };
+  });
+
+  return {
+    totalPresentes,
+    totalJustificadas,
+    totalAusentesSinMotivo,
+    filas,
+  };
 }

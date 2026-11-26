@@ -138,9 +138,16 @@ export default function GrupoDetalleScreen() {
       <Pressable
         key={jornada.id}
         accessibilityRole="button"
-        onPress={() =>
-          setAvisoAccion(`Jornada "${jornada.titulo}": su detalle se habilitará en el siguiente bloque.`)
-        }
+        onPress={() => {
+          if (esResponsable) {
+            router.push({
+              pathname: '/grupos/[grupoId]/jornadas/[jornadaId]',
+              params: { grupoId: grupo.id, jornadaId: jornada.id },
+            });
+          } else {
+            setAvisoAccion(`Jornada "${jornada.titulo}": la vista de participante se habilitará en el siguiente bloque.`);
+          }
+        }}
         style={({ pressed }) => [styles.tarjetaJornada, pressed && styles.tarjetaPresionada]}
       >
         <View style={styles.filaSuperior}>
@@ -252,7 +259,10 @@ export default function GrupoDetalleScreen() {
             <Pressable
               accessibilityRole="button"
               onPress={() =>
-                setAvisoAccion('Los reportes de participación del grupo se habilitarán en el siguiente bloque.')
+                router.push({
+                  pathname: '/grupos/[grupoId]/reportes',
+                  params: { grupoId: grupo.id },
+                })
               }
               style={styles.tabInterna}
             >
@@ -319,7 +329,10 @@ export default function GrupoDetalleScreen() {
                 <Boton
                   icono="nueva"
                   onPress={() =>
-                    setAvisoAccion('La creación de nuevas jornadas se habilitará en el siguiente bloque.')
+                    router.push({
+                      pathname: '/grupos/[grupoId]/jornadas/crear',
+                      params: { grupoId: grupo.id },
+                    })
                   }
                   titulo="Nueva jornada"
                 />
@@ -357,7 +370,10 @@ export default function GrupoDetalleScreen() {
           <Boton
             icono="nueva"
             onPress={() =>
-              setAvisoAccion('La creación de nuevas jornadas se habilitará en el siguiente bloque.')
+              router.push({
+                pathname: '/grupos/[grupoId]/jornadas/crear',
+                params: { grupoId: grupo.id },
+              })
             }
             titulo="Nueva jornada"
           />
