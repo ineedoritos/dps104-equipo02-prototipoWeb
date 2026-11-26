@@ -64,6 +64,7 @@ export default function CuentaScreen() {
 
         <Boton
           estilo={styles.boton}
+          icono="salir"
           onPress={() => {
             cerrarSesion();
             router.replace('/(auth)/login');

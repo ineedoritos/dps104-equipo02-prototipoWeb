@@ -290,6 +290,7 @@ export default function CrearOEditarJornadaScreen() {
 
               <Boton
                 cargando={enviando}
+                icono="guardar"
                 onPress={manejarGuardar}
                 titulo={esEdicion ? 'Guardar cambios' : 'Crear jornada'}
               />

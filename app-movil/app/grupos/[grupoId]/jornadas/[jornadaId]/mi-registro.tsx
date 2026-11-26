@@ -11,9 +11,9 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Aviso } from '@/components/ui/Aviso';
+import { BarraSuperior } from '@/components/ui/BarraSuperior';
 import { Boton } from '@/components/ui/Boton';
 import { ESTADO_ASISTENCIA, Estado } from '@/components/ui/Estado';
-import { Icono } from '@/components/ui/Icono';
 import { Seccion } from '@/components/ui/Seccion';
 import { formatearDia, formatearDuracion, horaEnZona } from '@/lib/fecha';
 import {
@@ -65,23 +65,13 @@ export default function DetalleRegistroScreen() {
 
   if (!sesion || !grupo || !jornada) {
     return (
-      <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
-        <View style={styles.barraSuperior}>
-          <Pressable
-            accessibilityLabel="Volver"
-            accessibilityRole="button"
-            onPress={() => router.back()}
-            style={styles.botonIcono}
-          >
-            <Icono color={colores.tinta} nombre="volver" tamano={22} />
-          </Pressable>
-          <Text style={styles.tituloBarra}>Detalle del registro</Text>
-          <View style={styles.espacioDerecha} />
-        </View>
+      <SafeAreaView edges={['bottom']} style={styles.pantalla}>
+        <BarraSuperior titulo="Detalle del registro" />
         <View style={styles.contenido}>
           <Aviso
             accion={
               <Boton
+                icono="reloj"
                 onPress={() => router.replace('/(tabs)/historial')}
                 tamano="sm"
                 titulo="Ir a Mi historial"
@@ -113,19 +103,8 @@ export default function DetalleRegistroScreen() {
     asistencia.minutos_reconocidos < asistencia.duracion_minutos;
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
-      <View style={styles.barraSuperior}>
-        <Pressable
-          accessibilityLabel="Volver"
-          accessibilityRole="button"
-          onPress={() => router.back()}
-          style={styles.botonIcono}
-        >
-          <Icono color={colores.tinta} nombre="volver" tamano={22} />
-        </Pressable>
-        <Text style={styles.tituloBarra}>Detalle del registro</Text>
-        <View style={styles.espacioDerecha} />
-      </View>
+    <SafeAreaView edges={['bottom']} style={styles.pantalla}>
+      <BarraSuperior titulo="Detalle del registro" />
 
       <ScrollView contentContainerStyle={styles.contenido} showsVerticalScrollIndicator={false}>
         {__DEV__ ? (

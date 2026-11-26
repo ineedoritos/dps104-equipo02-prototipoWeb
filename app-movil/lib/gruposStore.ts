@@ -380,6 +380,33 @@ export function retirarIntegrante(grupoId: string, integranteId: string): void {
   notificar();
 }
 
+export function transferirResponsableYSalir(grupoId: string, sucesorIntegranteId: string): void {
+  const actual = exigirResponsable(grupoId);
+
+  const sucesor = integrantes.find(
+    (i) => i.id === sucesorIntegranteId && i.grupo_id === grupoId && i.retirado_en === null,
+  );
+  if (!sucesor || sucesor.usuario_id === actual.id) {
+    throw new ErrorDominio(
+      'ERR_VALIDACION',
+      'Selecciona a otro integrante activo del grupo como nuevo responsable.',
+    );
+  }
+
+  const ahora = dayjs().toISOString();
+  integrantes = integrantes.map((i) => {
+    if (i.id === sucesorIntegranteId) {
+      return { ...i, rol: 'responsable' };
+    }
+    if (i.grupo_id === grupoId && i.usuario_id === actual.id && i.retirado_en === null) {
+      return { ...i, retirado_en: ahora };
+    }
+    return i;
+  });
+
+  notificar();
+}
+
 export function obtenerJornadasDeGrupo(grupoId: string): Jornada[] {
   return jornadas
     .filter((j) => j.grupo_id === grupoId)
@@ -1029,7 +1056,7 @@ export function obtenerMisGruposParaHistorial(): Array<{ grupo: Grupo; retirado:
 
   const porGrupo = new Map<string, { grupo: Grupo; retirado: boolean }>();
   for (const membresia of integrantes) {
-    if (membresia.usuario_id !== sesionActual.id) {
+    if (membresia.usuario_id !== sesionActual.id || membresia.rol !== 'participante') {
       continue;
     }
     const grupo = grupos.find((g) => g.id === membresia.grupo_id);
@@ -1061,7 +1088,9 @@ export function obtenerMiHistorial(grupoId?: string): ResumenMiHistorial {
     };
   }
 
-  const misMembresias = integrantes.filter((i) => i.usuario_id === sesionActual?.id);
+  const misMembresias = integrantes.filter(
+    (i) => i.usuario_id === sesionActual?.id && i.rol === 'participante',
+  );
   const retiradosPorGrupo = new Map<string, boolean>();
   for (const m of misMembresias) {
     const activo = m.retirado_en === null;
@@ -1078,6 +1107,9 @@ export function obtenerMiHistorial(grupoId?: string): ResumenMiHistorial {
     .map((asistencia) => {
       const jornada = jornadas.find((j) => j.id === asistencia.jornada_id);
       if (!jornada) {
+        return null;
+      }
+      if (!retiradosPorGrupo.has(jornada.grupo_id)) {
         return null;
       }
       if (grupoId && jornada.grupo_id !== grupoId) {

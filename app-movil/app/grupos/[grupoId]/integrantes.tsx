@@ -1,9 +1,10 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Aviso } from '@/components/ui/Aviso';
+import { BarraSuperior } from '@/components/ui/BarraSuperior';
 import { Boton } from '@/components/ui/Boton';
 import { CampoTexto } from '@/components/ui/CampoTexto';
 import { Icono } from '@/components/ui/Icono';
@@ -16,6 +17,7 @@ import {
   obtenerSesionActual,
   retirarIntegrante,
   suscribirStore,
+  transferirResponsableYSalir,
 } from '@/lib/gruposStore';
 import { cifrasTabulares, colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
 import { ErrorDominio, type IntegranteConUsuario, type RolGrupo } from '@/types/dominio';
@@ -37,6 +39,8 @@ export default function IntegrantesScreen() {
   const [cargando, setCargando] = useState(false);
   const [errorCorreo, setErrorCorreo] = useState('');
   const [errorAccion, setErrorAccion] = useState('');
+  const [modalSucesor, setModalSucesor] = useState(false);
+  const [sucesorId, setSucesorId] = useState<string | null>(null);
 
   const sesion = obtenerSesionActual();
   const grupo = grupoId ? obtenerGrupoPorId(grupoId) : undefined;
@@ -108,6 +112,16 @@ export default function IntegrantesScreen() {
       return;
     }
     const esPropio = integrante.usuario_id === sesion?.id;
+    const totalResponsables = integrantes.filter((i) => i.rol === 'responsable').length;
+    const esUltimoResponsable = esPropio && integrante.rol === 'responsable' && totalResponsables <= 1;
+
+    if (esUltimoResponsable) {
+      const primerCandidato = integrantes.find((i) => i.usuario_id !== sesion?.id);
+      setSucesorId(primerCandidato?.id ?? null);
+      setModalSucesor(true);
+      return;
+    }
+
     Alert.alert(
       esPropio ? 'Salir del grupo' : 'Retirar integrante',
       esPropio
@@ -138,25 +152,34 @@ export default function IntegrantesScreen() {
     );
   };
 
+  const manejarDesignarYSalir = () => {
+    if (!grupoId || !sucesorId) {
+      return;
+    }
+    setErrorAccion('');
+    try {
+      transferirResponsableYSalir(grupoId, sucesorId);
+      setModalSucesor(false);
+      router.replace('/(tabs)');
+    } catch (err) {
+      setModalSucesor(false);
+      if (err instanceof ErrorDominio) {
+        setErrorAccion(err.message);
+      } else {
+        setErrorAccion('No pudimos transferir el rol de responsable. Intenta de nuevo.');
+      }
+    }
+  };
+
   if (!grupo || rolActual !== 'responsable') {
     return (
-      <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
-        <View style={styles.barraSuperior}>
-          <Pressable
-            accessibilityLabel="Volver"
-            accessibilityRole="button"
-            onPress={() => router.back()}
-            style={styles.botonVolver}
-          >
-            <Icono color={colores.tinta} nombre="volver" tamano={22} />
-          </Pressable>
-          <Text style={styles.tituloBarra}>Integrantes</Text>
-          <View style={styles.espacioDerecha} />
-        </View>
+      <SafeAreaView edges={['bottom']} style={styles.pantalla}>
+        <BarraSuperior titulo="Integrantes" />
         <View style={styles.contenido}>
           <Aviso
             accion={
               <Boton
+                icono="inicio"
                 onPress={() => router.replace('/(tabs)')}
                 tamano="sm"
                 titulo="Ir a Mis grupos"
@@ -171,22 +194,11 @@ export default function IntegrantesScreen() {
     );
   }
 
+  const candidatosSucesor = integrantes.filter((i) => i.usuario_id !== sesion?.id);
+
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
-      <View style={styles.barraSuperior}>
-        <Pressable
-          accessibilityLabel="Volver"
-          accessibilityRole="button"
-          onPress={() => router.back()}
-          style={styles.botonVolver}
-        >
-          <Icono color={colores.tinta} nombre="volver" tamano={22} />
-        </Pressable>
-        <Text accessibilityRole="header" style={styles.tituloBarra}>
-          Integrantes
-        </Text>
-        <View style={styles.espacioDerecha} />
-      </View>
+    <SafeAreaView edges={['bottom']} style={styles.pantalla}>
+      <BarraSuperior titulo="Integrantes" />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -234,7 +246,7 @@ export default function IntegrantesScreen() {
             })}
           </View>
 
-          <Boton cargando={cargando} onPress={manejarAgregar} titulo="Agregar" />
+          <Boton cargando={cargando} icono="agregarPersona" onPress={manejarAgregar} titulo="Agregar" />
         </View>
 
         <View style={styles.encabezadoLista}>
@@ -306,6 +318,80 @@ export default function IntegrantesScreen() {
         </Text>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <Modal
+        animationType="fade"
+        onRequestClose={() => setModalSucesor(false)}
+        transparent
+        visible={modalSucesor}
+      >
+        <View style={styles.veloModal}>
+          <View style={styles.tarjetaModal}>
+            <Text style={styles.tituloModal}>Elegir sucesor antes de salir</Text>
+            {candidatosSucesor.length > 0 ? (
+              <>
+                <Text style={styles.cuerpoModal}>
+                  Eres el único responsable del grupo. Elige a quién dejar como nuevo responsable
+                  para poder salir:
+                </Text>
+                <View style={styles.listaSucesores}>
+                  {candidatosSucesor.map((cand) => {
+                    const elegido = sucesorId === cand.id;
+                    return (
+                      <Pressable
+                        key={cand.id}
+                        accessibilityRole="radio"
+                        accessibilityState={{ checked: elegido }}
+                        onPress={() => setSucesorId(cand.id)}
+                        style={[styles.opcionSucesor, elegido && styles.opcionSucesorActiva]}
+                      >
+                        <Icono
+                          color={elegido ? colores.acento : colores.tintaSuave}
+                          nombre={elegido ? 'hecho' : 'cuenta'}
+                          tamano={20}
+                        />
+                        <View style={styles.datosPersona}>
+                          <Text style={styles.nombrePersona}>{cand.usuario.nombre}</Text>
+                          <Text style={styles.correoPersona}>{cand.usuario.correo}</Text>
+                        </View>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+                <View style={styles.botonesModal}>
+                  <Boton
+                    estilo={styles.botonModal}
+                    icono="cerrar"
+                    onPress={() => setModalSucesor(false)}
+                    titulo="Cancelar"
+                    variante="secundario"
+                  />
+                  <Boton
+                    deshabilitado={!sucesorId}
+                    estilo={styles.botonModal}
+                    icono="salir"
+                    onPress={manejarDesignarYSalir}
+                    titulo="Designar y salir"
+                    variante="peligro"
+                  />
+                </View>
+              </>
+            ) : (
+              <>
+                <Text style={styles.cuerpoModal}>
+                  Eres el único integrante activo del grupo. Agrega primero a otra persona arriba
+                  para poder designarla como responsable antes de salir.
+                </Text>
+                <Boton
+                  icono="hecho"
+                  onPress={() => setModalSucesor(false)}
+                  titulo="Entendido"
+                />
+              </>
+            )}
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -314,30 +400,6 @@ const styles = StyleSheet.create({
   pantalla: {
     backgroundColor: colores.papel,
     flex: 1,
-  },
-  barraSuperior: {
-    alignItems: 'center',
-    borderBottomColor: colores.borde,
-    borderBottomWidth: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: espaciados.md,
-    paddingVertical: espaciados.sm,
-  },
-  botonVolver: {
-    alignItems: 'center',
-    borderRadius: radios.pill,
-    height: 40,
-    justifyContent: 'center',
-    width: 40,
-  },
-  tituloBarra: {
-    color: colores.tinta,
-    fontSize: tipografia.tituloSm,
-    fontWeight: pesos.fuerte,
-  },
-  espacioDerecha: {
-    width: 40,
   },
   contenido: {
     gap: espaciados.lg,
@@ -453,5 +515,55 @@ const styles = StyleSheet.create({
     fontSize: tipografia.cuerpoSm,
     lineHeight: 19,
     textAlign: 'center',
+  },
+  veloModal: {
+    alignItems: 'center',
+    backgroundColor: colores.velo,
+    flex: 1,
+    justifyContent: 'center',
+    padding: espaciados.lg,
+  },
+  tarjetaModal: {
+    backgroundColor: colores.superficie,
+    borderColor: colores.borde,
+    borderRadius: radios.tarjeta,
+    borderWidth: 1,
+    gap: espaciados.md,
+    padding: espaciados.lg,
+    width: '100%',
+  },
+  tituloModal: {
+    color: colores.tinta,
+    fontSize: tipografia.tituloSm,
+    fontWeight: pesos.fuerte,
+  },
+  cuerpoModal: {
+    color: colores.tintaSuave,
+    fontSize: tipografia.cuerpoSm,
+    lineHeight: 20,
+  },
+  listaSucesores: {
+    gap: espaciados.sm,
+  },
+  opcionSucesor: {
+    alignItems: 'center',
+    backgroundColor: colores.superficieAlt,
+    borderColor: colores.borde,
+    borderRadius: radios.campo,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: espaciados.md,
+    padding: espaciados.md,
+  },
+  opcionSucesorActiva: {
+    backgroundColor: colores.acentoSuave,
+    borderColor: colores.acentoBorde,
+  },
+  botonesModal: {
+    flexDirection: 'row',
+    gap: espaciados.md,
+  },
+  botonModal: {
+    flex: 1,
   },
 });

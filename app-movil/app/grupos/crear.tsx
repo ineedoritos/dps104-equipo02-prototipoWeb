@@ -113,7 +113,7 @@ export default function CrearGrupoScreen() {
             tipo="info"
           />
 
-          <Boton cargando={cargando} onPress={manejarCrear} titulo="Crear grupo" />
+          <Boton cargando={cargando} icono="guardar" onPress={manejarCrear} titulo="Crear grupo" />
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

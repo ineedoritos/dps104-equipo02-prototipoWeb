@@ -12,6 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Aviso } from '@/components/ui/Aviso';
+import { BarraSuperior } from '@/components/ui/BarraSuperior';
 import { Boton } from '@/components/ui/Boton';
 import { Estado, type TonoEstado } from '@/components/ui/Estado';
 import { EstadoVacio } from '@/components/ui/EstadoVacio';
@@ -85,25 +86,15 @@ export default function GrupoDetalleScreen() {
 
   if (!grupo || !rol) {
     return (
-      <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
-        <View style={styles.barraSuperior}>
-          <Pressable
-            accessibilityLabel="Volver"
-            accessibilityRole="button"
-            onPress={() => router.replace('/(tabs)')}
-            style={styles.botonIcono}
-          >
-            <Icono color={colores.tinta} nombre="volver" tamano={22} />
-          </Pressable>
-          <Text style={styles.tituloBarra}>Grupo</Text>
-          <View style={styles.espacioDerecha} />
-        </View>
+      <SafeAreaView edges={['bottom']} style={styles.pantalla}>
+        <BarraSuperior onVolver={() => router.replace('/(tabs)')} titulo="Grupo" />
         <View style={styles.contenido}>
           <Aviso
             accion={
               <View style={styles.accionesErrorGrupo}>
                 {grupoId ? (
                   <Boton
+                    icono="reloj"
                     onPress={() =>
                       router.replace({
                         pathname: '/(tabs)/historial',
@@ -116,6 +107,7 @@ export default function GrupoDetalleScreen() {
                   />
                 ) : null}
                 <Boton
+                  icono="inicio"
                   onPress={() => router.replace('/(tabs)')}
                   tamano="sm"
                   titulo="Ir a Mis grupos"
@@ -195,7 +187,7 @@ export default function GrupoDetalleScreen() {
         {esAhoraConQR ? (
           <View style={styles.pieDestacado}>
             <Boton
-              icono="camara"
+              icono="qrScanner"
               onPress={() =>
                 router.push({
                   pathname: '/grupos/[grupoId]/jornadas/[jornadaId]/escanear-qr',
@@ -212,41 +204,29 @@ export default function GrupoDetalleScreen() {
   };
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
-      <View style={styles.barraSuperior}>
-        <Pressable
-          accessibilityLabel="Volver a Mis grupos"
-          accessibilityRole="button"
-          onPress={() => router.back()}
-          style={styles.botonIcono}
-        >
-          <Icono color={colores.tinta} nombre="volver" tamano={22} />
-        </Pressable>
-
-        <View style={styles.centroBarra}>
-          <Text numberOfLines={1} style={styles.tituloBarra}>
-            {grupo.nombre}
-          </Text>
-        </View>
-
-        {esResponsable ? (
-          <Pressable
-            accessibilityLabel="Configuración del grupo"
-            accessibilityRole="button"
-            onPress={() =>
-              router.push({
-                pathname: '/grupos/[grupoId]/configuracion',
-                params: { grupoId: grupo.id },
-              })
-            }
-            style={styles.botonAjustes}
-          >
-            <Text style={styles.textoAjustes}>Ajustes</Text>
-          </Pressable>
-        ) : (
-          <View style={styles.espacioDerecha} />
-        )}
-      </View>
+    <SafeAreaView edges={['bottom']} style={styles.pantalla}>
+      <BarraSuperior
+        accessibilityLabelVolver="Volver a Mis grupos"
+        derecha={
+          esResponsable ? (
+            <Pressable
+              accessibilityLabel="Configuración del grupo"
+              accessibilityRole="button"
+              onPress={() =>
+                router.push({
+                  pathname: '/grupos/[grupoId]/configuracion',
+                  params: { grupoId: grupo.id },
+                })
+              }
+              style={styles.botonAjustes}
+            >
+              <Icono color={colores.acento} nombre="ajustes" tamano={18} />
+              <Text style={styles.textoAjustes}>Ajustes</Text>
+            </Pressable>
+          ) : undefined
+        }
+        titulo={grupo.nombre}
+      />
 
       <ScrollView
         contentContainerStyle={styles.contenido}

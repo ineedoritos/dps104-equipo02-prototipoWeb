@@ -12,6 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Aviso } from '@/components/ui/Aviso';
+import { BarraSuperior } from '@/components/ui/BarraSuperior';
 import { Boton } from '@/components/ui/Boton';
 import { Estado, type TonoEstado } from '@/components/ui/Estado';
 import { Icono } from '@/components/ui/Icono';
@@ -75,23 +76,13 @@ export default function DetalleJornadaScreen() {
 
   if (!grupo || !jornada || rol !== 'responsable') {
     return (
-      <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
-        <View style={styles.barraSuperior}>
-          <Pressable
-            accessibilityLabel="Volver"
-            accessibilityRole="button"
-            onPress={() => router.back()}
-            style={styles.botonIcono}
-          >
-            <Icono color={colores.tinta} nombre="volver" tamano={22} />
-          </Pressable>
-          <Text style={styles.tituloBarra}>Detalle de jornada</Text>
-          <View style={styles.espacioDerecha} />
-        </View>
+      <SafeAreaView edges={['bottom']} style={styles.pantalla}>
+        <BarraSuperior titulo="Detalle de jornada" />
         <View style={styles.contenido}>
           <Aviso
             accion={
               <Boton
+                icono="inicio"
                 onPress={() => router.replace('/(tabs)')}
                 tamano="sm"
                 titulo="Ir a Mis grupos"
@@ -128,21 +119,8 @@ export default function DetalleJornadaScreen() {
   };
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
-      <View style={styles.barraSuperior}>
-        <Pressable
-          accessibilityLabel="Volver al grupo"
-          accessibilityRole="button"
-          onPress={() => router.back()}
-          style={styles.botonIcono}
-        >
-          <Icono color={colores.tinta} nombre="volver" tamano={22} />
-        </Pressable>
-        <Text numberOfLines={1} style={styles.tituloBarra}>
-          Detalle de jornada
-        </Text>
-        <View style={styles.espacioDerecha} />
-      </View>
+    <SafeAreaView edges={['bottom']} style={styles.pantalla}>
+      <BarraSuperior accessibilityLabelVolver="Volver al grupo" titulo="Detalle de jornada" />
 
       <ScrollView contentContainerStyle={styles.contenido} showsVerticalScrollIndicator={false}>
         {__DEV__ ? (
@@ -242,6 +220,7 @@ export default function DetalleJornadaScreen() {
             <View style={styles.acciones}>
               {puedeMostrarQR ? (
                 <Boton
+                  icono="qr"
                   onPress={() =>
                     router.push({
                       pathname: '/grupos/[grupoId]/jornadas/[jornadaId]/mostrar-qr',
@@ -254,6 +233,7 @@ export default function DetalleJornadaScreen() {
 
               {puedePasarLista ? (
                 <Boton
+                  icono="lista"
                   onPress={() =>
                     router.push({
                       pathname: '/grupos/[grupoId]/jornadas/[jornadaId]/asistencia',
@@ -276,6 +256,7 @@ export default function DetalleJornadaScreen() {
                 <View style={styles.filaAccionesSecundarias}>
                   <Boton
                     estilo={styles.botonSecundarioFila}
+                    icono="editar"
                     onPress={() =>
                       router.push({
                         pathname: '/grupos/[grupoId]/jornadas/crear',
@@ -287,6 +268,7 @@ export default function DetalleJornadaScreen() {
                   />
                   <Boton
                     estilo={styles.botonSecundarioFila}
+                    icono="cerrar"
                     onPress={() => setModalCancelar(true)}
                     titulo="Cancelar jornada"
                     variante="peligro"

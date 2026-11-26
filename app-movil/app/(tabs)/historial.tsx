@@ -126,6 +126,7 @@ export default function MiHistorialScreen() {
           <Aviso
             accion={
               <Boton
+                icono="entrar"
                 onPress={() => router.replace('/(auth)/login')}
                 tamano="sm"
                 titulo="Iniciar sesión"

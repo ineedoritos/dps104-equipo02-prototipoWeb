@@ -18,7 +18,18 @@ export type NombreIcono =
   | 'alerta'
   | 'info'
   | 'hecho'
-  | 'sinEventos';
+  | 'sinEventos'
+  | 'qr'
+  | 'qrScanner'
+  | 'lista'
+  | 'editar'
+  | 'guardar'
+  | 'salir'
+  | 'entrar'
+  | 'agregarPersona'
+  | 'reintentar'
+  | 'reporte'
+  | 'ajustes';
 
 type NombreMaterialIcon = ComponentProps<typeof MaterialIcons>['name'];
 
@@ -39,6 +50,17 @@ const NOMBRES: Record<NombreIcono, NombreMaterialIcon> = {
   info: 'info-outline',
   hecho: 'check-circle-outline',
   sinEventos: 'event-busy',
+  qr: 'qr-code-2',
+  qrScanner: 'qr-code-scanner',
+  lista: 'fact-check',
+  editar: 'edit',
+  guardar: 'save',
+  salir: 'logout',
+  entrar: 'login',
+  agregarPersona: 'person-add',
+  reintentar: 'refresh',
+  reporte: 'bar-chart',
+  ajustes: 'settings',
 };
 
 export interface IconoProps {

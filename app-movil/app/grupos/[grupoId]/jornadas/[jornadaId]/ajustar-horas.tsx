@@ -326,7 +326,7 @@ export default function AjustarHorasScreen() {
                 tipo="info"
               />
 
-              <Boton cargando={guardando} onPress={manejarGuardar} titulo="Guardar horas" />
+              <Boton cargando={guardando} icono="guardar" onPress={manejarGuardar} titulo="Guardar horas" />
             </>
           ) : null}
         </ScrollView>

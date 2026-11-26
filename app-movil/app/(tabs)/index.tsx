@@ -78,6 +78,13 @@ export default function MisGruposScreen() {
 
   return (
     <SafeAreaView edges={['top']} style={styles.pantalla}>
+      <View style={styles.cabeceraFija}>
+        <Text accessibilityRole="header" style={styles.titulo}>
+          Mis grupos
+        </Text>
+        <Text style={styles.subtitulo}>Tu rol cambia según el grupo.</Text>
+      </View>
+
       <ScrollView
         contentContainerStyle={styles.contenido}
         refreshControl={
@@ -90,12 +97,6 @@ export default function MisGruposScreen() {
         }
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.encabezado}>
-          <Text accessibilityRole="header" style={styles.titulo}>
-            Mis grupos
-          </Text>
-          <Text style={styles.subtitulo}>Tu rol cambia según el grupo.</Text>
-        </View>
 
         {__DEV__ ? (
           <View style={styles.barraEstados}>
@@ -232,10 +233,20 @@ export default function MisGruposScreen() {
 
 const styles = StyleSheet.create({
   pantalla: {
-    backgroundColor: colores.papel,
+    backgroundColor: colores.superficie,
     flex: 1,
   },
+  cabeceraFija: {
+    backgroundColor: colores.superficie,
+    borderBottomColor: colores.borde,
+    borderBottomWidth: 1,
+    gap: espaciados.xs,
+    paddingHorizontal: espaciados.lg,
+    paddingVertical: espaciados.md,
+  },
   contenido: {
+    backgroundColor: colores.papel,
+    flexGrow: 1,
     gap: espaciados.lg,
     padding: espaciados.lg,
     paddingBottom: espaciados.xxl,

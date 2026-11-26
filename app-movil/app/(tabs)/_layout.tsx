@@ -12,13 +12,13 @@ export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        headerStyle: { backgroundColor: colores.papel },
+        headerStyle: { backgroundColor: colores.superficie },
         headerTitleStyle: {
           color: colores.tinta,
           fontSize: tipografia.tituloSm,
           fontWeight: pesos.fuerte,
         },
-        headerShadowVisible: false,
+        headerShadowVisible: true,
         tabBarActiveTintColor: colores.acento,
         tabBarInactiveTintColor: colores.tintaTenue,
         tabBarLabelStyle: {
