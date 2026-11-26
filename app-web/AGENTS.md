@@ -47,10 +47,6 @@ Nunca adivines reglas de negocio, nombres de tablas ni rutas de pantallas. Antes
   gh pr create --base main
   ```
 
-## 6. Skills de agentes
-- **Fuente única:** `app-web/.agents/skills/`. Ahí se agregan o editan las skills del módulo web.
-- `.claude/skills/` y `.commandcode/skills/` son **copias** de `.agents/skills/` (sin symlinks, para evitar problemas en Windows). Al cambiar una skill, vuelve a copiarla en el mismo commit:
-  ```bash
-  rm -rf .claude/skills .commandcode/skills
-  cp -r .agents/skills .claude/skills && cp -r .agents/skills .commandcode/skills
-  ```
+## 6. Skills y coordinación entre agentes
+- Las skills viven en la **raíz** del repositorio (`../.agents/skills/`). Cómo editarlas y las reglas de merge y *Human in the loop*: [`../AGENTS.md`](../AGENTS.md).
+- Para coordinarte con otros agentes (PRs, rebases, delegación), usa la skill `agentes-chat`.
