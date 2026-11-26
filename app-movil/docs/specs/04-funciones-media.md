@@ -10,9 +10,9 @@ Módulo de prioridad **Media** (`RF10`–`RF13`, `RF16`).
 ## HU10 · Documentar jornadas con fotografías
 - **Requerimiento:** `RF10` (Evidencia fotográfica) · **Actor:** Integrante · **Prioridad:** Media
 - **Criterios de aceptación:**
-  - `CA01`: Si `fotos_habilitadas = true` en la jornada, cualquier integrante autorizado puede capturar una foto con la cámara y asociarla a una jornada iniciada y no cancelada (guardada en Supabase Storage).
+  - `CA01`: Si `modo_fotos` es `'opcionales'` u `'obligatorias'` en la jornada, cualquier integrante autorizado puede capturar una foto con la cámara y asociarla a una jornada iniciada y no cancelada (guardada en Supabase Storage). Si es `'no_permitidas'`, no se permite subir fotos.
   - `CA02`: Cada foto muestra autor y fecha; solo los integrantes autorizados del grupo la consultan.
-  - `CA03`: La foto nunca es obligatoria; permiso de cámara denegado o error de subida no bloquea el flujo y permite reintentar.
+  - `CA03`: Si `modo_fotos = 'opcionales'`, permiso de cámara denegado o error de subida no bloquea el registro de asistencia y permite reintentar. Si `modo_fotos = 'obligatorias'`, el participante debe adjuntar al menos una foto para completar/validar su asistencia; si niega el permiso de cámara o falla la subida, se muestra mensaje claro con opción de abrir ajustes del sistema o reintentar, y el responsable conserva la facultad de registrar o corregir la asistencia manualmente (`HU07 CA05`).
   - `CA04`: El responsable puede retirar una foto no autorizada (`retirada_en`, `retirada_por`) sin afectar ni borrar asistencias.
 
 ---

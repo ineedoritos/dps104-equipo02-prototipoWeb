@@ -46,7 +46,7 @@ Fuente académica base: `docs/artifacts/DPS104_Equipo02_T1_corregido (1).pdf` (E
 - **RNF02 · Persistencia:** lectura y escritura mediante API (Supabase); los datos confirmados se persisten en la nube.
 - **RNF03 · Seguridad e integridad:** autorización verificada en servidor (RLS + RPCs), credenciales protegidas y operaciones idempotentes sin duplicados.
 - **RNF04 · Errores y permisos:** toda pantalla maneja estados de carga, errores visibles claros, reintento seguro y solicitud/manejo de permisos de cámara, GPS y notificaciones.
-- **RNF05 · Privacidad:** fotografías nunca obligatorias; prohibido almacenar datos confidenciales o imágenes identificables sin autorización.
+- **RNF05 · Privacidad:** las fotografías son configurables por grupo (`no_permitidas`, `opcionales` u `obligatorias`); cuando sean obligatorias solo aplican como evidencia de asistencia dentro del grupo y está prohibido almacenar datos confidenciales o imágenes identificables sin autorización.
 
 ## 6. Criterio de éxito de la prueba con usuarios (Tablas 2 y 3 del T1)
 La hipótesis del MVP se valida entre el 2 y 4 de diciembre con 3 usuarios reales en un grupo demo:

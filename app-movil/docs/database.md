@@ -26,7 +26,7 @@ Zona horaria de referencia para jornadas de un solo día: **`America/El_Salvador
 | `modalidad_asistencia` | `text` | `NOT NULL DEFAULT 'manual' CHECK (modalidad_asistencia IN ('manual','qr'))` | |
 | `control_horas` | `boolean` | `NOT NULL DEFAULT false` | Independiente de `modalidad_asistencia`. |
 | `gps_habilitado` | `boolean` | `NOT NULL DEFAULT false` | **Media.** `CHECK (NOT gps_habilitado OR modalidad_asistencia = 'qr')`. |
-| `fotos_habilitadas` | `boolean` | `NOT NULL DEFAULT false` | **Media.** |
+| `modo_fotos` | `text` | `NOT NULL DEFAULT 'no_permitidas' CHECK (modo_fotos IN ('no_permitidas','opcionales','obligatorias'))` | **Media.** |
 | `requiere_validacion` | `boolean` | `NOT NULL DEFAULT false` | **Media.** |
 | `notificaciones_habilitadas` | `boolean` | `NOT NULL DEFAULT false` | **Media.** |
 | `creado_por` | `uuid` | `NOT NULL REFERENCES public.usuarios(id)` | Trigger inserta automáticamente al creador en `integrantes_grupo` como `'responsable'`. |
@@ -58,7 +58,7 @@ Zona horaria de referencia para jornadas de un solo día: **`America/El_Salvador
 | `modalidad_asistencia` | `text` | `NOT NULL CHECK (modalidad_asistencia IN ('manual','qr'))` | Copia (snapshot) al crear: la app envía los valores leídos de `grupos` en el `INSERT` (sin trigger). |
 | `control_horas` | `boolean` | `NOT NULL` | Copia al crear. |
 | `gps_habilitado` | `boolean` | `NOT NULL DEFAULT false` | Copia al crear. |
-| `fotos_habilitadas` | `boolean` | `NOT NULL DEFAULT false` | Copia al crear. |
+| `modo_fotos` | `text` | `NOT NULL DEFAULT 'no_permitidas' CHECK (modo_fotos IN ('no_permitidas','opcionales','obligatorias'))` | Copia al crear. |
 | `requiere_validacion` | `boolean` | `NOT NULL DEFAULT false` | Copia al crear. |
 | `notificaciones_habilitadas` | `boolean` | `NOT NULL DEFAULT false` | Copia al crear. |
 | `ref_latitud` | `double precision` | `NULL` | **Media (`HU11`).** Latitud puntual de referencia. |
@@ -149,7 +149,7 @@ Funciones auxiliares SQL `STABLE SECURITY DEFINER` (evitan recursión de políti
 | `jornadas` | Si `es_integrante(grupo_id)` o el usuario tiene fila en `asistencias` para esa jornada (`HU14`). | INSERT/UPDATE solo `es_responsable(grupo_id)`. |
 | `codigos_qr` | Solo `es_responsable(jornada.grupo_id)`. | INSERT/UPDATE solo `es_responsable(jornada.grupo_id)`. |
 | `asistencias` | `participante_id = auth.uid()` **o** `es_responsable(jornada.grupo_id)`. | Escrituras controladas por RPCs `registrar_asistencia_manual` y `registrar_asistencia_qr`. |
-| `fotos_jornada` | `es_integrante(jornada.grupo_id)` y `retirada_en IS NULL`. | INSERT integrantes activos si `fotos_habilitadas`; UPDATE (`retirada_en`) solo responsables. |
+| `fotos_jornada` | `es_integrante(jornada.grupo_id)` y `retirada_en IS NULL`. | INSERT integrantes activos si `modo_fotos <> 'no_permitidas'`; UPDATE (`retirada_en`) solo responsables. |
 | `solicitudes_revision` | `participante_id = auth.uid()` o `es_responsable(jornada.grupo_id)`. | INSERT participante elegible; UPDATE (resolución) solo responsable activo. |
 | `notificaciones` / `tokens_push` | Solo `usuario_id = auth.uid()`. | `notificaciones`: UPDATE `leida` por dueño (INSERT por servidor). `tokens_push`: CRUD por dueño. |
 

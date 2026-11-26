@@ -12,7 +12,7 @@ Módulo central de prioridad **Alta** (`RF05`–`RF09`).
 - **Historia:** Como responsable, quiero crear y gestionar jornadas para conservar un registro organizado.
 - **Criterios de aceptación:**
   - `CA01`: Se exigen **título**, **descripción**, **inicio** (`inicio_en`) y **fin** (`fin_en`). Debe cumplirse `fin_en > inicio_en` y que ambos ocurran dentro de una **única jornada del mismo día calendario** (`America/El_Salvador`, UTC-6).
-  - `CA02`: Al crearse, la jornada guarda una **copia (snapshot)** de la configuración vigente del grupo (`modalidad_asistencia`, `control_horas`, `gps_habilitado`, `fotos_habilitadas`, `requiere_validacion`, `notificaciones_habilitadas`) y queda visible para los integrantes activos.
+  - `CA02`: Al crearse, la jornada guarda una **copia (snapshot)** de la configuración vigente del grupo (`modalidad_asistencia`, `control_horas`, `gps_habilitado`, `modo_fotos`, `requiere_validacion`, `notificaciones_habilitadas`) y queda visible para los integrantes activos.
   - `CA03`: La jornada puede editarse; si ya existen registros en `asistencias` o `fotos_jornada`, el horario (`inicio_en` y `fin_en`) **queda fijo** (solo se permite editar título/descripción).
   - `CA04`: La jornada puede cancelarse (`cancelada = true`) conservando registros y fotos existentes, pero **excluyéndolos de todos los totales y reportes**, y bloqueando nuevos registros o escaneos QR.
 

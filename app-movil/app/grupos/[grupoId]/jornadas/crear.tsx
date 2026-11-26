@@ -89,6 +89,12 @@ export default function CrearOEditarJornadaScreen() {
   const modalidadTexto =
     grupo.modalidad_asistencia === 'qr' ? 'Asistencia por QR' : 'Asistencia manual';
   const horasTexto = grupo.control_horas ? 'con control de horas' : 'sin control de horas';
+  const fotosTexto =
+    grupo.modo_fotos === 'obligatorias'
+      ? 'fotos obligatorias'
+      : grupo.modo_fotos === 'opcionales'
+        ? 'fotos opcionales'
+        : 'sin fotos';
 
   const errorHoraFin =
     !horarioBloqueado && horaFin <= horaInicio
@@ -194,7 +200,7 @@ export default function CrearOEditarJornadaScreen() {
                 <View style={styles.tarjetaInfoTexto}>
                   <Text style={styles.tituloInfo}>Usa la configuración actual del grupo</Text>
                   <Text style={styles.subtituloInfo}>
-                    {modalidadTexto} · {horasTexto}
+                    {modalidadTexto} · {horasTexto} · {fotosTexto}
                   </Text>
                 </View>
               </View>

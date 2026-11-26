@@ -18,6 +18,7 @@ import {
   type IntegranteGrupo,
   type Jornada,
   type ModalidadAsistencia,
+  type ModoFotos,
   type RegistroHistorial,
   type ResultadoRegistroQR,
   type ResumenGrupoUsuario,
@@ -187,7 +188,7 @@ export function crearGrupo(datos: { nombre: string; descripcion?: string }): Gru
     modalidad_asistencia: 'manual',
     control_horas: false,
     gps_habilitado: false,
-    fotos_habilitadas: false,
+    modo_fotos: 'no_permitidas',
     requiere_validacion: false,
     notificaciones_habilitadas: false,
     creado_por: sesionActual.id,
@@ -225,6 +226,7 @@ export function actualizarConfiguracionGrupo(
     modalidad_asistencia: ModalidadAsistencia;
     control_horas: boolean;
     gps_habilitado: boolean;
+    modo_fotos?: ModoFotos;
   },
 ): Grupo {
   exigirResponsable(grupoId);
@@ -241,6 +243,7 @@ export function actualizarConfiguracionGrupo(
       modalidad_asistencia: config.modalidad_asistencia,
       control_horas: config.control_horas,
       gps_habilitado: gpsFinal,
+      modo_fotos: config.modo_fotos ?? g.modo_fotos,
     };
     return actualizado;
   });
@@ -541,7 +544,7 @@ export function crearJornada(
     modalidad_asistencia: grupo.modalidad_asistencia,
     control_horas: grupo.control_horas,
     gps_habilitado: grupo.gps_habilitado,
-    fotos_habilitadas: grupo.fotos_habilitadas,
+    modo_fotos: grupo.modo_fotos,
     requiere_validacion: grupo.requiere_validacion,
     notificaciones_habilitadas: grupo.notificaciones_habilitadas,
     creado_por: actual.id,
