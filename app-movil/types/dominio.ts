@@ -4,6 +4,12 @@ export type ModalidadAsistencia = 'manual' | 'qr';
 
 export type EstadoJornada = 'en_curso' | 'programada' | 'finalizada' | 'cancelada';
 
+export type EstadoAsistencia = 'presente' | 'ausente' | 'justificada';
+
+export type OrigenAsistencia = 'manual' | 'qr';
+
+export type EstadoValidacion = 'aprobado' | 'pendiente';
+
 export interface UsuarioCuenta {
   id: string;
   nombre: string;
@@ -56,6 +62,52 @@ export interface Jornada {
   creado_en: string;
 }
 
+export interface Asistencia {
+  id: string;
+  jornada_id: string;
+  participante_id: string;
+  estado: EstadoAsistencia;
+  motivo_ausencia: string | null;
+  origen: OrigenAsistencia;
+  hora_entrada: string | null;
+  hora_salida: string | null;
+  duracion_minutos: number | null;
+  minutos_reconocidos: number | null;
+  motivo_ajuste: string | null;
+  estado_validacion: EstadoValidacion;
+  validado_por: string | null;
+  actualizado_por: string;
+  actualizado_en: string;
+}
+
+export interface CodigoQR {
+  id: string;
+  jornada_id: string;
+  codigo_hash: string;
+  expira_en: string;
+  revocado_en: string | null;
+  generado_por: string;
+  creado_en: string;
+}
+
+export interface FilaReporteGrupo {
+  participante: UsuarioCuenta;
+  presentes: number;
+  ausentesSinMotivo: number;
+  justificadas: number;
+  motivosJustificadas: string[];
+  tasaAsistencia: number | null;
+  minutosRegistrados: number;
+  minutosReconocidos: number;
+}
+
+export interface ResumenReporteGrupo {
+  totalPresentes: number;
+  totalJustificadas: number;
+  totalAusentesSinMotivo: number;
+  filas: FilaReporteGrupo[];
+}
+
 export interface ResumenGrupoUsuario {
   grupo: Grupo;
   rol: RolGrupo;
@@ -70,7 +122,13 @@ export type CodigoErrorDominio =
   | 'ERR_ULTIMO_RESPONSABLE'
   | 'ERR_NO_AUTORIZADO'
   | 'ERR_CORREO_DUPLICADO'
-  | 'ERR_CREDENCIALES';
+  | 'ERR_CREDENCIALES'
+  | 'ERR_HORARIO_BLOQUEADO'
+  | 'ERR_HORA_INVALIDA'
+  | 'ERR_SOLAPAMIENTO_HORAS'
+  | 'ERR_MOTIVO_OBLIGATORIO'
+  | 'ERR_JORNADA_CANCELADA'
+  | 'ERR_VALIDACION';
 
 export class ErrorDominio extends Error {
   codigo: CodigoErrorDominio;
