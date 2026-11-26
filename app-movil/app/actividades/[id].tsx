@@ -1,24 +1,27 @@
-import dayjs from 'dayjs';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
-import {
-  Alert,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Aviso } from '@/components/ui/Aviso';
+import { Boton } from '@/components/ui/Boton';
+import { CampoTexto } from '@/components/ui/CampoTexto';
+import {
+  ESTADO_ASISTENCIA,
+  ESTADO_JORNADA,
+  Estado,
+  coloresDeEstado,
+} from '@/components/ui/Estado';
+import { EstadoVacio } from '@/components/ui/EstadoVacio';
+import { Icono } from '@/components/ui/Icono';
+import { formatearDia } from '@/lib/fecha';
 import {
   guardarAsistenciasActividad,
   obtenerActividadPorId,
   obtenerAsistenciasActividad,
   obtenerParticipantes,
 } from '@/lib/mockStore';
-import { colores, espaciados, radios } from '@/lib/tema';
+import { cifrasTabulares, colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
 import type { EstadoAsistencia, RegistroAsistencia } from '@/types/actividad';
 
 type MapaAsistencia = Record<number, { estado?: EstadoAsistencia; motivo: string }>;
@@ -29,12 +32,6 @@ const OPCIONES: { estado: EstadoAsistencia; letra: string }[] = [
   { estado: 'ausente', letra: 'A' },
   { estado: 'justificada', letra: 'J' },
 ];
-
-const ETIQUETA_ESTADO: Record<EstadoAsistencia, string> = {
-  presente: 'Presente',
-  justificada: 'Justificada',
-  ausente: 'Ausente',
-};
 
 export default function ActividadDetalleScreen() {
   const router = useRouter();
@@ -61,6 +58,7 @@ export default function ActividadDetalleScreen() {
   });
 
   const [error, setError] = useState('');
+  const [aviso, setAviso] = useState('');
 
   const resumen = useMemo(() => {
     let presentes = 0;
@@ -81,19 +79,26 @@ export default function ActividadDetalleScreen() {
 
   if (!actividad) {
     return (
-      <SafeAreaView style={styles.pantalla}>
-        <View style={styles.vacio}>
-          <Text style={styles.titulo}>Actividad no encontrada</Text>
-          <Pressable onPress={() => router.back()} style={styles.botonVolver}>
-            <Text style={styles.textoVolver}>← Volver</Text>
-          </Pressable>
+      <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
+        <View style={styles.vacioContenedor}>
+          <EstadoVacio
+            accion={
+              <Boton onPress={() => router.back()} titulo="Volver" variante="secundario" />
+            }
+            descripcion="Puede que se haya eliminado o que el enlace ya no sea válido."
+            icono="alerta"
+            titulo="Jornada no encontrada"
+          />
         </View>
       </SafeAreaView>
     );
   }
 
+  const estadoJornada = ESTADO_JORNADA[actividad.status];
+
   const seleccionarEstado = (participanteId: number, estado: EstadoAsistencia) => {
     setError('');
+    setAviso('');
     setMapa((previo) => {
       const actual = previo[participanteId] ?? { motivo: '' };
       const nuevoEstado = actual.estado === estado ? undefined : estado;
@@ -109,10 +114,11 @@ export default function ActividadDetalleScreen() {
 
   const cambiarMotivo = (participanteId: number, motivo: string) => {
     setError('');
+    setAviso('');
     setMapa((previo) => ({
       ...previo,
       [participanteId]: {
-        ...(previo[participanteId] ?? {}),
+        ...(previo[participanteId] ?? { motivo: '' }),
         motivo,
       },
     }));
@@ -128,7 +134,8 @@ export default function ActividadDetalleScreen() {
       }
 
       if (item.estado === 'justificada' && !item.motivo.trim()) {
-        setError(`Ingresa el motivo de ausencia justificada para ${p.nombre}.`);
+        setError(`Ingresa el motivo de la ausencia justificada de ${p.nombre}.`);
+        setAviso('');
         return;
       }
 
@@ -141,29 +148,67 @@ export default function ActividadDetalleScreen() {
     }
 
     guardarAsistenciasActividad(actividadId, registros);
-    Alert.alert('Asistencia guardada', 'Los datos de la actividad se actualizaron.', [
-      { text: 'OK' },
-    ]);
+    setError('');
+    setAviso('Asistencia guardada. Los datos de la jornada se actualizaron.');
   };
 
   return (
-    <SafeAreaView style={styles.pantalla}>
+    <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
       <ScrollView contentContainerStyle={styles.contenido} keyboardShouldPersistTaps="handled">
-        <Pressable onPress={() => router.back()} style={styles.botonVolver}>
-          <Text style={styles.textoVolver}>← Volver</Text>
+        <Pressable
+          accessibilityLabel="Volver"
+          accessibilityRole="button"
+          hitSlop={4}
+          onPress={() => router.back()}
+          style={({ pressed }) => [styles.botonVolver, pressed && styles.presionado]}
+        >
+          <Icono color={colores.acento} nombre="volver" tamano={18} />
+          <Text style={styles.textoVolver}>Volver</Text>
         </Pressable>
 
-        <View style={styles.tarjeta}>
-          <Text style={styles.titulo}>{actividad.title}</Text>
-          <Text style={styles.meta}>
-            {dayjs(actividad.date).format('DD/MM/YYYY')} · {actividad.startTime}
-            {actividad.endTime ? ` - ${actividad.endTime}` : ''}
+        <View style={styles.encabezado}>
+          <Estado etiqueta={estadoJornada.etiqueta} tono={estadoJornada.tono} />
+
+          <Text accessibilityRole="header" style={styles.titulo}>
+            {actividad.title}
           </Text>
-          <Text style={styles.meta}>📍 {actividad.location}</Text>
+
+          {actividad.description ? (
+            <Text style={styles.descripcionJornada}>{actividad.description}</Text>
+          ) : null}
+
+          <View style={styles.metaGrupo}>
+            <View style={styles.meta}>
+              <Icono color={colores.tintaSuave} nombre="calendario" tamano={16} />
+              <Text style={styles.metaTexto}>
+                {formatearDia(actividad.date, {
+                  weekday: 'short',
+                  day: '2-digit',
+                  month: 'short',
+                })}
+              </Text>
+            </View>
+
+            <View style={styles.meta}>
+              <Icono color={colores.tintaSuave} nombre="reloj" tamano={16} />
+              <Text style={[styles.metaTexto, cifrasTabulares]}>
+                {actividad.startTime}
+                {actividad.endTime ? ` – ${actividad.endTime}` : ''}
+              </Text>
+            </View>
+
+            <View style={styles.meta}>
+              <Icono color={colores.tintaSuave} nombre="lugar" tamano={16} />
+              <Text style={styles.metaTexto}>{actividad.location}</Text>
+            </View>
+          </View>
         </View>
 
-        <View style={styles.pestanas}>
+        <View accessibilityRole="tablist" style={styles.pestanas}>
           <Pressable
+            accessibilityLabel="Asistencia"
+            accessibilityRole="tab"
+            accessibilityState={{ selected: pestana === 'asistencia' }}
             onPress={() => setPestana('asistencia')}
             style={[styles.pestana, pestana === 'asistencia' && styles.pestanaActiva]}
           >
@@ -175,10 +220,15 @@ export default function ActividadDetalleScreen() {
           </Pressable>
 
           <Pressable
+            accessibilityLabel="Reporte"
+            accessibilityRole="tab"
+            accessibilityState={{ selected: pestana === 'reporte' }}
             onPress={() => setPestana('reporte')}
             style={[styles.pestana, pestana === 'reporte' && styles.pestanaActiva]}
           >
-            <Text style={[styles.pestanaTexto, pestana === 'reporte' && styles.pestanaTextoActiva]}>
+            <Text
+              style={[styles.pestanaTexto, pestana === 'reporte' && styles.pestanaTextoActiva]}
+            >
               Reporte
             </Text>
           </Pressable>
@@ -186,8 +236,10 @@ export default function ActividadDetalleScreen() {
 
         {pestana === 'asistencia' ? (
           <View style={styles.tarjeta}>
-            <Text style={styles.tituloSeccion}>Participantes y asistencia manual</Text>
-            <Text style={styles.leyenda}>P Presente · A Ausente · J Justificada</Text>
+            <View style={styles.tituloFila}>
+              <Text style={styles.tituloSeccion}>Participantes</Text>
+              <Text style={styles.leyenda}>P presente · A ausente · J justificada</Text>
+            </View>
 
             <View style={styles.lista}>
               {participantes.map((participante) => {
@@ -197,26 +249,40 @@ export default function ActividadDetalleScreen() {
                   <View key={participante.id} style={styles.filaParticipante}>
                     <View style={styles.filaSuperior}>
                       <View style={styles.infoParticipante}>
-                        <Text style={styles.nombreParticipante}>{participante.nombre}</Text>
-                        <Text style={styles.correoParticipante}>{participante.correo}</Text>
+                        <Text numberOfLines={1} style={styles.nombreParticipante}>
+                          {participante.nombre}
+                        </Text>
+                        <Text numberOfLines={1} style={styles.correoParticipante}>
+                          {participante.correo}
+                        </Text>
                       </View>
 
                       <View style={styles.grupoBotones}>
                         {OPCIONES.map((opcion) => {
                           const activo = item.estado === opcion.estado;
+                          const paleta = coloresDeEstado(ESTADO_ASISTENCIA[opcion.estado].tono);
+
                           return (
                             <Pressable
+                              accessibilityLabel={`${ESTADO_ASISTENCIA[opcion.estado].etiqueta} para ${participante.nombre}`}
+                              accessibilityRole="button"
+                              accessibilityState={{ selected: activo }}
                               key={opcion.estado}
                               onPress={() => seleccionarEstado(participante.id, opcion.estado)}
-                              style={[
+                              style={({ pressed }) => [
                                 styles.botonEstado,
-                                activo && styles[`boton_${opcion.estado}`],
+                                activo && {
+                                  backgroundColor: paleta.fondo,
+                                  borderColor: paleta.texto,
+                                  borderWidth: 2,
+                                },
+                                pressed && styles.presionado,
                               ]}
                             >
                               <Text
                                 style={[
                                   styles.textoEstado,
-                                  activo && styles.textoEstadoActivo,
+                                  activo && { color: paleta.texto, fontWeight: pesos.fuerte },
                                 ]}
                               >
                                 {opcion.letra}
@@ -228,11 +294,11 @@ export default function ActividadDetalleScreen() {
                     </View>
 
                     {item.estado === 'justificada' ? (
-                      <TextInput
+                      <CampoTexto
+                        estilo={styles.campoMotivo}
+                        etiqueta="Motivo de la ausencia"
                         onChangeText={(texto) => cambiarMotivo(participante.id, texto)}
-                        placeholder="Motivo de la ausencia (obligatorio)"
-                        placeholderTextColor={colores.textoSuave}
-                        style={styles.campoMotivo}
+                        placeholder="Ej. Cita médica"
                         value={item.motivo}
                       />
                     ) : null}
@@ -242,40 +308,51 @@ export default function ActividadDetalleScreen() {
             </View>
 
             <View style={styles.resumen}>
-              <Text style={styles.resumenTexto}>
-                {resumen.presentes} presentes · {resumen.ausentes} ausentes · {resumen.justificadas}{' '}
-                justificadas
-              </Text>
+              <View style={styles.resumenItem}>
+                <View style={[styles.punto, { backgroundColor: colores.presente }]} />
+                <Text style={styles.resumenTexto}>
+                  <Text style={styles.resumenNumero}>{resumen.presentes}</Text> presentes
+                </Text>
+              </View>
+              <View style={styles.resumenItem}>
+                <View style={[styles.punto, { backgroundColor: colores.ausente }]} />
+                <Text style={styles.resumenTexto}>
+                  <Text style={styles.resumenNumero}>{resumen.ausentes}</Text> ausentes
+                </Text>
+              </View>
+              <View style={styles.resumenItem}>
+                <View style={[styles.punto, { backgroundColor: colores.justificada }]} />
+                <Text style={styles.resumenTexto}>
+                  <Text style={styles.resumenNumero}>{resumen.justificadas}</Text> justificadas
+                </Text>
+              </View>
             </View>
 
-            {error ? <Text style={styles.textoError}>{error}</Text> : null}
+            {error ? <Aviso texto={error} tipo="error" /> : null}
+            {aviso ? <Aviso texto={aviso} tipo="exito" /> : null}
 
-            <Pressable
-              accessibilityRole="button"
-              onPress={manejarGuardar}
-              style={({ pressed }) => [styles.botonGuardar, pressed && styles.presionado]}
-            >
-              <Text style={styles.textoGuardar}>Guardar asistencia</Text>
-            </Pressable>
+            <Boton onPress={manejarGuardar} titulo="Guardar asistencia" />
           </View>
         ) : (
           <View style={styles.tarjeta}>
             <View style={styles.reporteEncabezado}>
-              <View>
-                <Text style={styles.tituloSeccion}>Reporte de esta actividad</Text>
+              <View style={styles.reporteTitulos}>
+                <Text style={styles.tituloSeccion}>Reporte de la jornada</Text>
                 <Text style={styles.leyenda}>
-                  {resumen.total} de {participantes.length} participantes registrados
+                  {resumen.total} de {participantes.length} participantes con registro
                 </Text>
               </View>
-              <Text style={styles.tasaGrande}>{resumen.tasa}</Text>
+              <View style={styles.tasaBloque}>
+                <Text style={styles.etiquetaTasa}>Asistencia</Text>
+                <Text style={styles.tasaGrande}>{resumen.tasa}</Text>
+              </View>
             </View>
 
             {resumen.total === 0 ? (
-              <View style={styles.reporteVacio}>
-                <Text style={styles.reporteVacioTexto}>
-                  Todavía no hay registros de asistencia en esta actividad.
-                </Text>
-              </View>
+              <Aviso
+                texto="Todavía no hay registros de asistencia en esta jornada."
+                tipo="info"
+              />
             ) : (
               <>
                 <View style={styles.barraContenedor}>
@@ -283,8 +360,7 @@ export default function ActividadDetalleScreen() {
                     <View
                       style={[
                         styles.barraSegmento,
-                        styles.barraPresente,
-                        { flex: resumen.presentes },
+                        { backgroundColor: colores.presente, flex: resumen.presentes },
                       ]}
                     />
                   ) : null}
@@ -292,8 +368,7 @@ export default function ActividadDetalleScreen() {
                     <View
                       style={[
                         styles.barraSegmento,
-                        styles.barraJustificada,
-                        { flex: resumen.justificadas },
+                        { backgroundColor: colores.justificada, flex: resumen.justificadas },
                       ]}
                     />
                   ) : null}
@@ -301,8 +376,7 @@ export default function ActividadDetalleScreen() {
                     <View
                       style={[
                         styles.barraSegmento,
-                        styles.barraAusente,
-                        { flex: resumen.ausentes },
+                        { backgroundColor: colores.ausente, flex: resumen.ausentes },
                       ]}
                     />
                   ) : null}
@@ -310,48 +384,52 @@ export default function ActividadDetalleScreen() {
 
                 <View style={styles.leyendaColores}>
                   <View style={styles.leyendaItem}>
-                    <View style={[styles.punto, styles.barraPresente]} />
+                    <View style={[styles.punto, { backgroundColor: colores.presente }]} />
                     <Text style={styles.leyendaItemTexto}>Presentes: {resumen.presentes}</Text>
                   </View>
                   <View style={styles.leyendaItem}>
-                    <View style={[styles.punto, styles.barraJustificada]} />
+                    <View style={[styles.punto, { backgroundColor: colores.justificada }]} />
                     <Text style={styles.leyendaItemTexto}>
                       Justificadas: {resumen.justificadas}
                     </Text>
                   </View>
                   <View style={styles.leyendaItem}>
-                    <View style={[styles.punto, styles.barraAusente]} />
-                    <Text style={styles.leyendaItemTexto}>Sin motivo: {resumen.ausentes}</Text>
+                    <View style={[styles.punto, { backgroundColor: colores.ausente }]} />
+                    <Text style={styles.leyendaItemTexto}>Ausentes: {resumen.ausentes}</Text>
                   </View>
                 </View>
 
                 <View style={styles.lista}>
                   {participantes.map((participante) => {
                     const item = mapa[participante.id];
+                    const estadoAsistencia = item?.estado
+                      ? ESTADO_ASISTENCIA[item.estado]
+                      : undefined;
+
                     return (
                       <View key={participante.id} style={styles.filaReporte}>
                         <View style={styles.infoParticipante}>
-                          <Text style={styles.nombreParticipante}>{participante.nombre}</Text>
+                          <Text numberOfLines={1} style={styles.nombreParticipante}>
+                            {participante.nombre}
+                          </Text>
                           {item?.estado === 'justificada' && item.motivo.trim() ? (
-                            <Text style={styles.motivoReporte}>Motivo: {item.motivo.trim()}</Text>
+                            <Text numberOfLines={2} style={styles.motivoReporte}>
+                              Motivo: {item.motivo.trim()}
+                            </Text>
                           ) : null}
                         </View>
-                        <Text
-                          style={[
-                            styles.badgeReporte,
-                            item?.estado ? styles[`badge_${item.estado}`] : styles.badgeSinRegistro,
-                          ]}
-                        >
-                          {item?.estado ? ETIQUETA_ESTADO[item.estado] : 'Sin registro'}
-                        </Text>
+                        <Estado
+                          etiqueta={estadoAsistencia?.etiqueta}
+                          tono={estadoAsistencia?.tono ?? 'sinRegistro'}
+                        />
                       </View>
                     );
                   })}
                 </View>
 
                 <Text style={styles.notaPie}>
-                  Tasa = presentes ÷ (presentes + ausencias) × 100. Las justificadas cuentan como
-                  ausencia con motivo visible.
+                  La tasa cuenta solo a quienes tienen registro. Las ausencias justificadas
+                  mantienen su motivo visible.
                 </Text>
               </>
             )}
@@ -364,108 +442,139 @@ export default function ActividadDetalleScreen() {
 
 const styles = StyleSheet.create({
   pantalla: {
-    backgroundColor: colores.fondo,
+    backgroundColor: colores.papel,
     flex: 1,
   },
   contenido: {
     flexGrow: 1,
-    gap: espaciados.md,
-    padding: espaciados.md,
-    paddingBottom: espaciados.xl,
+    gap: espaciados.lg,
+    padding: espaciados.lg,
+    paddingBottom: espaciados.xxl,
   },
-  vacio: {
-    alignItems: 'center',
+  vacioContenedor: {
     flex: 1,
     justifyContent: 'center',
     padding: espaciados.lg,
   },
   botonVolver: {
+    alignItems: 'center',
     alignSelf: 'flex-start',
-    paddingVertical: espaciados.xs,
+    flexDirection: 'row',
+    gap: espaciados.xs,
+    minHeight: 44,
+  },
+  presionado: {
+    opacity: 0.75,
   },
   textoVolver: {
-    color: colores.primario,
-    fontSize: 15,
-    fontWeight: '600',
+    color: colores.acento,
+    fontSize: tipografia.cuerpoSm,
+    fontWeight: pesos.fuerte,
   },
-  tarjeta: {
-    backgroundColor: colores.superficie,
-    borderColor: colores.borde,
-    borderRadius: radios.lg,
-    borderWidth: 1,
-    padding: espaciados.lg,
+  encabezado: {
+    gap: espaciados.sm,
   },
   titulo: {
-    color: colores.texto,
-    fontSize: 20,
-    fontWeight: '800',
+    color: colores.tinta,
+    fontSize: tipografia.display,
+    fontWeight: pesos.fuerte,
+    letterSpacing: -0.4,
+    lineHeight: tipografia.display + 4,
+  },
+  descripcionJornada: {
+    color: colores.tintaSuave,
+    fontSize: tipografia.cuerpoSm,
+    lineHeight: 20,
+  },
+  metaGrupo: {
+    gap: espaciados.xs,
+    marginTop: espaciados.xs,
   },
   meta: {
-    color: colores.textoSuave,
-    fontSize: 13,
-    marginTop: 4,
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: espaciados.sm,
+  },
+  metaTexto: {
+    color: colores.tintaSuave,
+    flex: 1,
+    fontSize: tipografia.cuerpoSm,
+    lineHeight: 18,
   },
   pestanas: {
-    backgroundColor: colores.superficie,
+    backgroundColor: colores.superficieAlt,
     borderColor: colores.borde,
-    borderRadius: radios.md,
+    borderRadius: radios.campo,
     borderWidth: 1,
     flexDirection: 'row',
     padding: 4,
   },
   pestana: {
     alignItems: 'center',
-    borderRadius: radios.sm,
+    borderRadius: radios.campo - 4,
     flex: 1,
-    paddingVertical: 10,
+    justifyContent: 'center',
+    minHeight: 40,
   },
   pestanaActiva: {
-    backgroundColor: colores.primario,
+    backgroundColor: colores.acento,
   },
   pestanaTexto: {
-    color: colores.grisTexto,
-    fontSize: 14,
-    fontWeight: '700',
+    color: colores.tintaSuave,
+    fontSize: tipografia.cuerpoSm,
+    fontWeight: pesos.medio,
   },
   pestanaTextoActiva: {
     color: colores.superficie,
+    fontWeight: pesos.fuerte,
+  },
+  tarjeta: {
+    backgroundColor: colores.superficie,
+    borderColor: colores.borde,
+    borderRadius: radios.tarjeta,
+    borderWidth: 1,
+    gap: espaciados.md,
+    padding: espaciados.lg,
+  },
+  tituloFila: {
+    gap: espaciados.xs,
   },
   tituloSeccion: {
-    color: colores.texto,
-    fontSize: 17,
-    fontWeight: '700',
+    color: colores.tinta,
+    fontSize: tipografia.tituloSm,
+    fontWeight: pesos.fuerte,
   },
   leyenda: {
-    color: colores.textoSuave,
-    fontSize: 12,
-    marginTop: 4,
+    color: colores.tintaSuave,
+    fontSize: tipografia.micro,
+    lineHeight: 15,
   },
   lista: {
-    marginTop: espaciados.md,
+    marginTop: espaciados.xs,
   },
   filaParticipante: {
-    borderTopColor: colores.grisSuave,
+    borderTopColor: colores.borde,
     borderTopWidth: 1,
-    paddingVertical: 12,
+    paddingVertical: espaciados.md,
   },
   filaSuperior: {
     alignItems: 'center',
     flexDirection: 'row',
-    justifyContent: 'space-between',
     gap: espaciados.sm,
+    justifyContent: 'space-between',
   },
   infoParticipante: {
     flex: 1,
+    gap: 2,
   },
   nombreParticipante: {
-    color: colores.texto,
-    fontSize: 15,
-    fontWeight: '600',
+    color: colores.tinta,
+    fontSize: tipografia.cuerpo,
+    fontWeight: pesos.medio,
   },
   correoParticipante: {
-    color: colores.textoSuave,
-    fontSize: 12,
-    marginTop: 2,
+    color: colores.tintaSuave,
+    fontSize: tipografia.micro,
   },
   grupoBotones: {
     flexDirection: 'row',
@@ -473,174 +582,119 @@ const styles = StyleSheet.create({
   },
   botonEstado: {
     alignItems: 'center',
-    backgroundColor: colores.fondo,
+    backgroundColor: colores.superficieAlt,
     borderColor: colores.borde,
-    borderRadius: radios.sm,
+    borderRadius: radios.campo,
     borderWidth: 1,
-    height: 36,
+    height: 44,
     justifyContent: 'center',
-    width: 36,
-  },
-  boton_presente: {
-    backgroundColor: colores.exitoPunto,
-    borderColor: colores.exitoPunto,
-  },
-  boton_ausente: {
-    backgroundColor: '#EF4444',
-    borderColor: '#EF4444',
-  },
-  boton_justificada: {
-    backgroundColor: '#F59E0B',
-    borderColor: '#F59E0B',
+    width: 44,
   },
   textoEstado: {
-    color: colores.grisTexto,
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  textoEstadoActivo: {
-    color: colores.superficie,
+    color: colores.tintaSuave,
+    fontSize: tipografia.cuerpo,
+    fontWeight: pesos.medio,
   },
   campoMotivo: {
-    backgroundColor: colores.fondo,
-    borderColor: colores.borde,
-    borderRadius: radios.sm,
-    borderWidth: 1,
-    color: colores.texto,
-    fontSize: 13,
     marginTop: espaciados.sm,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
   },
   resumen: {
-    backgroundColor: colores.fondo,
-    borderRadius: radios.md,
-    marginTop: espaciados.md,
-    padding: espaciados.sm + 2,
+    borderTopColor: colores.borde,
+    borderTopWidth: 1,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: espaciados.md,
+    paddingTop: espaciados.md,
+  },
+  resumenItem: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: espaciados.xs + 2,
+  },
+  punto: {
+    borderRadius: radios.pill,
+    height: 8,
+    width: 8,
   },
   resumenTexto: {
-    color: colores.grisTexto,
-    fontSize: 13,
-    fontWeight: '600',
-    textAlign: 'center',
+    color: colores.tintaSuave,
+    fontSize: tipografia.cuerpoSm,
   },
-  textoError: {
-    color: '#B91C1C',
-    fontSize: 13,
-    fontWeight: '500',
-    marginTop: espaciados.sm,
-  },
-  botonGuardar: {
-    alignItems: 'center',
-    backgroundColor: colores.primario,
-    borderRadius: radios.md,
-    marginTop: espaciados.md,
-    paddingVertical: 14,
-  },
-  presionado: {
-    opacity: 0.85,
-  },
-  textoGuardar: {
-    color: colores.superficie,
-    fontSize: 16,
-    fontWeight: '700',
+  resumenNumero: {
+    ...cifrasTabulares,
+    color: colores.tinta,
+    fontWeight: pesos.fuerte,
   },
   reporteEncabezado: {
-    alignItems: 'center',
+    alignItems: 'flex-start',
     flexDirection: 'row',
+    gap: espaciados.md,
     justifyContent: 'space-between',
   },
+  reporteTitulos: {
+    flex: 1,
+    gap: 2,
+  },
+  tasaBloque: {
+    alignItems: 'flex-end',
+  },
+  etiquetaTasa: {
+    color: colores.tintaSuave,
+    fontSize: tipografia.micro,
+    fontWeight: pesos.fuerte,
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
+  },
   tasaGrande: {
-    color: colores.primario,
-    fontSize: 22,
-    fontWeight: '800',
-  },
-  reporteVacio: {
-    backgroundColor: colores.fondo,
-    borderRadius: radios.md,
-    marginTop: espaciados.md,
-    padding: espaciados.lg,
-  },
-  reporteVacioTexto: {
-    color: colores.textoSuave,
-    fontSize: 13,
-    textAlign: 'center',
+    ...cifrasTabulares,
+    color: colores.tinta,
+    fontSize: tipografia.display,
+    fontWeight: pesos.fuerte,
+    letterSpacing: -0.4,
   },
   barraContenedor: {
-    borderRadius: radios.sm,
+    backgroundColor: colores.borde,
+    borderRadius: radios.pill,
     flexDirection: 'row',
-    height: 16,
-    marginTop: espaciados.md,
+    height: 12,
+    marginTop: espaciados.xs,
     overflow: 'hidden',
   },
   barraSegmento: {
     height: '100%',
   },
-  barraPresente: {
-    backgroundColor: colores.exitoPunto,
-  },
-  barraJustificada: {
-    backgroundColor: '#F59E0B',
-  },
-  barraAusente: {
-    backgroundColor: '#EF4444',
-  },
   leyendaColores: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: espaciados.md,
-    marginTop: espaciados.md,
   },
   leyendaItem: {
     alignItems: 'center',
     flexDirection: 'row',
-    gap: 6,
-  },
-  punto: {
-    borderRadius: 999,
-    height: 10,
-    width: 10,
+    gap: espaciados.xs + 2,
   },
   leyendaItemTexto: {
-    color: colores.grisTexto,
-    fontSize: 13,
-    fontWeight: '600',
+    color: colores.tintaSuave,
+    fontSize: tipografia.cuerpoSm,
+    fontWeight: pesos.medio,
   },
   filaReporte: {
     alignItems: 'center',
-    borderTopColor: colores.grisSuave,
+    borderTopColor: colores.borde,
     borderTopWidth: 1,
     flexDirection: 'row',
-    justifyContent: 'space-between',
     gap: espaciados.sm,
-    paddingVertical: 12,
+    justifyContent: 'space-between',
+    paddingVertical: espaciados.md,
   },
   motivoReporte: {
-    color: colores.textoSuave,
-    fontSize: 12,
-    marginTop: 2,
-  },
-  badgeReporte: {
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  badge_presente: {
-    color: colores.exito,
-  },
-  badge_justificada: {
-    color: '#B45309',
-  },
-  badge_ausente: {
-    color: '#DC2626',
-  },
-  badgeSinRegistro: {
-    color: colores.textoSuave,
-    fontWeight: '500',
+    color: colores.tintaSuave,
+    fontSize: tipografia.micro,
+    lineHeight: 16,
   },
   notaPie: {
-    color: colores.textoSuave,
-    fontSize: 12,
-    lineHeight: 18,
-    marginTop: espaciados.md,
+    color: colores.tintaSuave,
+    fontSize: tipografia.micro,
+    lineHeight: 16,
   },
 });

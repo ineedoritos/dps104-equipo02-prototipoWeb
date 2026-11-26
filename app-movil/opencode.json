@@ -1,0 +1,12 @@
+{
+  "mcp": {
+    "servers": {
+      "awwwards": {
+        "type": "local",
+        "command": [
+          "awwwards-mcp"
+        ]
+      }
+    }
+  }
+}

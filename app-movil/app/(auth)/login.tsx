@@ -1,18 +1,12 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { colores, espaciados, radios } from '@/lib/tema';
+import { Boton } from '@/components/ui/Boton';
+import { CampoTexto } from '@/components/ui/CampoTexto';
+import { Icono } from '@/components/ui/Icono';
+import { colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
 
 const REGEX_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -51,42 +45,61 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.pantalla}>
+    <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.pantalla}
       >
         <ScrollView contentContainerStyle={styles.contenido} keyboardShouldPersistTaps="handled">
           <View style={styles.encabezado}>
-            <Text style={styles.titulo}>Registro de actividades</Text>
+            <View style={styles.marca}>
+              <Icono color={colores.acento} nombre="gente" tamano={26} />
+            </View>
+            <Text accessibilityRole="header" style={styles.titulo}>
+              Registro de jornadas
+            </Text>
+            <Text style={styles.subtitulo}>
+              Consulta tus grupos y registra la asistencia de cada jornada.
+            </Text>
           </View>
 
           <View style={styles.tarjeta}>
             <Text style={styles.tituloFormulario}>Iniciar sesión</Text>
 
-            <Text style={styles.etiqueta}>Correo electrónico</Text>
-            <TextInput
-              autoCapitalize="none"
-              autoComplete="email"
-              keyboardType="email-address"
-              onChangeText={(valor) => {
-                setCorreo(valor);
-                if (errorCorreo) {
-                  setErrorCorreo('');
-                }
-              }}
-              placeholder="correo@ejemplo.com"
-              placeholderTextColor={colores.textoSuave}
-              style={[styles.campo, errorCorreo ? styles.campoError : null]}
-              value={correo}
-            />
-            {errorCorreo ? <Text style={styles.textoError}>{errorCorreo}</Text> : null}
+            <View style={styles.formulario}>
+              <CampoTexto
+                autoCapitalize="none"
+                autoComplete="email"
+                error={errorCorreo}
+                etiqueta="Correo electrónico"
+                keyboardType="email-address"
+                onChangeText={(valor) => {
+                  setCorreo(valor);
+                  if (errorCorreo) {
+                    setErrorCorreo('');
+                  }
+                }}
+                placeholder="correo@ejemplo.com"
+                value={correo}
+              />
 
-            <Text style={styles.etiqueta}>Contraseña</Text>
-            <View style={[styles.campoContrasena, errorContrasena ? styles.campoError : null]}>
-              <TextInput
+              <CampoTexto
+                accesorio={
+                  <Pressable
+                    accessibilityLabel={
+                      mostrarContrasena ? 'Ocultar contraseña' : 'Mostrar contraseña'
+                    }
+                    accessibilityRole="button"
+                    onPress={() => setMostrarContrasena((visible) => !visible)}
+                    style={styles.botonVer}
+                  >
+                    <Text style={styles.textoVer}>{mostrarContrasena ? 'Ocultar' : 'Ver'}</Text>
+                  </Pressable>
+                }
                 autoCapitalize="none"
                 autoComplete="password"
+                error={errorContrasena}
+                etiqueta="Contraseña"
                 onChangeText={(valor) => {
                   setContrasena(valor);
                   if (errorContrasena) {
@@ -94,28 +107,12 @@ export default function LoginScreen() {
                   }
                 }}
                 placeholder="Mínimo 6 caracteres"
-                placeholderTextColor={colores.textoSuave}
                 secureTextEntry={!mostrarContrasena}
-                style={styles.inputContrasena}
                 value={contrasena}
               />
-              <Pressable
-                accessibilityRole="button"
-                onPress={() => setMostrarContrasena((visible) => !visible)}
-                style={styles.botonVer}
-              >
-                <Text style={styles.textoVer}>{mostrarContrasena ? 'Ocultar' : 'Ver'}</Text>
-              </Pressable>
-            </View>
-            {errorContrasena ? <Text style={styles.textoError}>{errorContrasena}</Text> : null}
 
-            <Pressable
-              accessibilityRole="button"
-              onPress={manejarInicioSesion}
-              style={({ pressed }) => [styles.boton, pressed && styles.botonPresionado]}
-            >
-              <Text style={styles.textoBoton}>Entrar</Text>
-            </Pressable>
+              <Boton estilo={styles.boton} onPress={manejarInicioSesion} titulo="Entrar" />
+            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -125,97 +122,67 @@ export default function LoginScreen() {
 
 const styles = StyleSheet.create({
   pantalla: {
+    backgroundColor: colores.papel,
     flex: 1,
-    backgroundColor: colores.fondo,
   },
   contenido: {
     flexGrow: 1,
+    gap: espaciados.xl,
     justifyContent: 'center',
     padding: espaciados.lg,
   },
   encabezado: {
-    marginBottom: espaciados.lg,
+    gap: espaciados.sm,
+  },
+  marca: {
+    alignItems: 'center',
+    backgroundColor: colores.acentoSuave,
+    borderRadius: radios.tarjeta,
+    height: 52,
+    justifyContent: 'center',
+    marginBottom: espaciados.xs,
+    width: 52,
   },
   titulo: {
-    color: colores.texto,
-    fontSize: 28,
-    fontWeight: '800',
+    color: colores.tinta,
+    fontSize: tipografia.display,
+    fontWeight: pesos.fuerte,
+    letterSpacing: -0.4,
+    lineHeight: tipografia.display + 4,
+  },
+  subtitulo: {
+    color: colores.tintaSuave,
+    fontSize: tipografia.cuerpoSm,
+    lineHeight: 19,
   },
   tarjeta: {
     backgroundColor: colores.superficie,
     borderColor: colores.borde,
-    borderRadius: radios.lg,
+    borderRadius: radios.tarjeta,
     borderWidth: 1,
+    gap: espaciados.lg,
     padding: espaciados.lg,
   },
   tituloFormulario: {
-    color: colores.texto,
-    fontSize: 20,
-    fontWeight: '700',
-    marginBottom: espaciados.md,
+    color: colores.tinta,
+    fontSize: tipografia.tituloSm,
+    fontWeight: pesos.fuerte,
   },
-  etiqueta: {
-    color: colores.texto,
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: espaciados.xs,
-    marginTop: espaciados.sm,
-  },
-  campo: {
-    backgroundColor: colores.fondo,
-    borderColor: colores.borde,
-    borderRadius: radios.md,
-    borderWidth: 1,
-    color: colores.texto,
-    fontSize: 16,
-    paddingHorizontal: espaciados.md,
-    paddingVertical: espaciados.sm + 4,
-  },
-  campoContrasena: {
-    alignItems: 'center',
-    backgroundColor: colores.fondo,
-    borderColor: colores.borde,
-    borderRadius: radios.md,
-    borderWidth: 1,
-    flexDirection: 'row',
-  },
-  inputContrasena: {
-    color: colores.texto,
-    flex: 1,
-    fontSize: 16,
-    paddingHorizontal: espaciados.md,
-    paddingVertical: espaciados.sm + 4,
+  formulario: {
+    gap: espaciados.md,
   },
   botonVer: {
+    alignItems: 'center',
+    alignSelf: 'stretch',
+    justifyContent: 'center',
     paddingHorizontal: espaciados.md,
-    paddingVertical: espaciados.sm + 4,
   },
   textoVer: {
-    color: colores.primario,
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  campoError: {
-    borderColor: '#DC2626',
-  },
-  textoError: {
-    color: '#B91C1C',
-    fontSize: 12,
-    marginTop: espaciados.xs,
+    color: colores.acento,
+    fontSize: tipografia.cuerpoSm,
+    fontWeight: pesos.fuerte,
   },
   boton: {
-    alignItems: 'center',
-    backgroundColor: colores.primario,
-    borderRadius: radios.md,
-    marginTop: espaciados.lg,
-    paddingVertical: espaciados.md,
-  },
-  botonPresionado: {
-    opacity: 0.85,
-  },
-  textoBoton: {
-    color: colores.superficie,
-    fontSize: 16,
-    fontWeight: '700',
+    marginTop: espaciados.xs,
   },
 });

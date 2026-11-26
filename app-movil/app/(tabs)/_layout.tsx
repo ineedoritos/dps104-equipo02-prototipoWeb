@@ -1,34 +1,9 @@
 import { Tabs } from 'expo-router';
-import { SymbolView } from 'expo-symbols';
 import { Platform } from 'react-native';
-import type { ColorValue } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { colores } from '@/lib/tema';
-
-type Props = {
-  color: ColorValue;
-};
-
-function IconoInicio({ color }: Props) {
-  return (
-    <SymbolView
-      name={{ ios: 'house.fill', android: 'home', web: 'home' }}
-      size={26}
-      tintColor={color}
-    />
-  );
-}
-
-function IconoCuenta({ color }: Props) {
-  return (
-    <SymbolView
-      name={{ ios: 'person.crop.circle.fill', android: 'account_circle', web: 'account_circle' }}
-      size={26}
-      tintColor={color}
-    />
-  );
-}
+import { Icono } from '@/components/ui/Icono';
+import { colores, pesos, tipografia } from '@/lib/tema';
 
 export default function TabsLayout() {
   const insets = useSafeAreaInsets();
@@ -37,18 +12,26 @@ export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        headerStyle: { backgroundColor: colores.superficie },
-        headerTitleStyle: { color: colores.texto, fontWeight: '700' },
+        headerStyle: { backgroundColor: colores.papel },
+        headerTitleStyle: {
+          color: colores.tinta,
+          fontSize: tipografia.tituloSm,
+          fontWeight: pesos.fuerte,
+        },
         headerShadowVisible: false,
-        tabBarActiveTintColor: colores.primario,
-        tabBarInactiveTintColor: colores.textoSuave,
-        tabBarLabelStyle: { fontSize: 12, fontWeight: '600' },
+        tabBarActiveTintColor: colores.acento,
+        tabBarInactiveTintColor: colores.tintaTenue,
+        tabBarLabelStyle: {
+          fontSize: tipografia.micro,
+          fontWeight: pesos.fuerte,
+          letterSpacing: 0.2,
+        },
         tabBarStyle: {
           backgroundColor: colores.superficie,
           borderTopColor: colores.borde,
-          height: 58 + bottomInset,
+          height: 60 + bottomInset,
           paddingBottom: bottomInset,
-          paddingTop: 6,
+          paddingTop: 8,
         },
       }}
     >
@@ -57,14 +40,18 @@ export default function TabsLayout() {
         options={{
           title: 'Inicio',
           headerShown: false,
-          tabBarIcon: ({ color }) => <IconoInicio color={color} />,
+          tabBarIcon: ({ color }) => (
+            <Icono color={typeof color === 'string' ? color : colores.tintaTenue} nombre="inicio" tamano={24} />
+          ),
         }}
       />
       <Tabs.Screen
         name="cuenta"
         options={{
           title: 'Cuenta',
-          tabBarIcon: ({ color }) => <IconoCuenta color={color} />,
+          tabBarIcon: ({ color }) => (
+            <Icono color={typeof color === 'string' ? color : colores.tintaTenue} nombre="cuenta" tamano={24} />
+          ),
         }}
       />
     </Tabs>
