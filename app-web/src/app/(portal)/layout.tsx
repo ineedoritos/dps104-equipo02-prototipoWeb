@@ -1,3 +1,4 @@
+import { ContextoPortalProvider } from "@/components/layout/contexto-portal";
 import { PortalShell } from "@/components/layout/portal-shell";
 
 export default function PortalLayout({
@@ -5,5 +6,9 @@ export default function PortalLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <PortalShell>{children}</PortalShell>;
+  return (
+    <ContextoPortalProvider>
+      <PortalShell>{children}</PortalShell>
+    </ContextoPortalProvider>
+  );
 }

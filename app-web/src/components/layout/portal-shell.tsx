@@ -8,13 +8,16 @@ import {
   CalendarDays,
   ChevronLeft,
   ChevronRight,
+  ChevronsUpDown,
   ClipboardList,
   LogOut,
   Menu,
   User,
   UserCheck,
+  Users,
 } from "lucide-react";
 
+import { useContextoPortal } from "@/components/layout/contexto-portal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,13 +29,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
@@ -48,35 +44,6 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
-type RolGrupo = "responsable" | "participante";
-
-interface ContextoPortal {
-  id: string;
-  nombre: string;
-  tipo: "grupo" | "personal";
-  rol?: RolGrupo;
-}
-
-const CONTEXTOS_BASE: ContextoPortal[] = [
-  {
-    id: "grupo-voluntariado",
-    nombre: "Brigada Universitaria UDB",
-    tipo: "grupo",
-    rol: "responsable",
-  },
-  {
-    id: "grupo-deporte",
-    nombre: "Club de Atletismo Campus",
-    tipo: "grupo",
-    rol: "participante",
-  },
-  {
-    id: "personal",
-    nombre: "Mi reporte personal",
-    tipo: "personal",
-  },
-];
-
 interface ItemNavegacion {
   href: string;
   etiqueta: string;
@@ -85,6 +52,11 @@ interface ItemNavegacion {
 }
 
 const ITEMS_NAVEGACION: ItemNavegacion[] = [
+  {
+    href: "/grupos",
+    etiqueta: "Grupos",
+    icono: Users,
+  },
   {
     href: "/dashboard",
     etiqueta: "Resumen",
@@ -166,28 +138,16 @@ function ListaNavegacion({
 export function PortalShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { contextoActivo, seleccionarPersonal } = useContextoPortal();
   const [colapsado, setColapsado] = useState(false);
   const [menuMovilAbierto, setMenuMovilAbierto] = useState(false);
-  const [contextoId, setContextoId] = useState<string>(CONTEXTOS_BASE[0].id);
-
-  const contextoActivo =
-    CONTEXTOS_BASE.find((item) => item.id === contextoId) ?? CONTEXTOS_BASE[0];
 
   const esResponsable =
-    contextoActivo.tipo === "grupo" && contextoActivo.rol === "responsable";
+    contextoActivo?.tipo === "grupo" && contextoActivo.rol === "responsable";
 
   const itemsVisibles = ITEMS_NAVEGACION.filter(
     (item) => !item.soloResponsable || esResponsable,
   );
-
-  function manejarCambioContexto(nuevoId: string | null) {
-    if (!nuevoId) return;
-    setContextoId(nuevoId);
-    const seleccionado = CONTEXTOS_BASE.find((item) => item.id === nuevoId);
-    if (seleccionado && seleccionado.rol !== "responsable") {
-      router.push("/mi-reporte");
-    }
-  }
 
   return (
     <div className="min-h-screen flex bg-background text-foreground">
@@ -206,7 +166,7 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
         >
           {!colapsado && (
             <Link
-              href="/dashboard"
+              href="/grupos"
               className="text-sm font-semibold tracking-tight text-foreground truncate"
             >
               Registro de actividades
@@ -275,36 +235,33 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
               </SheetContent>
             </Sheet>
 
-            {/* Selector de grupo / modo personal */}
-            <Select value={contextoId} onValueChange={manejarCambioContexto}>
-              <SelectTrigger
-                className="w-[220px] sm:w-[280px] bg-secondary"
-                aria-label="Seleccionar grupo o vista personal"
-              >
-                <SelectValue placeholder="Selecciona un contexto" />
-              </SelectTrigger>
-              <SelectContent>
-                {CONTEXTOS_BASE.map((item) => (
-                  <SelectItem key={item.id} value={item.id}>
-                    <span className="flex items-center gap-2">
-                      <span className="truncate">{item.nombre}</span>
-                      {item.rol && (
-                        <Badge
-                          variant={
-                            item.rol === "responsable" ? "default" : "secondary"
-                          }
-                          className="text-[11px] font-medium"
-                        >
-                          {item.rol === "responsable"
-                            ? "Responsable"
-                            : "Participante"}
-                        </Badge>
-                      )}
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {/* Acceso a la página de selección de grupo */}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="gap-2 max-w-[240px] sm:max-w-[340px] bg-secondary"
+              render={<Link href="/grupos" />}
+            >
+              <span className="truncate">
+                {contextoActivo?.nombre ?? "Seleccionar grupo"}
+              </span>
+              {contextoActivo?.rol && (
+                <Badge
+                  variant={
+                    contextoActivo.rol === "responsable"
+                      ? "default"
+                      : "secondary"
+                  }
+                  className="text-[11px] font-medium shrink-0"
+                >
+                  {contextoActivo.rol === "responsable"
+                    ? "Responsable"
+                    : "Participante"}
+                </Badge>
+              )}
+              <ChevronsUpDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            </Button>
           </div>
 
           {/* Menú de usuario */}
@@ -336,7 +293,16 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
                 </DropdownMenuLabel>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => router.push("/mi-reporte")}>
+              <DropdownMenuItem onClick={() => router.push("/grupos")}>
+                <Users className="mr-2 h-4 w-4" />
+                <span>Cambiar grupo</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  seleccionarPersonal();
+                  router.push("/mi-reporte");
+                }}
+              >
                 <UserCheck className="mr-2 h-4 w-4" />
                 <span>Mi reporte personal</span>
               </DropdownMenuItem>

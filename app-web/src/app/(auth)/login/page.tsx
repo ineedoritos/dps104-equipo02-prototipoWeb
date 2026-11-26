@@ -25,7 +25,7 @@ export default function LoginPage() {
       return;
     }
     setError(null);
-    router.push("/dashboard");
+    router.push("/grupos");
   }
 
   return (
