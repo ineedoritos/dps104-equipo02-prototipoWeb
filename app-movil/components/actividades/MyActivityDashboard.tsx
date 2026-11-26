@@ -1,9 +1,15 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { ActivityCard } from '@/components/actividades/ActivityCard';
-import { DatePickerField } from '@/components/ui/DatePickerField';
-import { colores, espaciados, radios } from '@/lib/tema';
+import { ActivityRow } from '@/components/actividades/ActivityRow';
+import { FiltrosModal } from '@/components/actividades/FiltrosModal';
+import { TodayCard } from '@/components/actividades/TodayCard';
+import { Boton } from '@/components/ui/Boton';
+import { EstadoVacio } from '@/components/ui/EstadoVacio';
+import { Icono } from '@/components/ui/Icono';
+import { Seccion } from '@/components/ui/Seccion';
+import { fechaEnZona } from '@/lib/fecha';
+import { colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
 import type {
   Actividad,
   EstadoActividad,
@@ -18,12 +24,24 @@ export interface MyActivityDashboardProps {
   onCreateActivity?: () => void;
 }
 
-const OPCIONES_ESTADO: { valor: EstadoActividad | 'all'; etiqueta: string }[] = [
-  { valor: 'all', etiqueta: 'Todos los estados' },
+type FiltroEstado = EstadoActividad | 'all';
+
+const OPCIONES_ESTADO: { valor: FiltroEstado; etiqueta: string }[] = [
+  { valor: 'all', etiqueta: 'Todas' },
   { valor: 'upcoming', etiqueta: 'Próximas' },
   { valor: 'current', etiqueta: 'En curso' },
-  { valor: 'completed', etiqueta: 'Completadas' },
+  { valor: 'completed', etiqueta: 'Finalizadas' },
 ];
+
+const FILTROS_INICIALES: FiltrosActividades = { status: 'all', dateFrom: '', dateTo: '' };
+
+function capitalizar(texto: string): string {
+  return texto.charAt(0).toUpperCase() + texto.slice(1);
+}
+
+function contarJornadas(total: number): string {
+  return `${total} ${total === 1 ? 'jornada' : 'jornadas'}`;
+}
 
 export function MyActivityDashboard({
   user,
@@ -31,12 +49,10 @@ export function MyActivityDashboard({
   onSelectActivity,
   onCreateActivity,
 }: MyActivityDashboardProps) {
-  const [filtros, setFiltros] = useState<FiltrosActividades>({
-    status: 'all',
-    dateFrom: '',
-    dateTo: '',
-  });
-  const [mostrarEstados, setMostrarEstados] = useState(false);
+  const [filtros, setFiltros] = useState<FiltrosActividades>(FILTROS_INICIALES);
+  const [modalAbierto, setModalAbierto] = useState(false);
+
+  const hoyISO = fechaEnZona();
 
   const actividadesFiltradas = activities.filter((actividad) => {
     const coincideEstado = filtros.status === 'all' || actividad.status === filtros.status;
@@ -46,309 +62,242 @@ export function MyActivityDashboard({
     return coincideEstado && coincideDesde && coincideHasta;
   });
 
-  const etiquetaEstado =
-    OPCIONES_ESTADO.find((opcion) => opcion.valor === filtros.status)?.etiqueta ??
-    'Todos los estados';
+  const hoyDestacada =
+    actividadesFiltradas.find((actividad) => actividad.date === hoyISO) ??
+    actividadesFiltradas.find((actividad) => actividad.status === 'current');
+
+  const resto = actividadesFiltradas.filter((actividad) => actividad.id !== hoyDestacada?.id);
+
+  const hayFiltros =
+    filtros.status !== 'all' || filtros.dateFrom !== '' || filtros.dateTo !== '';
+  const hayFiltroFecha = filtros.dateFrom !== '' || filtros.dateTo !== '';
 
   const limpiarFiltros = () => {
-    setFiltros({ status: 'all', dateFrom: '', dateTo: '' });
-    setMostrarEstados(false);
+    setFiltros(FILTROS_INICIALES);
+    setModalAbierto(false);
   };
 
+  const nombre = capitalizar(user.name);
+
   return (
-    <View style={styles.tarjetaPrincipal}>
+    <View style={styles.contenedor}>
       <View style={styles.encabezado}>
-        <Text style={styles.saludo}>¡Hola, {user.name}! 👋</Text>
-        <Text style={styles.descripcionEncabezado}>
-          Consulta tus actividades, registra asistencia y revisa tu avance.
+        <Text style={styles.sobreTitulo}>Registro de jornadas</Text>
+        <Text accessibilityRole="header" style={styles.nombre}>
+          {nombre}
         </Text>
+        <Text style={styles.subtitulo}>Revisa tus jornadas y registra la asistencia del grupo.</Text>
 
         {onCreateActivity ? (
-          <Pressable
-            accessibilityRole="button"
+          <Boton
+            estilo={styles.botonNueva}
+            icono="nueva"
             onPress={onCreateActivity}
-            style={({ pressed }) => [styles.botonPrimario, pressed && styles.campoPresionado]}
-          >
-            <Text style={styles.botonPrimarioTexto}>+ Nueva actividad</Text>
-          </Pressable>
+            titulo="Nueva jornada"
+          />
         ) : null}
       </View>
 
-      <View style={styles.seccion}>
-        <Text style={styles.tituloSeccion}>Filtrar actividades</Text>
+      {hoyDestacada ? (
+        <Seccion estilo={styles.seccion} titulo="Hoy">
+          <TodayCard
+            activity={hoyDestacada}
+            onPress={
+              onSelectActivity ? () => onSelectActivity(hoyDestacada) : undefined
+            }
+          />
+        </Seccion>
+      ) : null}
 
-        <View style={styles.panelFiltros}>
-          <View style={styles.campoGrupo}>
-            <Text style={styles.etiqueta}>Estado</Text>
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => setMostrarEstados((visible) => !visible)}
-              style={({ pressed }) => [styles.campo, pressed && styles.campoPresionado]}
-            >
-              <Text style={styles.campoTexto}>{etiquetaEstado}</Text>
-              <Text style={styles.chevron}>{mostrarEstados ? '▲' : '▼'}</Text>
-            </Pressable>
+      <Seccion
+        accion={
+          hayFiltros ? (
+            <Boton
+              onPress={limpiarFiltros}
+              tamano="sm"
+              titulo="Limpiar filtros"
+              variante="fantasma"
+            />
+          ) : undefined
+        }
+        detalle={contarJornadas(resto.length)}
+        estilo={styles.seccion}
+        titulo={hoyDestacada ? 'Próximas y anteriores' : 'Todas las jornadas'}
+      >
+        <ScrollView
+          contentContainerStyle={styles.filtros}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+        >
+          {OPCIONES_ESTADO.map((opcion) => {
+            const activa = filtros.status === opcion.valor;
 
-            {mostrarEstados ? (
-              <View style={styles.listaOpciones}>
-                {OPCIONES_ESTADO.map((opcion) => {
-                  const activa = filtros.status === opcion.valor;
-
-                  return (
-                    <Pressable
-                      key={opcion.valor}
-                      onPress={() => {
-                        setFiltros((anteriores) => ({
-                          ...anteriores,
-                          status: opcion.valor,
-                        }));
-                        setMostrarEstados(false);
-                      }}
-                      style={[styles.opcion, activa && styles.opcionActiva]}
-                    >
-                      <Text style={[styles.opcionTexto, activa && styles.opcionTextoActiva]}>
-                        {opcion.etiqueta}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            ) : null}
-          </View>
-
-          <View style={styles.filaFechas}>
-            <View style={styles.campoMitad}>
-              <DatePickerField
-                label="Desde"
-                maxDate={filtros.dateTo || undefined}
-                onChange={(valor) =>
-                  setFiltros((anteriores) => ({ ...anteriores, dateFrom: valor }))
-                }
-                value={filtros.dateFrom}
-              />
-            </View>
-
-            <View style={styles.campoMitad}>
-              <DatePickerField
-                label="Hasta"
-                minDate={filtros.dateFrom || undefined}
-                onChange={(valor) =>
-                  setFiltros((anteriores) => ({ ...anteriores, dateTo: valor }))
-                }
-                value={filtros.dateTo}
-              />
-            </View>
-          </View>
+            return (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ selected: activa }}
+                key={opcion.valor}
+                onPress={() => setFiltros((previos) => ({ ...previos, status: opcion.valor }))}
+                style={({ pressed }) => [
+                  styles.chip,
+                  activa && styles.chipActivo,
+                  pressed && styles.chipPresionado,
+                ]}
+              >
+                <Text style={[styles.chipTexto, activa && styles.chipTextoActivo]}>
+                  {opcion.etiqueta}
+                </Text>
+              </Pressable>
+            );
+          })}
 
           <Pressable
+            accessibilityLabel="Filtrar por fechas"
             accessibilityRole="button"
-            onPress={limpiarFiltros}
-            style={({ pressed }) => [styles.botonSecundario, pressed && styles.campoPresionado]}
+            accessibilityState={{ selected: hayFiltroFecha }}
+            onPress={() => setModalAbierto(true)}
+            style={({ pressed }) => [
+              styles.chip,
+              styles.chipFecha,
+              hayFiltroFecha && styles.chipFechaActivo,
+              pressed && styles.chipPresionado,
+            ]}
           >
-            <Text style={styles.botonSecundarioTexto}>Limpiar filtros</Text>
+            <Icono
+              color={hayFiltroFecha ? colores.acento : colores.tintaSuave}
+              nombre="filtro"
+              tamano={16}
+            />
+            <Text style={[styles.chipTexto, hayFiltroFecha && styles.chipFechaTextoActivo]}>
+              Fechas
+            </Text>
           </Pressable>
-        </View>
-      </View>
+        </ScrollView>
 
-      <View style={styles.seccion}>
-        <Text style={styles.tituloSeccion}>Mis actividades</Text>
-
-        {actividadesFiltradas.length > 0 ? (
-          <View style={styles.listaActividades}>
-            {actividadesFiltradas.map((actividad) => (
-              <ActivityCard
-                key={actividad.id}
+        {resto.length > 0 ? (
+          <View style={styles.lista}>
+            {resto.map((actividad) => (
+              <ActivityRow
                 activity={actividad}
+                key={actividad.id}
                 onPress={onSelectActivity ? () => onSelectActivity(actividad) : undefined}
-                variant={actividad.status}
               />
             ))}
           </View>
         ) : (
-          <View style={styles.estadoVacio}>
-            <Text style={styles.estadoVacioIcono}>🗓️</Text>
-            <Text style={styles.estadoVacioTitulo}>No hay actividades con esos filtros</Text>
-            <Text style={styles.estadoVacioDescripcion}>
-              Prueba con otro estado o rango de fechas para ver más resultados.
-            </Text>
-            <Pressable
-              accessibilityRole="button"
-              onPress={limpiarFiltros}
-              style={({ pressed }) => [styles.botonSecundario, pressed && styles.campoPresionado]}
-            >
-              <Text style={styles.botonSecundarioTexto}>Limpiar filtros</Text>
-            </Pressable>
-          </View>
+          <EstadoVacio
+            accion={
+              hayFiltros ? (
+                <Boton onPress={limpiarFiltros} titulo="Limpiar filtros" variante="secundario" />
+              ) : onCreateActivity ? (
+                <Boton
+                  icono="nueva"
+                  onPress={onCreateActivity}
+                  titulo="Crear la primera jornada"
+                />
+              ) : undefined
+            }
+            descripcion={
+              hayFiltros
+                ? 'Prueba con otro estado o con un rango de fechas distinto.'
+                : 'Cuando crees una jornada aparecerá aquí con su estado y horario.'
+            }
+            icono="sinEventos"
+            titulo={hayFiltros ? 'No hay jornadas con esos filtros' : 'Aún no hay jornadas'}
+          />
         )}
-      </View>
+      </Seccion>
+
+      <FiltrosModal
+        filtros={filtros}
+        onChange={setFiltros}
+        onClose={() => setModalAbierto(false)}
+        onLimpiar={() => setFiltros(FILTROS_INICIALES)}
+        visible={modalAbierto}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  tarjetaPrincipal: {
-    backgroundColor: colores.superficie,
-    borderColor: colores.borde,
-    borderRadius: radios.xl,
-    borderWidth: 1,
-    padding: espaciados.lg,
+  contenedor: {
+    gap: espaciados.xl,
   },
   encabezado: {
-    marginBottom: espaciados.md,
+    gap: espaciados.xs,
   },
-  saludo: {
-    color: colores.texto,
-    fontSize: 24,
-    fontWeight: '800',
-    letterSpacing: -0.3,
+  sobreTitulo: {
+    color: colores.acento,
+    fontSize: tipografia.micro,
+    fontWeight: pesos.fuerte,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
   },
-  descripcionEncabezado: {
-    color: colores.textoSuave,
-    fontSize: 14,
-    lineHeight: 21,
-    marginTop: espaciados.xs,
+  nombre: {
+    color: colores.tinta,
+    fontSize: tipografia.display,
+    fontWeight: pesos.fuerte,
+    letterSpacing: -0.4,
+    lineHeight: tipografia.display + 4,
+    marginTop: 2,
   },
-  botonPrimario: {
-    alignItems: 'center',
-    backgroundColor: colores.primario,
-    borderRadius: radios.md,
+  subtitulo: {
+    color: colores.tintaSuave,
+    fontSize: tipografia.cuerpoSm,
+    lineHeight: 19,
+  },
+  botonNueva: {
     marginTop: espaciados.md,
-    minHeight: 44,
-    justifyContent: 'center',
-    paddingHorizontal: espaciados.md,
-    paddingVertical: 12,
-  },
-  botonPrimarioTexto: {
-    color: colores.superficie,
-    fontSize: 15,
-    fontWeight: '700',
   },
   seccion: {
-    marginTop: espaciados.lg,
-  },
-  tituloSeccion: {
-    color: colores.texto,
-    fontSize: 19,
-    fontWeight: '700',
-    letterSpacing: -0.2,
-  },
-  panelFiltros: {
-    backgroundColor: colores.fondo,
-    borderColor: colores.borde,
-    borderRadius: radios.lg,
-    borderWidth: 1,
     gap: espaciados.md,
-    marginTop: espaciados.sm + 4,
-    padding: espaciados.md,
   },
-  campoGrupo: {
+  filtros: {
     gap: espaciados.sm,
+    paddingRight: espaciados.sm,
   },
-  filaFechas: {
-    flexDirection: 'row',
-    gap: espaciados.sm,
-  },
-  campoMitad: {
-    flex: 1,
-  },
-  etiqueta: {
-    color: colores.grisTexto,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  campo: {
+  chip: {
     alignItems: 'center',
     backgroundColor: colores.superficie,
     borderColor: colores.borde,
-    borderRadius: radios.md,
+    borderRadius: radios.pill,
     borderWidth: 1,
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    minHeight: 44,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-  },
-  campoPresionado: {
-    opacity: 0.85,
-  },
-  campoTexto: {
-    color: colores.grisTexto,
-    flex: 1,
-    fontSize: 14,
-  },
-  chevron: {
-    color: colores.textoSuave,
-    fontSize: 10,
-  },
-  listaOpciones: {
-    backgroundColor: colores.superficie,
-    borderColor: colores.borde,
-    borderRadius: radios.md,
-    borderWidth: 1,
-    overflow: 'hidden',
-  },
-  opcion: {
-    borderTopColor: colores.grisSuave,
-    borderTopWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-  },
-  opcionActiva: {
-    backgroundColor: colores.primarioSuave,
-  },
-  opcionTexto: {
-    color: colores.grisTexto,
-    fontSize: 14,
-  },
-  opcionTextoActiva: {
-    color: colores.primario,
-    fontWeight: '700',
-  },
-  botonSecundario: {
-    alignItems: 'center',
-    backgroundColor: colores.superficie,
-    borderColor: colores.borde,
-    borderRadius: radios.md,
-    borderWidth: 1,
-    minHeight: 44,
+    gap: espaciados.xs + 2,
     justifyContent: 'center',
-    paddingHorizontal: espaciados.md,
-    paddingVertical: 12,
+    minHeight: 44,
+    paddingHorizontal: espaciados.md + 2,
   },
-  botonSecundarioTexto: {
-    color: colores.grisTexto,
-    fontSize: 14,
-    fontWeight: '600',
+  chipActivo: {
+    backgroundColor: colores.tinta,
+    borderColor: colores.tinta,
   },
-  listaActividades: {
-    gap: espaciados.md,
-    marginTop: espaciados.md,
+  chipPresionado: {
+    opacity: 0.8,
   },
-  estadoVacio: {
-    alignItems: 'center',
-    backgroundColor: colores.fondo,
-    borderColor: colores.borde,
-    borderRadius: radios.lg,
+  chipTexto: {
+    color: colores.tintaSuave,
+    fontSize: tipografia.cuerpoSm,
+    fontWeight: pesos.medio,
+  },
+  chipTextoActivo: {
+    color: colores.superficie,
+    fontWeight: pesos.fuerte,
+  },
+  chipFecha: {
+    borderStyle: 'dashed',
     borderWidth: 1,
-    marginTop: espaciados.md,
-    padding: espaciados.lg,
   },
-  estadoVacioIcono: {
-    fontSize: 32,
+  chipFechaActivo: {
+    backgroundColor: colores.acentoSuave,
+    borderColor: colores.acentoBorde,
+    borderStyle: 'solid',
   },
-  estadoVacioTitulo: {
-    color: colores.texto,
-    fontSize: 16,
-    fontWeight: '700',
-    marginTop: espaciados.sm,
-    textAlign: 'center',
+  chipFechaTextoActivo: {
+    color: colores.acento,
+    fontWeight: pesos.fuerte,
   },
-  estadoVacioDescripcion: {
-    color: colores.textoSuave,
-    fontSize: 13,
-    lineHeight: 19,
-    marginBottom: espaciados.md,
-    marginTop: espaciados.xs,
-    textAlign: 'center',
+  lista: {
+    gap: espaciados.md,
   },
 });

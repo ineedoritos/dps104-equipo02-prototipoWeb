@@ -1,8 +1,9 @@
 import { useRouter } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { Boton } from '@/components/ui/Boton';
 import usuarioJson from '@/data/usuario.json';
-import { colores, espaciados, radios } from '@/lib/tema';
+import { colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
 import type { Usuario } from '@/types/actividad';
 
 const usuario = usuarioJson as Usuario;
@@ -21,8 +22,12 @@ export default function CuentaScreen() {
         <View style={styles.avatar}>
           <Text style={styles.avatarTexto}>{nombre.charAt(0)}</Text>
         </View>
-        <Text style={styles.nombre}>{nombre}</Text>
-        <Text style={styles.rol}>Miembro de la comunidad</Text>
+        <View style={styles.perfilInfo}>
+          <Text accessibilityRole="header" style={styles.nombre}>
+            {nombre}
+          </Text>
+          <Text style={styles.rol}>Participante</Text>
+        </View>
       </View>
 
       <View style={styles.tarjeta}>
@@ -40,13 +45,12 @@ export default function CuentaScreen() {
           Administra el acceso a tu cuenta en este dispositivo.
         </Text>
 
-        <Pressable
-          accessibilityRole="button"
+        <Boton
+          estilo={styles.boton}
           onPress={() => router.replace('/(auth)/login')}
-          style={({ pressed }) => [styles.boton, pressed && styles.botonPresionado]}
-        >
-          <Text style={styles.botonTexto}>Cerrar sesión</Text>
-        </Pressable>
+          titulo="Cerrar sesión"
+          variante="secundario"
+        />
       </View>
     </ScrollView>
   );
@@ -54,59 +58,62 @@ export default function CuentaScreen() {
 
 const styles = StyleSheet.create({
   contenido: {
-    backgroundColor: colores.fondo,
+    backgroundColor: colores.papel,
     flexGrow: 1,
-    gap: espaciados.md,
-    padding: espaciados.md,
-    paddingBottom: espaciados.xl,
+    gap: espaciados.lg,
+    padding: espaciados.lg,
+    paddingBottom: espaciados.xxl,
   },
   perfil: {
     alignItems: 'center',
-    backgroundColor: colores.superficie,
-    borderColor: colores.borde,
-    borderRadius: radios.xl,
-    borderWidth: 1,
-    padding: espaciados.lg,
+    flexDirection: 'row',
+    gap: espaciados.md,
+    paddingVertical: espaciados.sm,
   },
   avatar: {
     alignItems: 'center',
-    backgroundColor: colores.primarioSuave,
-    borderRadius: 999,
-    height: 76,
+    backgroundColor: colores.acentoSuave,
+    borderColor: colores.acentoBorde,
+    borderRadius: radios.pill,
+    borderWidth: 1,
+    height: 64,
     justifyContent: 'center',
-    width: 76,
+    width: 64,
   },
   avatarTexto: {
-    color: colores.primario,
-    fontSize: 30,
-    fontWeight: '800',
+    color: colores.acento,
+    fontSize: tipografia.display,
+    fontWeight: pesos.fuerte,
+  },
+  perfilInfo: {
+    flex: 1,
+    gap: 2,
   },
   nombre: {
-    color: colores.texto,
-    fontSize: 22,
-    fontWeight: '800',
-    marginTop: espaciados.md,
+    color: colores.tinta,
+    fontSize: tipografia.titulo,
+    fontWeight: pesos.fuerte,
+    letterSpacing: -0.2,
   },
   rol: {
-    color: colores.textoSuave,
-    fontSize: 14,
-    marginTop: espaciados.xs,
+    color: colores.tintaSuave,
+    fontSize: tipografia.cuerpoSm,
   },
   tarjeta: {
     backgroundColor: colores.superficie,
     borderColor: colores.borde,
-    borderRadius: radios.lg,
+    borderRadius: radios.tarjeta,
     borderWidth: 1,
     padding: espaciados.lg,
   },
   tituloTarjeta: {
-    color: colores.texto,
-    fontSize: 17,
-    fontWeight: '700',
+    color: colores.tinta,
+    fontSize: tipografia.tituloSm,
+    fontWeight: pesos.fuerte,
   },
   fila: {
     alignItems: 'center',
-    borderTopColor: colores.grisSuave,
+    borderTopColor: colores.borde,
     borderTopWidth: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -114,35 +121,21 @@ const styles = StyleSheet.create({
     paddingTop: espaciados.md,
   },
   etiqueta: {
-    color: colores.textoSuave,
-    fontSize: 14,
+    color: colores.tintaSuave,
+    fontSize: tipografia.cuerpoSm,
   },
   valor: {
-    color: colores.texto,
-    fontSize: 14,
-    fontWeight: '600',
+    color: colores.tinta,
+    fontSize: tipografia.cuerpoSm,
+    fontWeight: pesos.medio,
   },
   descripcion: {
-    color: colores.textoSuave,
-    fontSize: 14,
-    lineHeight: 20,
+    color: colores.tintaSuave,
+    fontSize: tipografia.cuerpoSm,
+    lineHeight: 19,
     marginTop: espaciados.xs,
   },
   boton: {
-    alignItems: 'center',
-    backgroundColor: colores.superficie,
-    borderColor: colores.bordeFuerte,
-    borderRadius: radios.md,
-    borderWidth: 1,
-    marginTop: espaciados.md,
-    paddingVertical: 12,
-  },
-  botonPresionado: {
-    opacity: 0.85,
-  },
-  botonTexto: {
-    color: colores.grisTexto,
-    fontSize: 14,
-    fontWeight: '600',
+    marginTop: espaciados.lg,
   },
 });
