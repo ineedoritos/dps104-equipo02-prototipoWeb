@@ -4,6 +4,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Aviso } from '@/components/ui/Aviso';
+import { BarraSuperior } from '@/components/ui/BarraSuperior';
 import { Boton } from '@/components/ui/Boton';
 import { Icono } from '@/components/ui/Icono';
 import { formatearDuracion } from '@/lib/fecha';
@@ -68,8 +69,12 @@ export default function ConfirmacionQRScreen() {
     subtituloHora = '';
   }
 
+  const volverAlGrupo = () =>
+    router.dismissTo({ pathname: '/grupos/[grupoId]', params: { grupoId: grupo.id } });
+
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
+    <SafeAreaView edges={['bottom']} style={styles.pantalla}>
+      <BarraSuperior accessibilityLabelVolver="Volver al grupo" onVolver={volverAlGrupo} titulo="Registro de asistencia" />
       <ScrollView contentContainerStyle={styles.contenido} showsVerticalScrollIndicator={false}>
         <View style={styles.tarjetaConfirmacion}>
           <View
@@ -105,7 +110,7 @@ export default function ConfirmacionQRScreen() {
             estilo={styles.botonAccion}
             icono="reloj"
             onPress={() =>
-              router.replace({
+              router.dismissTo({
                 pathname: '/(tabs)/historial',
                 params: { grupoId: grupo.id },
               })
@@ -114,12 +119,7 @@ export default function ConfirmacionQRScreen() {
           />
           <Boton
             estilo={styles.botonAccion}
-            onPress={() =>
-              router.replace({
-                pathname: '/grupos/[grupoId]',
-                params: { grupoId: grupo.id },
-              })
-            }
+            onPress={volverAlGrupo}
             titulo="Volver al grupo"
             variante="secundario"
           />

@@ -23,6 +23,20 @@ Antes de aprobar un PR de integración, el desarrollador humano verifica:
 
 ---
 
+### Regresión de interfaz móvil (PR #67)
+
+Con Expo Go en un teléfono Android, inicia desde un arranque limpio. En el pase de usuario final, deja desactivada la variable `EXPO_PUBLIC_CONTROLES_PRUEBA`. Para probar estados forzados, cuenta de prueba o simulación de QR, añade `EXPO_PUBLIC_CONTROLES_PRUEBA=1` a `app-movil/.env.local` y reinicia Expo.
+
+1. Abre **Iniciar sesión** con teclado visible. Muestra y oculta la contraseña con el icono de ojo. Verifica que puedes enviar desde el teclado y que el botón sigue al alcance. Repite con el último campo de **Crear grupo**, **Nueva jornada**, **Integrantes** y **Ajustar horas**.
+2. Recorre **Mis grupos → Cuenta → Mi historial → Grupo → Reportes → Integrantes → Jornadas**, y luego **Detalle de jornada → Pasar lista → Ajustar horas**. Compara encabezados, barra de estado, sombras y alineación. Alterna las secciones del grupo varias veces y usa Atrás del sistema y de la app. Tras editar una jornada, Atrás debe regresar al grupo.
+3. En **Reportes**, prueba **Personalizado** con una pantalla angosta o texto grande. Verifica que puedes leer ambas fechas completas y que el selector evita rangos invertidos. Prueba un período sin datos y otro con datos. Expande el detalle de un integrante con nombre largo y verifica su tasa, motivos y horas, si aplican.
+4. Abre un grupo con jornadas. Verifica que **+ Nueva jornada** está antes de la lista y que **Configuración del grupo** se reconoce por el engranaje. Con TalkBack, revisa los nombres de los botones de configuración y contraseña, y el estado seleccionado de las pestañas.
+5. En **Integrantes**, prueba **Salir del grupo** como único responsable. Sin candidatos, **Ir a agregar integrante** debe llevar al formulario. Con candidatos, el botón de salida debe quedar deshabilitado hasta seleccionar a alguien. Cancela una vez y comprueba que no cambia ningún rol. Luego confirma y verifica que la persona elegida queda como responsable.
+6. En **Mi historial**, comprueba que aparecen los grupos de participación, incluidos los de los que se retiró como participante. Un grupo donde ahora eres responsable, incluso si antes participabas, no debe aparecer. Si el filtro deja de estar disponible, la interfaz vuelve a **Todos**.
+7. Con controles de prueba apagados, comprueba que una jornada configurada para QR ofrece registrar la asistencia desde la lista del responsable. Repite con los controles habilitados para recorrer **Mostrar QR → Simular lectura válida → Confirmación → Mi historial**. La lectura y la matriz QR de esta versión son simulaciones locales.
+
+---
+
 ## 3. Los 4 Flujos Maestros (obligatorios antes de cada corte de fase y para la prueba del 2–4 dic)
 
 Estos son exactamente los 4 *Task Flows* definidos en la Tabla 3 del T1 y en `docs/artifacts/Flujo de Registro de actividades.html`.

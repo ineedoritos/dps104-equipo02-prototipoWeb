@@ -16,7 +16,7 @@ import { BarraSuperior } from '@/components/ui/BarraSuperior';
 import { Boton } from '@/components/ui/Boton';
 import { Estado, type TonoEstado } from '@/components/ui/Estado';
 import { Icono } from '@/components/ui/Icono';
-import { formatearDia, horaEnZona } from '@/lib/fecha';
+import { fechaEnZona, formatearDia, horaEnZona } from '@/lib/fecha';
 import {
   cancelarJornada,
   derivarEstadoJornada,
@@ -26,6 +26,7 @@ import {
   obtenerResumenAsistenciaJornada,
   suscribirStore,
 } from '@/lib/gruposStore';
+import { mostrarControlesDePrueba } from '@/lib/opcionesPrueba';
 import { cifrasTabulares, colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
 import type { EstadoJornada, Jornada } from '@/types/dominio';
 
@@ -99,7 +100,7 @@ export default function DetalleJornadaScreen() {
 
   const estado = derivarEstadoJornada(jornada);
   const metaEstado = MAPA_ESTADO_JORNADA[estado];
-  const fechaTexto = formatearDia(jornada.inicio_en.slice(0, 10), {
+  const fechaTexto = formatearDia(fechaEnZona(jornada.inicio_en), {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -108,7 +109,7 @@ export default function DetalleJornadaScreen() {
   const horaFin = horaEnZona(jornada.fin_en).slice(0, 5);
 
   const esQR = jornada.modalidad_asistencia === 'qr';
-  const puedeMostrarQR = esQR && estado === 'en_curso' && !jornada.cancelada;
+  const puedeMostrarQR = mostrarControlesDePrueba && esQR && estado === 'en_curso' && !jornada.cancelada;
   const puedePasarLista =
     !jornada.cancelada && (estado === 'en_curso' || estado === 'finalizada');
 
@@ -123,7 +124,7 @@ export default function DetalleJornadaScreen() {
       <BarraSuperior accessibilityLabelVolver="Volver al grupo" titulo="Detalle de jornada" />
 
       <ScrollView contentContainerStyle={styles.contenido} showsVerticalScrollIndicator={false}>
-        {__DEV__ ? (
+        {mostrarControlesDePrueba ? (
           <View style={styles.barraEstados}>
             {(['normal', 'cargando', 'error'] as const).map((modo) => {
               const activo = estadoVista === modo;
@@ -240,7 +241,7 @@ export default function DetalleJornadaScreen() {
                       params: { grupoId: grupo.id, jornadaId: jornada.id },
                     })
                   }
-                  titulo={esQR ? 'Ver asistencia y corregir' : 'Pasar lista'}
+                  titulo={puedeMostrarQR ? 'Ver asistencia y corregir' : 'Pasar lista'}
                   variante={puedeMostrarQR ? 'secundario' : 'primario'}
                 />
               ) : null}

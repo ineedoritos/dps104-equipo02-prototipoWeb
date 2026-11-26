@@ -82,13 +82,14 @@ const styles = StyleSheet.create({
     borderRadius: radios.campo,
     borderWidth: 1,
     justifyContent: 'center',
-    paddingHorizontal: espaciados.lg,
+    paddingHorizontal: espaciados.md,
+    paddingVertical: espaciados.sm,
   },
   tamanoMd: {
     minHeight: 48,
   },
   tamanoSm: {
-    minHeight: 40,
+    minHeight: 48,
     paddingHorizontal: espaciados.md,
   },
   contenido: {
@@ -96,9 +97,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: espaciados.sm,
     justifyContent: 'center',
+    maxWidth: '100%',
   },
   texto: {
+    flexShrink: 1,
     fontWeight: pesos.fuerte,
+    textAlign: 'center',
   },
   textoMd: {
     fontSize: tipografia.cuerpo,

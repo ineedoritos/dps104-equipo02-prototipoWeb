@@ -10,9 +10,9 @@
 - Formulario superior: campo `Agregar por correo (cuenta existente)` + selector de rol inicial (`Participante` por defecto / `Responsable`) + botón **Agregar**.
 - Contador (*ej. "8 integrantes"*) y lista de integrantes activos (`retirado_en IS NULL`):
   - Nombre (indicando `(tú)` en la propia fila) y correo.
-  - Selector de rol `Participante | Responsable` (un solo rol por grupo).
-  - Acción **Retirar** (o **Salir del grupo** en la propia fila), con confirmación.
-- Nota al pie: *"Un rol por grupo. El último responsable no puede salir ni ser retirado. Al retirar a alguien, su historial se conserva."*
+  - Selector de rol `Participante | Responsable` para las demás personas. La fila propia muestra el rol actual.
+  - Acción **Retirar** (o **Salir del grupo** en la propia fila), con confirmación. Para salir como único responsable, primero elige a otra persona activa para que quede a cargo. Si no hay candidatos, la acción lleva al formulario para agregar a alguien.
+- Nota al pie: *"El grupo debe conservar al menos una persona responsable."*
 
 ## Estados obligatorios (`RNF04`)
 - **Cargando:** spinner en listado y en acciones de agregar/cambiar rol/retirar.

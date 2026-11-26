@@ -12,15 +12,9 @@ export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        headerStyle: { backgroundColor: colores.superficie },
-        headerTitleStyle: {
-          color: colores.tinta,
-          fontSize: tipografia.tituloSm,
-          fontWeight: pesos.fuerte,
-        },
-        headerShadowVisible: true,
+        headerShown: false,
         tabBarActiveTintColor: colores.acento,
-        tabBarInactiveTintColor: colores.tintaTenue,
+        tabBarInactiveTintColor: colores.tintaSuave,
         tabBarLabelStyle: {
           fontSize: tipografia.micro,
           fontWeight: pesos.fuerte,
@@ -39,9 +33,8 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: 'Mis grupos',
-          headerShown: false,
           tabBarIcon: ({ color }) => (
-            <Icono color={typeof color === 'string' ? color : colores.tintaTenue} nombre="gente" tamano={24} />
+            <Icono color={typeof color === 'string' ? color : colores.tintaSuave} nombre="gente" tamano={24} />
           ),
         }}
       />
@@ -49,9 +42,8 @@ export default function TabsLayout() {
         name="historial"
         options={{
           title: 'Mi historial',
-          headerShown: false,
           tabBarIcon: ({ color }) => (
-            <Icono color={typeof color === 'string' ? color : colores.tintaTenue} nombre="reloj" tamano={24} />
+            <Icono color={typeof color === 'string' ? color : colores.tintaSuave} nombre="reloj" tamano={24} />
           ),
         }}
       />
@@ -60,7 +52,7 @@ export default function TabsLayout() {
         options={{
           title: 'Cuenta',
           tabBarIcon: ({ color }) => (
-            <Icono color={typeof color === 'string' ? color : colores.tintaTenue} nombre="cuenta" tamano={24} />
+            <Icono color={typeof color === 'string' ? color : colores.tintaSuave} nombre="cuenta" tamano={24} />
           ),
         }}
       />

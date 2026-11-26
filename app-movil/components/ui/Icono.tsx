@@ -29,7 +29,11 @@ export type NombreIcono =
   | 'agregarPersona'
   | 'reintentar'
   | 'reporte'
-  | 'ajustes';
+  | 'ajustes'
+  | 'ver'
+  | 'ocultar'
+  | 'expandir'
+  | 'contraer';
 
 type NombreMaterialIcon = ComponentProps<typeof MaterialIcons>['name'];
 
@@ -61,6 +65,10 @@ const NOMBRES: Record<NombreIcono, NombreMaterialIcon> = {
   reintentar: 'refresh',
   reporte: 'bar-chart',
   ajustes: 'settings',
+  ver: 'visibility',
+  ocultar: 'visibility-off',
+  expandir: 'expand-more',
+  contraer: 'expand-less',
 };
 
 export interface IconoProps {

@@ -25,6 +25,7 @@ import {
   obtenerParticipantesActivos,
   suscribirStore,
 } from '@/lib/gruposStore';
+import { mostrarControlesDePrueba } from '@/lib/opcionesPrueba';
 import { cifrasTabulares, colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
 import { ErrorDominio, type Asistencia, type EstadoAsistencia, type IntegranteConUsuario } from '@/types/dominio';
 
@@ -248,7 +249,7 @@ export default function AsistenciaManualScreen() {
           </Text>
         </View>
 
-        {__DEV__ ? (
+        {mostrarControlesDePrueba ? (
           <View style={styles.barraEstados}>
             {(['normal', 'cargando', 'vacio', 'error'] as const).map((modo) => {
               const activo = estadoVista === modo;

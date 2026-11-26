@@ -2,6 +2,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { BarraSuperior } from '@/components/ui/BarraSuperior';
 import { Boton } from '@/components/ui/Boton';
 import { cerrarSesion, obtenerSesionActual } from '@/lib/gruposStore';
 import { colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
@@ -29,55 +30,60 @@ export default function CuentaScreen() {
   const inicial = usuario.nombre.trim().charAt(0).toUpperCase() || 'U';
 
   return (
-    <ScrollView contentContainerStyle={styles.contenido}>
-      <View style={styles.perfil}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarTexto}>{inicial}</Text>
+    <View style={styles.pantalla}>
+      <BarraSuperior mostrarVolver={false} titulo="Cuenta" />
+      <ScrollView contentContainerStyle={styles.contenido}>
+        <View style={styles.perfil}>
+          <View style={styles.avatar}>
+            <Text style={styles.avatarTexto}>{inicial}</Text>
+          </View>
+          <View style={styles.perfilInfo}>
+            <Text accessibilityRole="header" style={styles.nombre}>
+              {usuario.nombre}
+            </Text>
+            <Text style={styles.correo}>{usuario.correo}</Text>
+          </View>
         </View>
-        <View style={styles.perfilInfo}>
-          <Text accessibilityRole="header" style={styles.nombre}>
-            {usuario.nombre}
+
+        <View style={styles.tarjeta}>
+          <Text style={styles.tituloTarjeta}>Información personal</Text>
+
+          <View style={styles.fila}>
+            <Text style={styles.etiqueta}>Nombre</Text>
+            <Text style={styles.valor}>{usuario.nombre}</Text>
+          </View>
+
+          <View style={styles.fila}>
+            <Text style={styles.etiqueta}>Correo</Text>
+            <Text style={styles.valor}>{usuario.correo}</Text>
+          </View>
+        </View>
+
+        <View style={styles.tarjeta}>
+          <Text style={styles.tituloTarjeta}>Sesión</Text>
+          <Text style={styles.descripcion}>
+            Hay un solo tipo de cuenta. Tu rol se define dentro de cada grupo.
           </Text>
-          <Text style={styles.correo}>{usuario.correo}</Text>
-        </View>
-      </View>
 
-      <View style={styles.tarjeta}>
-        <Text style={styles.tituloTarjeta}>Información personal</Text>
-
-        <View style={styles.fila}>
-          <Text style={styles.etiqueta}>Nombre</Text>
-          <Text style={styles.valor}>{usuario.nombre}</Text>
-        </View>
-
-        <View style={styles.fila}>
-          <Text style={styles.etiqueta}>Correo</Text>
-          <Text style={styles.valor}>{usuario.correo}</Text>
-        </View>
-      </View>
-
-      <View style={styles.tarjeta}>
-        <Text style={styles.tituloTarjeta}>Sesión</Text>
-        <Text style={styles.descripcion}>
-          Hay un solo tipo de cuenta. Tu rol se define dentro de cada grupo.
-        </Text>
-
-        <Boton
-          estilo={styles.boton}
-          icono="salir"
-          onPress={() => {
-            cerrarSesion();
+          <Boton
+            estilo={styles.boton}
+            icono="salir"
+            onPress={() => {
+              cerrarSesion();
+              router.dismissAll();
             router.replace('/(auth)/login');
-          }}
-          titulo="Cerrar sesión"
-          variante="secundario"
-        />
-      </View>
-    </ScrollView>
+            }}
+            titulo="Cerrar sesión"
+            variante="secundario"
+          />
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  pantalla: { flex: 1, backgroundColor: colores.papel },
   contenido: {
     backgroundColor: colores.papel,
     flexGrow: 1,

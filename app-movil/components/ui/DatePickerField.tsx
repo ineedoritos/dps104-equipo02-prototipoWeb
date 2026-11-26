@@ -15,6 +15,7 @@ interface DatePickerFieldProps {
   minDate?: string;
   maxDate?: string;
   error?: string;
+  permitirLimpiar?: boolean;
 }
 
 export function DatePickerField({
@@ -25,6 +26,7 @@ export function DatePickerField({
   minDate,
   maxDate,
   error,
+  permitirLimpiar = true,
 }: DatePickerFieldProps) {
   const [abierto, setAbierto] = useState(false);
 
@@ -50,6 +52,7 @@ export function DatePickerField({
         <Pressable
           accessibilityLabel={`Seleccionar fecha ${label}`}
           accessibilityRole="button"
+          accessibilityValue={{ text: value ? dayjs(value).format('DD/MM/YYYY') : placeholder }}
           onPress={() => setAbierto(true)}
           style={({ pressed }) => [styles.campo, pressed && styles.campoPresionado]}
         >
@@ -59,11 +62,10 @@ export function DatePickerField({
           </Text>
         </Pressable>
 
-        {value ? (
+        {value && permitirLimpiar ? (
           <Pressable
             accessibilityLabel={`Limpiar fecha ${label}`}
             accessibilityRole="button"
-            hitSlop={4}
             onPress={() => onChange('')}
             style={({ pressed }) => [styles.botonLimpiar, pressed && styles.campoPresionado]}
           >
@@ -153,13 +155,13 @@ const styles = StyleSheet.create({
     fontSize: tipografia.cuerpo,
   },
   placeholder: {
-    color: colores.tintaTenue,
+    color: colores.tintaSuave,
   },
   botonLimpiar: {
     alignItems: 'center',
-    height: 44,
+    height: 48,
     justifyContent: 'center',
-    width: 44,
+    width: 48,
   },
   textoError: {
     color: colores.ausente,

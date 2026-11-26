@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Aviso } from '@/components/ui/Aviso';
@@ -8,6 +8,7 @@ import { Boton } from '@/components/ui/Boton';
 import { CampoTexto } from '@/components/ui/CampoTexto';
 import { Icono } from '@/components/ui/Icono';
 import { crearCuenta, iniciarSesion, obtenerSesionActual } from '@/lib/gruposStore';
+import { mostrarControlesDePrueba } from '@/lib/opcionesPrueba';
 import { colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
 import { ErrorDominio } from '@/types/dominio';
 
@@ -46,6 +47,7 @@ export default function LoginScreen() {
   };
 
   const manejarEnvio = () => {
+    if (cargando) return;
     limpiarErrores();
     const correoLimpio = correo.trim();
     const nombreLimpio = nombre.trim();
@@ -98,130 +100,129 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    <SafeAreaView edges={['top', 'bottom']} style={styles.marco}>
+      <ScrollView
+        automaticallyAdjustKeyboardInsets
+        contentContainerStyle={styles.contenido}
+        keyboardShouldPersistTaps="handled"
         style={styles.pantalla}
       >
-        <ScrollView
-          automaticallyAdjustKeyboardInsets
-          contentContainerStyle={styles.contenido}
-          keyboardShouldPersistTaps="handled"
-        >
-          <View style={styles.encabezado}>
-            <View style={styles.marca}>
-              <Icono color={colores.acento} nombre="gente" tamano={26} />
-            </View>
-            <Text accessibilityRole="header" style={styles.titulo}>
-              Registro de actividades
-            </Text>
-            <Text style={styles.subtitulo}>Tu asistencia y tus horas, el mismo día.</Text>
+        <View style={styles.encabezado}>
+          <View style={styles.marca}>
+            <Icono color={colores.acento} nombre="gente" tamano={26} />
           </View>
+          <Text accessibilityRole="header" style={styles.titulo}>
+            Registro de actividades
+          </Text>
+          <Text style={styles.subtitulo}>Tu asistencia y tus horas, el mismo día.</Text>
+        </View>
 
-          <View style={styles.tarjeta}>
-            <Text style={styles.tituloFormulario}>
-              {modoRegistro ? 'Crear cuenta' : 'Iniciar sesión'}
-            </Text>
+        <View style={styles.tarjeta}>
+          <Text style={styles.tituloFormulario}>
+            {modoRegistro ? 'Crear cuenta' : 'Iniciar sesión'}
+          </Text>
 
-            {errorGeneral ? <Aviso texto={errorGeneral} tipo="error" /> : null}
+          {errorGeneral ? <Aviso texto={errorGeneral} tipo="error" /> : null}
 
-            <View style={styles.formulario}>
-              {modoRegistro ? (
-                <CampoTexto
-                  autoCapitalize="words"
-                  error={errorNombre}
-                  etiqueta="Nombre completo"
-                  onChangeText={(valor) => {
-                    setNombre(valor);
-                    if (errorNombre) setErrorNombre('');
-                  }}
-                  placeholder="Ej. Carlos González"
-                  value={nombre}
-                />
-              ) : null}
-
+          <View style={styles.formulario}>
+            {modoRegistro ? (
               <CampoTexto
-                autoCapitalize="none"
-                autoComplete="email"
-                error={errorCorreo}
-                etiqueta="Correo"
-                keyboardType="email-address"
+                autoCapitalize="words"
+                error={errorNombre}
+                etiqueta="Nombre completo"
                 onChangeText={(valor) => {
-                  setCorreo(valor);
-                  if (errorCorreo) setErrorCorreo('');
+                  setNombre(valor);
+                  if (errorNombre) setErrorNombre('');
                 }}
-                placeholder="correo@ejemplo.com"
-                value={correo}
+                placeholder="Ej. Carlos González"
+                value={nombre}
               />
+            ) : null}
 
-              <CampoTexto
-                accesorio={
-                  <Pressable
-                    accessibilityLabel={
-                      mostrarContrasena ? 'Ocultar contraseña' : 'Mostrar contraseña'
-                    }
-                    accessibilityRole="button"
-                    onPress={() => setMostrarContrasena((visible) => !visible)}
-                    style={styles.botonVer}
-                  >
-                    <Text style={styles.textoVer}>{mostrarContrasena ? 'Ocultar' : 'Ver'}</Text>
-                  </Pressable>
-                }
-                autoCapitalize="none"
-                autoComplete="password"
-                error={errorContrasena}
-                etiqueta="Contraseña"
-                onChangeText={(valor) => {
-                  setContrasena(valor);
-                  if (errorContrasena) setErrorContrasena('');
-                }}
-                placeholder="Mínimo 6 caracteres"
-                secureTextEntry={!mostrarContrasena}
-                value={contrasena}
-              />
+            <CampoTexto
+              autoCapitalize="none"
+              autoComplete="email"
+              error={errorCorreo}
+              etiqueta="Correo"
+              keyboardType="email-address"
+              onChangeText={(valor) => {
+                setCorreo(valor);
+                if (errorCorreo) setErrorCorreo('');
+              }}
+              placeholder="correo@ejemplo.com"
+              value={correo}
+            />
 
-              <Boton
-                cargando={cargando}
-                estilo={styles.boton}
-                onPress={manejarEnvio}
-                titulo={modoRegistro ? 'Crear cuenta' : 'Iniciar sesión'}
-              />
+            <CampoTexto
+              accesorio={
+                <Pressable
+                  accessibilityLabel={
+                    mostrarContrasena ? 'Ocultar contraseña' : 'Mostrar contraseña'
+                  }
+                  accessibilityRole="button"
+                  onPress={() => setMostrarContrasena((visible) => !visible)}
+                  style={({ pressed }) => [styles.botonVer, pressed && { opacity: 0.65 }]}
+                >
+                  <Icono
+                    color={colores.tintaSuave}
+                    nombre={mostrarContrasena ? 'ocultar' : 'ver'}
+                    tamano={22}
+                  />
+                </Pressable>
+              }
+              autoCapitalize="none"
+              autoComplete={modoRegistro ? 'new-password' : 'current-password'}
+              error={errorContrasena}
+              etiqueta="Contraseña"
+              onChangeText={(valor) => {
+                setContrasena(valor);
+                if (errorContrasena) setErrorContrasena('');
+              }}
+              onSubmitEditing={manejarEnvio}
+              placeholder={modoRegistro ? 'Mínimo 6 caracteres' : undefined}
+              returnKeyType="go"
+              secureTextEntry={!mostrarContrasena}
+              value={contrasena}
+            />
 
+            <Boton
+              cargando={cargando}
+              estilo={styles.boton}
+              onPress={manejarEnvio}
+              titulo={modoRegistro ? 'Crear cuenta' : 'Iniciar sesión'}
+            />
+
+            <Pressable
+              accessibilityRole="button"
+              disabled={cargando}
+              onPress={cambiarModo}
+              style={styles.enlaceSecundario}
+            >
+              <Text style={styles.textoEnlace}>
+                {modoRegistro
+                  ? '¿Ya tienes cuenta? Iniciar sesión'
+                  : '¿No tienes cuenta? Crear cuenta'}
+              </Text>
+            </Pressable>
+
+            {mostrarControlesDePrueba && !modoRegistro ? (
               <Pressable
                 accessibilityRole="button"
-                disabled={cargando}
-                onPress={cambiarModo}
-                style={styles.enlaceSecundario}
+                onPress={entrarComoDemo}
+                style={styles.atajoDemo}
               >
-                <Text style={styles.textoEnlace}>
-                  {modoRegistro
-                    ? '¿Ya tienes cuenta? Iniciar sesión'
-                    : '¿No tienes cuenta? Crear cuenta'}
-                </Text>
+                <Text style={styles.textoAtajo}>Usar cuenta de prueba (carlos@ejemplo.com)</Text>
               </Pressable>
-
-              {__DEV__ && !modoRegistro ? (
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={entrarComoDemo}
-                  style={styles.atajoDemo}
-                >
-                  <Text style={styles.textoAtajo}>Usar cuenta de prueba (carlos@ejemplo.com)</Text>
-                </Pressable>
-              ) : null}
-            </View>
+            ) : null}
           </View>
-
-          <Text style={styles.notaPie}>
-            Hay un solo tipo de cuenta. Tu rol depende de cada grupo.
-          </Text>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  marco: { backgroundColor: colores.superficie, flex: 1 },
   pantalla: {
     backgroundColor: colores.papel,
     flex: 1,
@@ -274,19 +275,18 @@ const styles = StyleSheet.create({
     gap: espaciados.md,
   },
   botonVer: {
-    paddingHorizontal: espaciados.sm,
-    paddingVertical: espaciados.xs,
-  },
-  textoVer: {
-    color: colores.acento,
-    fontSize: tipografia.cuerpoSm,
-    fontWeight: pesos.fuerte,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 48,
+    minWidth: 48,
   },
   boton: {
     marginTop: espaciados.xs,
   },
   enlaceSecundario: {
     alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 48,
     paddingVertical: espaciados.sm,
   },
   textoEnlace: {
@@ -303,10 +303,5 @@ const styles = StyleSheet.create({
   textoAtajo: {
     color: colores.tintaSuave,
     fontSize: tipografia.micro,
-  },
-  notaPie: {
-    color: colores.tintaSuave,
-    fontSize: tipografia.cuerpoSm,
-    textAlign: 'center',
   },
 });

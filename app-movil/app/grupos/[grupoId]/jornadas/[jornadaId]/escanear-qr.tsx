@@ -14,6 +14,7 @@ import {
   obtenerMiRolEnGrupo,
   registrarAsistenciaQR,
 } from '@/lib/gruposStore';
+import { mostrarControlesDePrueba } from '@/lib/opcionesPrueba';
 import { colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
 import { ErrorDominio } from '@/types/dominio';
 
@@ -100,7 +101,7 @@ export default function EscanearQRScreen() {
     <SafeAreaView edges={['bottom']} style={styles.pantalla}>
       <BarraSuperior
         accessibilityLabelVolver="Volver al grupo"
-        titulo={jornada.titulo}
+        titulo="Escanear código QR"
       />
 
       <ScrollView contentContainerStyle={styles.contenido} showsVerticalScrollIndicator={false}>
@@ -125,15 +126,24 @@ export default function EscanearQRScreen() {
           />
         ) : null}
 
-        {puedeEscanear && estadoCamara === 'sin_permiso' ? (
+        {puedeEscanear && !mostrarControlesDePrueba ? (
+          <Aviso
+            accion={
+              <Boton onPress={() => router.back()} titulo="Volver" variante="secundario" />
+            }
+            texto="La lectura por cámara no está disponible en esta versión. Pide al responsable que registre tu asistencia."
+            tipo="info"
+          />
+        ) : null}
+
+        {puedeEscanear && mostrarControlesDePrueba && estadoCamara === 'sin_permiso' ? (
           <View style={styles.tarjetaPermiso}>
             <View style={styles.circuloIcono}>
               <Icono color={colores.acento} nombre="camara" tamano={28} />
             </View>
             <Text style={styles.tituloPermiso}>Necesitamos acceso a tu cámara</Text>
             <Text style={styles.descripcionPermiso}>
-              Habilita el permiso de cámara en la configuración de tu dispositivo para leer el
-              código que muestra el responsable.
+              Este estado simula que la app no tiene permiso de cámara.
             </Text>
             <Boton
               icono="camara"
@@ -141,7 +151,7 @@ export default function EscanearQRScreen() {
                 setMensajeError('');
                 setEstadoCamara('activa');
               }}
-              titulo="Solicitar permiso de nuevo"
+              titulo="Simular permiso concedido"
             />
             <Text style={styles.notaManual}>
               Sin permiso de cámara o fuera de rango: el responsable puede registrarte manualmente.
@@ -149,7 +159,7 @@ export default function EscanearQRScreen() {
           </View>
         ) : null}
 
-        {puedeEscanear && estadoCamara !== 'sin_permiso' ? (
+        {puedeEscanear && mostrarControlesDePrueba && estadoCamara !== 'sin_permiso' ? (
           <>
             <View style={styles.visor}>
               <View style={styles.marcoVisor}>
@@ -166,7 +176,7 @@ export default function EscanearQRScreen() {
                 ) : (
                   <View style={styles.centroVisor}>
                     <Icono color={colores.superficie} nombre="camara" tamano={36} />
-                    <Text style={styles.textoVisor}>Apunta al código del responsable</Text>
+                    <Text style={styles.textoVisor}>Simulación de lectura</Text>
                   </View>
                 )}
               </View>
@@ -174,7 +184,7 @@ export default function EscanearQRScreen() {
 
             {jornada.control_horas ? (
               <Aviso
-                texto="La app detecta automáticamente si registras tu entrada o tu salida."
+                texto="La simulación distingue una entrada de una salida."
                 tipo="info"
               />
             ) : null}
@@ -203,10 +213,10 @@ export default function EscanearQRScreen() {
                 deshabilitado={bloqueado}
                 icono="hecho"
                 onPress={() => procesarLectura('VALIDO')}
-                titulo="Registrar lectura del código"
+                titulo="Simular lectura válida"
               />
 
-              {__DEV__ ? (
+              {mostrarControlesDePrueba ? (
                 <View style={styles.barraPruebas}>
                   <Pressable
                     onPress={() => setEstadoCamara('sin_permiso')}
@@ -232,9 +242,7 @@ export default function EscanearQRScreen() {
           </>
         ) : null}
 
-        <Text style={styles.notaPie}>
-          Sin permiso de cámara o fuera de rango: el responsable puede registrarte manualmente.
-        </Text>
+
       </ScrollView>
     </SafeAreaView>
   );
@@ -396,10 +404,5 @@ const styles = StyleSheet.create({
     color: colores.tintaSuave,
     fontSize: tipografia.micro,
     fontWeight: pesos.medio,
-  },
-  notaPie: {
-    color: colores.tintaSuave,
-    fontSize: tipografia.cuerpoSm,
-    textAlign: 'center',
   },
 });

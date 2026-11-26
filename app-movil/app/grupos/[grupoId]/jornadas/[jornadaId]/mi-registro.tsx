@@ -15,7 +15,7 @@ import { BarraSuperior } from '@/components/ui/BarraSuperior';
 import { Boton } from '@/components/ui/Boton';
 import { ESTADO_ASISTENCIA, Estado } from '@/components/ui/Estado';
 import { Seccion } from '@/components/ui/Seccion';
-import { formatearDia, formatearDuracion, horaEnZona } from '@/lib/fecha';
+import { fechaEnZona, formatearDia, formatearDuracion, horaEnZona } from '@/lib/fecha';
 import {
   obtenerGrupoPorId,
   obtenerJornadaPorId,
@@ -24,6 +24,7 @@ import {
   obtenerSesionActual,
   suscribirStore,
 } from '@/lib/gruposStore';
+import { mostrarControlesDePrueba } from '@/lib/opcionesPrueba';
 import { cifrasTabulares, colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
 
 type EstadoVista = 'normal' | 'cargando' | 'error';
@@ -86,7 +87,7 @@ export default function DetalleRegistroScreen() {
     );
   }
 
-  const fechaTexto = formatearDia(jornada.inicio_en.slice(0, 10), {
+  const fechaTexto = formatearDia(fechaEnZona(jornada.inicio_en), {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -107,7 +108,7 @@ export default function DetalleRegistroScreen() {
       <BarraSuperior titulo="Detalle del registro" />
 
       <ScrollView contentContainerStyle={styles.contenido} showsVerticalScrollIndicator={false}>
-        {__DEV__ ? (
+        {mostrarControlesDePrueba ? (
           <View style={styles.barraEstados}>
             {(['normal', 'cargando', 'error'] as const).map((modo) => {
               const activo = estadoVista === modo;

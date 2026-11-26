@@ -24,6 +24,7 @@ import {
   obtenerResumenAsistenciaJornada,
   suscribirStore,
 } from '@/lib/gruposStore';
+import { mostrarControlesDePrueba } from '@/lib/opcionesPrueba';
 import { cifrasTabulares, colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
 import { ErrorDominio, type CodigoQR } from '@/types/dominio';
 
@@ -80,6 +81,7 @@ export default function MostrarQRScreen() {
 
   useFocusEffect(
     useCallback(() => {
+      if (!mostrarControlesDePrueba) return;
       if (jornadaId && !obtenerCodigoQRVigente(jornadaId)) {
         try {
           generarCodigoQR(jornadaId, 15);
@@ -93,7 +95,7 @@ export default function MostrarQRScreen() {
   );
 
   useEffect(() => {
-    if (!codigoQR) {
+    if (!mostrarControlesDePrueba || !codigoQR) {
       return;
     }
     const actualizar = () => {
@@ -154,7 +156,7 @@ export default function MostrarQRScreen() {
       />
 
       <ScrollView contentContainerStyle={styles.contenido} showsVerticalScrollIndicator={false}>
-        {__DEV__ ? (
+        {mostrarControlesDePrueba ? (
           <View style={styles.barraEstados}>
             {(['normal', 'cargando', 'error'] as const).map((modo) => {
               const activo = estadoVista === modo;
@@ -198,7 +200,14 @@ export default function MostrarQRScreen() {
           />
         ) : null}
 
-        {estadoVista === 'normal' ? (
+        {estadoVista === 'normal' && !mostrarControlesDePrueba ? (
+          <Aviso
+            texto="La lectura por cámara no está disponible en esta versión. Registra la asistencia desde la lista de la jornada."
+            tipo="info"
+          />
+        ) : null}
+
+        {estadoVista === 'normal' && mostrarControlesDePrueba ? (
           <>
             <View style={styles.cabecera}>
               <Text style={styles.tituloJornada}>{jornada.titulo}</Text>

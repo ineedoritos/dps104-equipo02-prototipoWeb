@@ -1,24 +1,22 @@
 import { type Href, useFocusEffect, useRouter } from 'expo-router';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
-  BackHandler,
-  Platform,
   Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
-  ToastAndroid,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Aviso } from '@/components/ui/Aviso';
+import { BarraSuperior } from '@/components/ui/BarraSuperior';
 import { Boton } from '@/components/ui/Boton';
 import { EstadoVacio } from '@/components/ui/EstadoVacio';
 import { Icono } from '@/components/ui/Icono';
 import { obtenerMisGrupos, obtenerSesionActual, suscribirStore } from '@/lib/gruposStore';
+import { mostrarControlesDePrueba } from '@/lib/opcionesPrueba';
 import { cifrasTabulares, colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
 import type { ResumenGrupoUsuario } from '@/types/dominio';
 
@@ -29,7 +27,6 @@ export default function MisGruposScreen() {
   const [grupos, setGrupos] = useState<ResumenGrupoUsuario[]>(() => obtenerMisGrupos());
   const [estadoVista, setEstadoVista] = useState<EstadoVista>('normal');
   const [refrescando, setRefrescando] = useState(false);
-  const ultimaAtras = useRef(0);
 
   const recargar = useCallback(() => {
     if (!obtenerSesionActual()) {
@@ -42,26 +39,7 @@ export default function MisGruposScreen() {
   useFocusEffect(
     useCallback(() => {
       recargar();
-      const desuscribir = suscribirStore(recargar);
-
-      if (Platform.OS !== 'android') {
-        return () => desuscribir();
-      }
-
-      const suscripcion = BackHandler.addEventListener('hardwareBackPress', () => {
-        const ahora = Date.now();
-        if (ahora - ultimaAtras.current < 2000) {
-          return false;
-        }
-        ultimaAtras.current = ahora;
-        ToastAndroid.show('Presiona atrás de nuevo para salir', ToastAndroid.SHORT);
-        return true;
-      });
-
-      return () => {
-        desuscribir();
-        suscripcion.remove();
-      };
+      return suscribirStore(recargar);
     }, [recargar]),
   );
 
@@ -77,13 +55,8 @@ export default function MisGruposScreen() {
   const listaVisible = estadoVista === 'vacio' ? [] : grupos;
 
   return (
-    <SafeAreaView edges={['top']} style={styles.pantalla}>
-      <View style={styles.cabeceraFija}>
-        <Text accessibilityRole="header" style={styles.titulo}>
-          Mis grupos
-        </Text>
-        <Text style={styles.subtitulo}>Tu rol cambia según el grupo.</Text>
-      </View>
+    <View style={styles.pantalla}>
+      <BarraSuperior mostrarVolver={false} titulo="Mis grupos" />
 
       <ScrollView
         contentContainerStyle={styles.contenido}
@@ -98,7 +71,7 @@ export default function MisGruposScreen() {
         showsVerticalScrollIndicator={false}
       >
 
-        {__DEV__ ? (
+        {mostrarControlesDePrueba ? (
           <View style={styles.barraEstados}>
             {(['normal', 'cargando', 'vacio', 'error'] as const).map((modo) => {
               const activo = estadoVista === modo;
@@ -155,6 +128,10 @@ export default function MisGruposScreen() {
             icono="gente"
             titulo="Aún no perteneces a ningún grupo"
           />
+        ) : null}
+
+        {estadoVista === 'normal' && listaVisible.length > 0 ? (
+          <Boton icono="nueva" onPress={() => router.push('/grupos/crear')} titulo="Crear grupo" />
         ) : null}
 
         {estadoVista === 'normal' && listaVisible.length > 0 ? (
@@ -217,17 +194,9 @@ export default function MisGruposScreen() {
           </View>
         ) : null}
 
-        {listaVisible.length > 0 && estadoVista === 'normal' ? (
-          <Boton
-            icono="nueva"
-            onPress={() => router.push('/grupos/crear')}
-            titulo="Crear grupo"
-          />
-        ) : null}
 
-        <Text style={styles.notaPie}>Solo ves los grupos a los que perteneces.</Text>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -235,14 +204,6 @@ const styles = StyleSheet.create({
   pantalla: {
     backgroundColor: colores.superficie,
     flex: 1,
-  },
-  cabeceraFija: {
-    backgroundColor: colores.superficie,
-    borderBottomColor: colores.borde,
-    borderBottomWidth: 1,
-    gap: espaciados.xs,
-    paddingHorizontal: espaciados.lg,
-    paddingVertical: espaciados.md,
   },
   contenido: {
     backgroundColor: colores.papel,
@@ -253,16 +214,6 @@ const styles = StyleSheet.create({
   },
   encabezado: {
     gap: espaciados.xs,
-  },
-  titulo: {
-    color: colores.tinta,
-    fontSize: tipografia.display,
-    fontWeight: pesos.fuerte,
-    letterSpacing: -0.4,
-  },
-  subtitulo: {
-    color: colores.tintaSuave,
-    fontSize: tipografia.cuerpo,
   },
   barraEstados: {
     flexDirection: 'row',
@@ -384,10 +335,5 @@ const styles = StyleSheet.create({
     color: colores.acento,
     fontSize: tipografia.micro,
     fontWeight: pesos.fuerte,
-  },
-  notaPie: {
-    color: colores.tintaSuave,
-    fontSize: tipografia.micro,
-    textAlign: 'center',
   },
 });

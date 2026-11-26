@@ -1060,7 +1060,7 @@ export function obtenerMisGruposParaHistorial(): Array<{ grupo: Grupo; retirado:
       continue;
     }
     const grupo = grupos.find((g) => g.id === membresia.grupo_id);
-    if (!grupo) {
+    if (!grupo || obtenerMiRolEnGrupo(grupo.id) === 'responsable') {
       continue;
     }
     const previo = porGrupo.get(grupo.id);
@@ -1088,19 +1088,9 @@ export function obtenerMiHistorial(grupoId?: string): ResumenMiHistorial {
     };
   }
 
-  const misMembresias = integrantes.filter(
-    (i) => i.usuario_id === sesionActual?.id && i.rol === 'participante',
+  const retiradosPorGrupo = new Map(
+    obtenerMisGruposParaHistorial().map(({ grupo, retirado }) => [grupo.id, retirado]),
   );
-  const retiradosPorGrupo = new Map<string, boolean>();
-  for (const m of misMembresias) {
-    const activo = m.retirado_en === null;
-    const previo = retiradosPorGrupo.get(m.grupo_id);
-    if (previo === undefined) {
-      retiradosPorGrupo.set(m.grupo_id, !activo);
-    } else if (activo) {
-      retiradosPorGrupo.set(m.grupo_id, false);
-    }
-  }
 
   const registros: RegistroHistorial[] = asistencias
     .filter((a) => a.participante_id === sesionActual?.id)

@@ -11,6 +11,7 @@ interface BarraSuperiorProps {
   onVolver?: () => void;
   accessibilityLabelVolver?: string;
   derecha?: ReactNode;
+  mostrarVolver?: boolean;
 }
 
 /**
@@ -22,30 +23,32 @@ export function BarraSuperior({
   onVolver,
   accessibilityLabelVolver = 'Volver',
   derecha,
+  mostrarVolver = true,
 }: BarraSuperiorProps) {
   const router = useRouter();
 
   return (
     <SafeAreaView edges={['top']} style={styles.fondo}>
       <View style={styles.barra}>
-        <Pressable
-          accessibilityLabel={accessibilityLabelVolver}
-          accessibilityRole="button"
-          onPress={onVolver ?? (() => router.back())}
-          style={({ pressed }) => [styles.botonIcono, pressed && styles.presionado]}
-        >
-          <Icono color={colores.tinta} nombre="volver" tamano={22} />
-        </Pressable>
+        {mostrarVolver ? (
+          <Pressable
+            accessibilityLabel={accessibilityLabelVolver}
+            accessibilityRole="button"
+            onPress={onVolver ?? (() => {
+              if (router.canGoBack()) router.back();
+              else router.replace('/(tabs)');
+            })}
+            style={({ pressed }) => [styles.botonIcono, pressed && styles.presionado]}
+          >
+            <Icono color={colores.tinta} nombre="volver" tamano={22} />
+          </Pressable>
+        ) : null}
 
-        <Text accessibilityRole="header" numberOfLines={1} style={styles.titulo}>
+        <Text accessibilityRole="header" numberOfLines={2} style={styles.titulo}>
           {titulo}
         </Text>
 
-        {derecha ? (
-          <View style={styles.derecha}>{derecha}</View>
-        ) : (
-          <View style={styles.espacioDerecha} />
-        )}
+        {derecha ? <View style={styles.derecha}>{derecha}</View> : null}
       </View>
     </SafeAreaView>
   );
@@ -62,16 +65,18 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    minHeight: 52,
-    paddingHorizontal: espaciados.sm,
+    minHeight: 56,
+    gap: espaciados.sm,
+    paddingHorizontal: espaciados.lg,
     paddingVertical: espaciados.xs,
   },
   botonIcono: {
     alignItems: 'center',
     borderRadius: radios.pill,
-    height: 44,
+    height: 48,
+    marginLeft: -espaciados.sm,
     justifyContent: 'center',
-    width: 44,
+    width: 48,
   },
   presionado: {
     opacity: 0.7,
@@ -81,13 +86,10 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: tipografia.tituloSm,
     fontWeight: pesos.fuerte,
-    textAlign: 'center',
+    paddingVertical: espaciados.xs,
   },
   derecha: {
     alignItems: 'flex-end',
-    minWidth: 44,
-  },
-  espacioDerecha: {
-    width: 44,
+    flexShrink: 0,
   },
 });

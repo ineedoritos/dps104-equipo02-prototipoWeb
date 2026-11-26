@@ -9,20 +9,21 @@ import {
   Text,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Aviso } from '@/components/ui/Aviso';
+import { BarraSuperior } from '@/components/ui/BarraSuperior';
 import { Boton } from '@/components/ui/Boton';
 import { Estado, type TonoEstado } from '@/components/ui/Estado';
 import { EstadoVacio } from '@/components/ui/EstadoVacio';
 import { Seccion } from '@/components/ui/Seccion';
-import { formatearDia, formatearDuracion } from '@/lib/fecha';
+import { fechaEnZona, formatearDia, formatearDuracion } from '@/lib/fecha';
 import {
   obtenerMiHistorial,
   obtenerMisGruposParaHistorial,
   obtenerSesionActual,
   suscribirStore,
 } from '@/lib/gruposStore';
+import { mostrarControlesDePrueba } from '@/lib/opcionesPrueba';
 import { cifrasTabulares, colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
 import type { RegistroHistorial } from '@/types/dominio';
 
@@ -38,7 +39,7 @@ function agruparPorMes(registros: RegistroHistorial[]): GrupoMes[] {
   const mapa = new Map<string, GrupoMes>();
 
   for (const item of registros) {
-    const fechaISO = item.jornada.inicio_en.slice(0, 10);
+    const fechaISO = fechaEnZona(item.jornada.inicio_en);
     const clave = fechaISO.slice(0, 7);
     let grupoMes = mapa.get(clave);
     if (!grupoMes) {
@@ -105,7 +106,8 @@ export default function MiHistorialScreen() {
   void tick;
   const sesion = obtenerSesionActual();
   const gruposFiltro = obtenerMisGruposParaHistorial();
-  const resumen = obtenerMiHistorial(filtroGrupoId);
+  const grupoSeleccionadoId = gruposFiltro.find(({ grupo }) => grupo.id === filtroGrupoId)?.grupo.id;
+  const resumen = obtenerMiHistorial(grupoSeleccionadoId);
 
   const manejarRefresh = () => {
     setRefrescando(true);
@@ -118,10 +120,8 @@ export default function MiHistorialScreen() {
 
   if (!sesion) {
     return (
-      <SafeAreaView edges={['top']} style={styles.pantalla}>
-        <View style={styles.cabecera}>
-          <Text style={styles.tituloPantalla}>Mi historial</Text>
-        </View>
+      <View style={styles.pantalla}>
+        <BarraSuperior mostrarVolver={false} titulo="Mi historial" />
         <View style={styles.contenido}>
           <Aviso
             accion={
@@ -136,7 +136,7 @@ export default function MiHistorialScreen() {
             tipo="info"
           />
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -144,13 +144,8 @@ export default function MiHistorialScreen() {
   const meses = agruparPorMes(registrosVisibles);
 
   return (
-    <SafeAreaView edges={['top']} style={styles.pantalla}>
-      <View style={styles.cabecera}>
-        <Text style={styles.tituloPantalla}>Mi historial</Text>
-        <Text style={styles.subtituloPantalla}>
-          Consulta tus asistencias y horas acumuladas.
-        </Text>
-      </View>
+    <View style={styles.pantalla}>
+      <BarraSuperior mostrarVolver={false} titulo="Mi historial" />
 
       <ScrollView
         contentContainerStyle={styles.contenido}
@@ -171,20 +166,22 @@ export default function MiHistorialScreen() {
         >
           <Pressable
             accessibilityRole="button"
+            accessibilityState={{ selected: !grupoSeleccionadoId }}
             onPress={() => setFiltroGrupoId(undefined)}
-            style={[styles.chipFiltro, !filtroGrupoId && styles.chipFiltroActivo]}
+            style={[styles.chipFiltro, !grupoSeleccionadoId && styles.chipFiltroActivo]}
           >
-            <Text style={[styles.textoChipFiltro, !filtroGrupoId && styles.textoChipFiltroActivo]}>
+            <Text style={[styles.textoChipFiltro, !grupoSeleccionadoId && styles.textoChipFiltroActivo]}>
               Todos
             </Text>
           </Pressable>
 
           {gruposFiltro.map(({ grupo, retirado }) => {
-            const activo = filtroGrupoId === grupo.id;
+            const activo = grupoSeleccionadoId === grupo.id;
             return (
               <Pressable
                 key={grupo.id}
                 accessibilityRole="button"
+                accessibilityState={{ selected: activo }}
                 onPress={() => setFiltroGrupoId(grupo.id)}
                 style={[styles.chipFiltro, activo && styles.chipFiltroActivo]}
               >
@@ -196,7 +193,7 @@ export default function MiHistorialScreen() {
           })}
         </ScrollView>
 
-        {__DEV__ ? (
+        {mostrarControlesDePrueba ? (
           <View style={styles.barraEstados}>
             {(['normal', 'cargando', 'vacio', 'error'] as const).map((modo) => {
               const activo = estadoVista === modo;
@@ -297,7 +294,7 @@ export default function MiHistorialScreen() {
                   <View style={styles.listaRegistros}>
                     {mes.items.map((item) => {
                       const badge = obtenerBadgeRegistro(item);
-                      const fechaTexto = formatearDia(item.jornada.inicio_en.slice(0, 10), {
+                      const fechaTexto = formatearDia(fechaEnZona(item.jornada.inicio_en), {
                         weekday: 'short',
                         day: 'numeric',
                         month: 'short',
@@ -360,7 +357,7 @@ export default function MiHistorialScreen() {
           </>
         ) : null}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -368,22 +365,6 @@ const styles = StyleSheet.create({
   pantalla: {
     backgroundColor: colores.papel,
     flex: 1,
-  },
-  cabecera: {
-    borderBottomColor: colores.borde,
-    borderBottomWidth: 1,
-    gap: 2,
-    paddingHorizontal: espaciados.lg,
-    paddingVertical: espaciados.md,
-  },
-  tituloPantalla: {
-    color: colores.tinta,
-    fontSize: tipografia.titulo,
-    fontWeight: pesos.fuerte,
-  },
-  subtituloPantalla: {
-    color: colores.tintaSuave,
-    fontSize: tipografia.cuerpoSm,
   },
   contenido: {
     gap: espaciados.lg,
@@ -394,6 +375,8 @@ const styles = StyleSheet.create({
     gap: espaciados.sm,
   },
   chipFiltro: {
+    justifyContent: 'center',
+    minHeight: 48,
     backgroundColor: colores.superficie,
     borderColor: colores.borde,
     borderRadius: radios.pill,

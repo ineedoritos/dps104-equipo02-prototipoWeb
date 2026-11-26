@@ -2,8 +2,6 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -13,10 +11,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Aviso } from '@/components/ui/Aviso';
+import { BarraSuperior } from '@/components/ui/BarraSuperior';
 import { Boton } from '@/components/ui/Boton';
 import { CampoTexto } from '@/components/ui/CampoTexto';
 import { HoraPickerField } from '@/components/ui/HoraPickerField';
-import { Icono } from '@/components/ui/Icono';
 import { fechaEnZona, fechaHoraEnZona, horaEnZona } from '@/lib/fecha';
 import {
   ajustarHorasAsistencia,
@@ -26,6 +24,7 @@ import {
   obtenerMiRolEnGrupo,
   obtenerParticipantesActivos,
 } from '@/lib/gruposStore';
+import { mostrarControlesDePrueba } from '@/lib/opcionesPrueba';
 import { cifrasTabulares, colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
 import { ErrorDominio } from '@/types/dominio';
 
@@ -101,19 +100,8 @@ export default function AjustarHorasScreen() {
     registro?.estado !== 'presente'
   ) {
     return (
-      <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
-        <View style={styles.barraSuperior}>
-          <Pressable
-            accessibilityLabel="Volver"
-            accessibilityRole="button"
-            onPress={() => router.back()}
-            style={styles.botonIcono}
-          >
-            <Icono color={colores.tinta} nombre="volver" tamano={22} />
-          </Pressable>
-          <Text style={styles.tituloBarra}>Ajustar horas</Text>
-          <View style={styles.espacioDerecha} />
-        </View>
+      <SafeAreaView edges={['bottom']} style={styles.pantalla}>
+        <BarraSuperior titulo="Ajustar horas" />
         <View style={styles.contenido}>
           <Aviso
             accion={
@@ -180,157 +168,137 @@ export default function AjustarHorasScreen() {
 
   return (
     <SafeAreaView edges={['bottom']} style={styles.pantalla}>
-      <SafeAreaView edges={['top']} style={styles.fondoBarra}>
-        <View style={styles.barraSuperior}>
-          <Pressable
-            accessibilityLabel="Volver a asistencia"
-            accessibilityRole="button"
-            onPress={() => router.back()}
-            style={styles.botonIcono}
-          >
-            <Icono color={colores.tinta} nombre="volver" tamano={22} />
-          </Pressable>
-          <Text numberOfLines={1} style={styles.tituloBarra}>
-            Ajustar horas
-          </Text>
-          <View style={styles.espacioDerecha} />
-        </View>
-      </SafeAreaView>
+      <BarraSuperior titulo="Ajustar horas" />
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.flex}
+      <ScrollView
+        automaticallyAdjustKeyboardInsets
+        contentContainerStyle={styles.contenido}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
-        <ScrollView
-          automaticallyAdjustKeyboardInsets
-          contentContainerStyle={styles.contenido}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
-          {__DEV__ ? (
-            <View style={styles.barraEstados}>
-              {(['normal', 'cargando', 'error'] as const).map((modo) => {
-                const activo = estadoVista === modo;
-                return (
-                  <Pressable
-                    key={modo}
-                    onPress={() => setEstadoVista(modo)}
-                    style={[styles.chipEstado, activo && styles.chipEstadoActivo]}
-                  >
-                    <Text style={[styles.textoChipEstado, activo && styles.textoChipEstadoActivo]}>
-                      {modo}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-          ) : null}
-
-          {estadoVista === 'cargando' ? (
-            <View style={styles.estadoCentro}>
-              <ActivityIndicator color={colores.acento} size="large" />
-              <Text style={styles.textoCarga}>Cargando horas del participante…</Text>
-            </View>
-          ) : null}
-
-          {estadoVista === 'error' ? (
-            <Aviso
-              accion={
-                <Boton
-                  onPress={() => setEstadoVista('normal')}
-                  tamano="sm"
-                  titulo="Reintentar"
-                  variante="secundario"
-                />
-              }
-              texto="No pudimos cargar los datos de horas. Intenta de nuevo."
-              tipo="error"
-            />
-          ) : null}
-
-          {estadoVista === 'normal' ? (
-            <>
-              <View style={styles.cabecera}>
-                <Text style={styles.tituloCabecera}>
-                  Ajustar horas de {participante.usuario.nombre}
-                </Text>
-                <Text style={[styles.subtituloCabecera, cifrasTabulares]}>
-                  {jornada.titulo} · {horaInicioDefault} – {horaFinDefault}
-                </Text>
-                {registro.origen === 'qr' ? (
-                  <Text style={styles.origenQR}>Registro original por QR (ajuste excepcional)</Text>
-                ) : null}
-              </View>
-
-              {errorGeneral ? <Aviso texto={errorGeneral} tipo="error" /> : null}
-
-              <View style={styles.filaHoras}>
-                <View style={styles.colHora}>
-                  <HoraPickerField
-                    label="Hora de entrada"
-                    onChange={setHoraEntrada}
-                    value={horaEntrada}
-                  />
-                </View>
-                <View style={styles.colHora}>
-                  <HoraPickerField
-                    error={
-                      horaSalida <= horaEntrada
-                        ? 'La hora de salida debe ser posterior a la de entrada.'
-                        : undefined
-                    }
-                    label="Hora de salida"
-                    onChange={setHoraSalida}
-                    value={horaSalida}
-                  />
-                </View>
-              </View>
-
-              <View style={styles.tarjetaDuracion}>
-                <Text style={styles.etiquetaDuracion}>Duración calculada</Text>
-                <Text style={[styles.valorDuracion, cifrasTabulares]}>
-                  {duracionCalculada !== null
-                    ? `${formatearDuracion(duracionCalculada)} (${duracionCalculada} min)`
-                    : 'Horario inválido'}
-                </Text>
-              </View>
-
-              <View style={styles.campoConAyuda}>
-                <CampoTexto
-                  etiqueta="Tiempo reconocido (minutos)"
-                  keyboardType="number-pad"
-                  onChangeText={setMinutosReconocidosTexto}
-                  placeholder={duracionCalculada !== null ? String(duracionCalculada) : '0'}
-                  value={minutosReconocidosTexto}
-                />
-                {duracionCalculada !== null ? (
-                  <Text style={styles.textoAyuda}>
-                    Entre 0 y {duracionCalculada} minutos. Si lo dejas vacío se reconoce el total.
+        {mostrarControlesDePrueba ? (
+          <View style={styles.barraEstados}>
+            {(['normal', 'cargando', 'error'] as const).map((modo) => {
+              const activo = estadoVista === modo;
+              return (
+                <Pressable
+                  key={modo}
+                  onPress={() => setEstadoVista(modo)}
+                  style={[styles.chipEstado, activo && styles.chipEstadoActivo]}
+                >
+                  <Text style={[styles.textoChipEstado, activo && styles.textoChipEstadoActivo]}>
+                    {modo}
                   </Text>
-                ) : null}
+                </Pressable>
+              );
+            })}
+          </View>
+        ) : null}
+
+        {estadoVista === 'cargando' ? (
+          <View style={styles.estadoCentro}>
+            <ActivityIndicator color={colores.acento} size="large" />
+            <Text style={styles.textoCarga}>Cargando horas del participante…</Text>
+          </View>
+        ) : null}
+
+        {estadoVista === 'error' ? (
+          <Aviso
+            accion={
+              <Boton
+                onPress={() => setEstadoVista('normal')}
+                tamano="sm"
+                titulo="Reintentar"
+                variante="secundario"
+              />
+            }
+            texto="No pudimos cargar los datos de horas. Intenta de nuevo."
+            tipo="error"
+          />
+        ) : null}
+
+        {estadoVista === 'normal' ? (
+          <>
+            <View style={styles.cabecera}>
+              <Text style={styles.tituloCabecera}>
+                Ajustar horas de {participante.usuario.nombre}
+              </Text>
+              <Text style={[styles.subtituloCabecera, cifrasTabulares]}>
+                {jornada.titulo} · {horaInicioDefault} – {horaFinDefault}
+              </Text>
+              {registro.origen === 'qr' ? (
+                <Text style={styles.origenQR}>Registro original por QR (ajuste excepcional)</Text>
+              ) : null}
+            </View>
+
+            {errorGeneral ? <Aviso texto={errorGeneral} tipo="error" /> : null}
+
+            <View style={styles.filaHoras}>
+              <View style={styles.colHora}>
+                <HoraPickerField
+                  label="Hora de entrada"
+                  onChange={setHoraEntrada}
+                  value={horaEntrada}
+                />
               </View>
+              <View style={styles.colHora}>
+                <HoraPickerField
+                  error={
+                    horaSalida <= horaEntrada
+                      ? 'La hora de salida debe ser posterior a la de entrada.'
+                      : undefined
+                  }
+                  label="Hora de salida"
+                  onChange={setHoraSalida}
+                  value={horaSalida}
+                />
+              </View>
+            </View>
 
+            <View style={styles.tarjetaDuracion}>
+              <Text style={styles.etiquetaDuracion}>Duración calculada</Text>
+              <Text style={[styles.valorDuracion, cifrasTabulares]}>
+                {duracionCalculada !== null
+                  ? `${formatearDuracion(duracionCalculada)} (${duracionCalculada} min)`
+                  : 'Horario inválido'}
+              </Text>
+            </View>
+
+            <View style={styles.campoConAyuda}>
               <CampoTexto
-                etiqueta={
-                  requiereMotivo ? 'Motivo del ajuste (obligatorio)' : 'Motivo del ajuste (opcional)'
-                }
-                multilinea
-                numberOfLines={3}
-                onChangeText={setMotivoAjuste}
-                placeholder="Explica por qué se ajusta el tiempo reconocido"
-                value={motivoAjuste}
+                etiqueta="Tiempo reconocido (minutos)"
+                keyboardType="number-pad"
+                onChangeText={setMinutosReconocidosTexto}
+                placeholder={duracionCalculada !== null ? String(duracionCalculada) : '0'}
+                value={minutosReconocidosTexto}
               />
+              {duracionCalculada !== null ? (
+                <Text style={styles.textoAyuda}>
+                  Entre 0 y {duracionCalculada} minutos. Si lo dejas vacío se reconoce el total.
+                </Text>
+              ) : null}
+            </View>
 
-              <Aviso
-                texto={`${participante.usuario.nombre} verá este motivo en su historial. Así evitamos reclamos semanas después.`}
-                tipo="info"
-              />
+            <CampoTexto
+              etiqueta={
+                requiereMotivo ? 'Motivo del ajuste (obligatorio)' : 'Motivo del ajuste (opcional)'
+              }
+              multilinea
+              numberOfLines={3}
+              onChangeText={setMotivoAjuste}
+              placeholder="Explica por qué se ajusta el tiempo reconocido"
+              value={motivoAjuste}
+            />
 
-              <Boton cargando={guardando} icono="guardar" onPress={manejarGuardar} titulo="Guardar horas" />
-            </>
-          ) : null}
-        </ScrollView>
-      </KeyboardAvoidingView>
+            <Aviso
+              texto={`${participante.usuario.nombre} verá este motivo en su historial. Así evitamos reclamos semanas después.`}
+              tipo="info"
+            />
+
+            <Boton cargando={guardando} icono="guardar" onPress={manejarGuardar} titulo="Guardar horas" />
+          </>
+        ) : null}
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -340,37 +308,8 @@ const styles = StyleSheet.create({
     backgroundColor: colores.papel,
     flex: 1,
   },
-  fondoBarra: {
-    backgroundColor: colores.superficie,
-  },
   flex: {
     flex: 1,
-  },
-  barraSuperior: {
-    alignItems: 'center',
-    backgroundColor: colores.superficie,
-    borderBottomColor: colores.borde,
-    borderBottomWidth: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: espaciados.sm,
-    paddingVertical: espaciados.sm,
-  },
-  botonIcono: {
-    alignItems: 'center',
-    height: 44,
-    justifyContent: 'center',
-    width: 44,
-  },
-  tituloBarra: {
-    color: colores.tinta,
-    flex: 1,
-    fontSize: tipografia.tituloSm,
-    fontWeight: pesos.fuerte,
-    textAlign: 'center',
-  },
-  espacioDerecha: {
-    width: 44,
   },
   contenido: {
     gap: espaciados.lg,

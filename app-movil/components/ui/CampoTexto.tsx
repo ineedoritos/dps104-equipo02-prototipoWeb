@@ -37,6 +37,7 @@ export function CampoTexto({
         ]}
       >
         <TextInput
+          accessibilityLabel={etiqueta}
           {...propiedades}
           multiline={multilinea}
           onBlur={(evento) => {
@@ -47,7 +48,7 @@ export function CampoTexto({
             setEnfocado(true);
             onFocus?.(evento);
           }}
-          placeholderTextColor={colores.tintaTenue}
+          placeholderTextColor={colores.tintaSuave}
           style={[styles.campo, multilinea && styles.campoMultilinea]}
           textAlignVertical={multilinea ? 'top' : 'center'}
           underlineColorAndroid="transparent"
@@ -55,7 +56,7 @@ export function CampoTexto({
         {accesorio}
       </View>
 
-      {error ? <Text style={styles.textoError}>{error}</Text> : null}
+      {error ? <Text accessibilityLiveRegion="polite" style={styles.textoError}>{error}</Text> : null}
     </View>
   );
 }

@@ -1,11 +1,18 @@
-import { Slot } from 'expo-router';
+import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
+
+import { colores } from '@/lib/tema';
 
 export default function RootLayout() {
   return (
-    <SafeAreaProvider>
-      <Slot />
+    <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: colores.superficie },
+        }}
+      />
       <StatusBar style="dark" />
     </SafeAreaProvider>
   );

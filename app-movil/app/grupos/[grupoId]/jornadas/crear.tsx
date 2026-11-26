@@ -2,8 +2,6 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -13,6 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Aviso } from '@/components/ui/Aviso';
+import { BarraSuperior } from '@/components/ui/BarraSuperior';
 import { Boton } from '@/components/ui/Boton';
 import { CampoTexto } from '@/components/ui/CampoTexto';
 import { DatePickerField } from '@/components/ui/DatePickerField';
@@ -27,6 +26,7 @@ import {
   obtenerJornadaPorId,
   obtenerMiRolEnGrupo,
 } from '@/lib/gruposStore';
+import { mostrarControlesDePrueba } from '@/lib/opcionesPrueba';
 import { colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
 import { ErrorDominio } from '@/types/dominio';
 
@@ -62,19 +62,8 @@ export default function CrearOEditarJornadaScreen() {
 
   if (!grupo || rol !== 'responsable' || (jornadaId && !jornadaExistente)) {
     return (
-      <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
-        <View style={styles.barraSuperior}>
-          <Pressable
-            accessibilityLabel="Volver"
-            accessibilityRole="button"
-            onPress={() => router.back()}
-            style={styles.botonIcono}
-          >
-            <Icono color={colores.tinta} nombre="volver" tamano={22} />
-          </Pressable>
-          <Text style={styles.tituloBarra}>Jornada</Text>
-          <View style={styles.espacioDerecha} />
-        </View>
+      <SafeAreaView edges={['bottom']} style={styles.pantalla}>
+        <BarraSuperior titulo="Jornada" />
         <View style={styles.contenido}>
           <Aviso
             accion={
@@ -140,10 +129,15 @@ export default function CrearOEditarJornadaScreen() {
             horaFin,
           });
 
-      router.replace({
+      const detalle = {
         pathname: '/grupos/[grupoId]/jornadas/[jornadaId]',
         params: { grupoId: grupo.id, jornadaId: resultado.id },
-      });
+      } as const;
+      if (esEdicion) {
+        router.dismissTo(detalle);
+      } else {
+        router.replace(detalle);
+      }
     } catch (error) {
       if (error instanceof ErrorDominio) {
         setErrorGeneral(error.message);
@@ -157,147 +151,129 @@ export default function CrearOEditarJornadaScreen() {
 
   return (
     <SafeAreaView edges={['bottom']} style={styles.pantalla}>
-      <SafeAreaView edges={['top']} style={styles.fondoBarra}>
-        <View style={styles.barraSuperior}>
-          <Pressable
-            accessibilityLabel="Volver"
-            accessibilityRole="button"
-            onPress={() => router.back()}
-            style={styles.botonIcono}
-          >
-            <Icono color={colores.tinta} nombre="volver" tamano={22} />
-          </Pressable>
-          <Text style={styles.tituloBarra}>{esEdicion ? 'Editar jornada' : 'Nueva jornada'}</Text>
-          <View style={styles.espacioDerecha} />
-        </View>
-      </SafeAreaView>
+      <BarraSuperior titulo={esEdicion ? 'Editar jornada' : 'Nueva jornada'} />
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.flex}
+      <ScrollView
+        automaticallyAdjustKeyboardInsets
+        contentContainerStyle={styles.contenido}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
-        <ScrollView
-          automaticallyAdjustKeyboardInsets
-          contentContainerStyle={styles.contenido}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
-          {__DEV__ ? (
-            <View style={styles.barraEstados}>
-              {(['normal', 'cargando', 'error'] as const).map((modo) => {
-                const activo = estadoVista === modo;
-                return (
-                  <Pressable
-                    key={modo}
-                    onPress={() => setEstadoVista(modo)}
-                    style={[styles.chipEstado, activo && styles.chipEstadoActivo]}
-                  >
-                    <Text style={[styles.textoChipEstado, activo && styles.textoChipEstadoActivo]}>
-                      {modo}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-          ) : null}
-
-          {estadoVista === 'cargando' ? (
-            <View style={styles.estadoCentro}>
-              <ActivityIndicator color={colores.acento} size="large" />
-              <Text style={styles.textoCarga}>Cargando formulario…</Text>
-            </View>
-          ) : null}
-
-          {estadoVista === 'error' ? (
-            <Aviso
-              accion={
-                <Boton
-                  onPress={() => setEstadoVista('normal')}
-                  tamano="sm"
-                  titulo="Reintentar"
-                  variante="secundario"
-                />
-              }
-              texto="No pudimos cargar la información de la jornada. Intenta de nuevo."
-              tipo="error"
-            />
-          ) : null}
-
-          {estadoVista === 'normal' ? (
-            <>
-              <View style={styles.tarjetaInfo}>
-                <Icono color={colores.info} nombre="info" tamano={18} />
-                <View style={styles.tarjetaInfoTexto}>
-                  <Text style={styles.tituloInfo}>Usa la configuración actual del grupo</Text>
-                  <Text style={styles.subtituloInfo}>
-                    {modalidadTexto} · {horasTexto}
+        {mostrarControlesDePrueba ? (
+          <View style={styles.barraEstados}>
+            {(['normal', 'cargando', 'error'] as const).map((modo) => {
+              const activo = estadoVista === modo;
+              return (
+                <Pressable
+                  key={modo}
+                  onPress={() => setEstadoVista(modo)}
+                  style={[styles.chipEstado, activo && styles.chipEstadoActivo]}
+                >
+                  <Text style={[styles.textoChipEstado, activo && styles.textoChipEstadoActivo]}>
+                    {modo}
                   </Text>
-                </View>
-              </View>
+                </Pressable>
+              );
+            })}
+          </View>
+        ) : null}
 
-              {horarioBloqueado ? (
-                <Aviso
-                  texto="Ya hay registros de asistencia en esta jornada; el horario quedó fijo."
-                  tipo="info"
-                />
-              ) : null}
+        {estadoVista === 'cargando' ? (
+          <View style={styles.estadoCentro}>
+            <ActivityIndicator color={colores.acento} size="large" />
+            <Text style={styles.textoCarga}>Cargando formulario…</Text>
+          </View>
+        ) : null}
 
-              {errorGeneral ? <Aviso texto={errorGeneral} tipo="error" /> : null}
-
-              <CampoTexto
-                etiqueta="Título"
-                onChangeText={setTitulo}
-                placeholder="Ej. Entrega de paquetes alimentarios"
-                value={titulo}
-              />
-
-              <CampoTexto
-                etiqueta="Descripción"
-                multilinea
-                numberOfLines={3}
-                onChangeText={setDescripcion}
-                placeholder="Describe brevemente la actividad que se realizará"
-                value={descripcion}
-              />
-
-              <View style={horarioBloqueado ? styles.bloqueDeshabilitado : undefined} pointerEvents={horarioBloqueado ? 'none' : 'auto'}>
-                <DatePickerField
-                  label="Fecha (un solo día)"
-                  onChange={setFecha}
-                  value={fecha}
-                />
-
-                <View style={styles.filaHoras}>
-                  <View style={styles.colHora}>
-                    <HoraPickerField
-                      deshabilitado={horarioBloqueado}
-                      label="Hora de inicio"
-                      onChange={setHoraInicio}
-                      value={horaInicio}
-                    />
-                  </View>
-                  <View style={styles.colHora}>
-                    <HoraPickerField
-                      deshabilitado={horarioBloqueado}
-                      error={errorHoraFin}
-                      label="Hora de fin"
-                      onChange={setHoraFin}
-                      value={horaFin}
-                    />
-                  </View>
-                </View>
-              </View>
-
+        {estadoVista === 'error' ? (
+          <Aviso
+            accion={
               <Boton
-                cargando={enviando}
-                icono="guardar"
-                onPress={manejarGuardar}
-                titulo={esEdicion ? 'Guardar cambios' : 'Crear jornada'}
+                onPress={() => setEstadoVista('normal')}
+                tamano="sm"
+                titulo="Reintentar"
+                variante="secundario"
               />
-            </>
-          ) : null}
-        </ScrollView>
-      </KeyboardAvoidingView>
+            }
+            texto="No pudimos cargar la información de la jornada. Intenta de nuevo."
+            tipo="error"
+          />
+        ) : null}
+
+        {estadoVista === 'normal' ? (
+          <>
+            <View style={styles.tarjetaInfo}>
+              <Icono color={colores.info} nombre="info" tamano={18} />
+              <View style={styles.tarjetaInfoTexto}>
+                <Text style={styles.tituloInfo}>Usa la configuración actual del grupo</Text>
+                <Text style={styles.subtituloInfo}>
+                  {modalidadTexto} · {horasTexto}
+                </Text>
+              </View>
+            </View>
+
+            {horarioBloqueado ? (
+              <Aviso
+                texto="Ya hay registros de asistencia en esta jornada; el horario quedó fijo."
+                tipo="info"
+              />
+            ) : null}
+
+            {errorGeneral ? <Aviso texto={errorGeneral} tipo="error" /> : null}
+
+            <CampoTexto
+              etiqueta="Título"
+              onChangeText={setTitulo}
+              placeholder="Ej. Entrega de paquetes alimentarios"
+              value={titulo}
+            />
+
+            <CampoTexto
+              etiqueta="Descripción"
+              multilinea
+              numberOfLines={3}
+              onChangeText={setDescripcion}
+              placeholder="Describe brevemente la actividad que se realizará"
+              value={descripcion}
+            />
+
+            <View style={horarioBloqueado ? styles.bloqueDeshabilitado : undefined} pointerEvents={horarioBloqueado ? 'none' : 'auto'}>
+              <DatePickerField
+                label="Fecha (un solo día)"
+                onChange={setFecha}
+                value={fecha}
+              />
+
+              <View style={styles.filaHoras}>
+                <View style={styles.colHora}>
+                  <HoraPickerField
+                    deshabilitado={horarioBloqueado}
+                    label="Hora de inicio"
+                    onChange={setHoraInicio}
+                    value={horaInicio}
+                  />
+                </View>
+                <View style={styles.colHora}>
+                  <HoraPickerField
+                    deshabilitado={horarioBloqueado}
+                    error={errorHoraFin}
+                    label="Hora de fin"
+                    onChange={setHoraFin}
+                    value={horaFin}
+                  />
+                </View>
+              </View>
+            </View>
+
+            <Boton
+              cargando={enviando}
+              icono={esEdicion ? 'guardar' : 'nueva'}
+              onPress={manejarGuardar}
+              titulo={esEdicion ? 'Guardar cambios' : 'Crear jornada'}
+            />
+          </>
+        ) : null}
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -307,35 +283,8 @@ const styles = StyleSheet.create({
     backgroundColor: colores.papel,
     flex: 1,
   },
-  fondoBarra: {
-    backgroundColor: colores.superficie,
-  },
   flex: {
     flex: 1,
-  },
-  barraSuperior: {
-    alignItems: 'center',
-    backgroundColor: colores.superficie,
-    borderBottomColor: colores.borde,
-    borderBottomWidth: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: espaciados.sm,
-    paddingVertical: espaciados.sm,
-  },
-  botonIcono: {
-    alignItems: 'center',
-    height: 44,
-    justifyContent: 'center',
-    width: 44,
-  },
-  tituloBarra: {
-    color: colores.tinta,
-    fontSize: tipografia.tituloSm,
-    fontWeight: pesos.fuerte,
-  },
-  espacioDerecha: {
-    width: 44,
   },
   contenido: {
     gap: espaciados.lg,

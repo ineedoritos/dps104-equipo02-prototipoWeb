@@ -7,14 +7,17 @@ import {
   StyleSheet,
   Text,
   View,
+  useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { PestanasGrupo } from '@/components/grupos/PestanasGrupo';
 import { Aviso } from '@/components/ui/Aviso';
 import { BarraApilada } from '@/components/ui/BarraApilada';
 import { BarraSuperior } from '@/components/ui/BarraSuperior';
 import { Boton } from '@/components/ui/Boton';
 import { DatePickerField } from '@/components/ui/DatePickerField';
+import { Icono } from '@/components/ui/Icono';
 import { EstadoVacio } from '@/components/ui/EstadoVacio';
 import { fechaEnZona } from '@/lib/fecha';
 import {
@@ -24,6 +27,7 @@ import {
   suscribirStore,
   type PeriodoReporte,
 } from '@/lib/gruposStore';
+import { mostrarControlesDePrueba } from '@/lib/opcionesPrueba';
 import { cifrasTabulares, colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
 
 type EstadoVista = 'normal' | 'cargando' | 'vacio' | 'error';
@@ -43,6 +47,7 @@ function formatearHorasDesdeMinutos(minutos: number): string {
 
 export default function ReportesGrupoScreen() {
   const router = useRouter();
+  const { width, fontScale } = useWindowDimensions();
   const { grupoId } = useLocalSearchParams<{ grupoId: string }>();
 
   const [periodo, setPeriodo] = useState<PeriodoReporte>('mes');
@@ -96,46 +101,16 @@ export default function ReportesGrupoScreen() {
   const totalRegistros =
     reporte.totalPresentes + reporte.totalJustificadas + reporte.totalAusentesSinMotivo;
   const sinDatos = estadoVista === 'vacio' || totalRegistros === 0;
+  const fechasEnFila = width >= 400 * Math.max(1, fontScale);
 
   return (
     <SafeAreaView edges={['bottom']} style={styles.pantalla}>
-      <BarraSuperior accessibilityLabelVolver="Volver al grupo" titulo="Reportes" />
-
-      <View style={styles.contenedorTabs}>
-        <View style={styles.tabsInternas}>
-          <Pressable
-            accessibilityRole="button"
-            onPress={() =>
-              router.replace({
-                pathname: '/grupos/[grupoId]',
-                params: { grupoId: grupo.id },
-              })
-            }
-            style={styles.tabInterna}
-          >
-            <Text style={styles.textoTab}>Jornadas</Text>
-          </Pressable>
-          <Pressable
-            accessibilityRole="button"
-            onPress={() =>
-              router.replace({
-                pathname: '/grupos/[grupoId]/integrantes',
-                params: { grupoId: grupo.id },
-              })
-            }
-            style={styles.tabInterna}
-          >
-            <Text style={styles.textoTab}>Integrantes</Text>
-          </Pressable>
-          <View style={[styles.tabInterna, styles.tabInternaActiva]}>
-            <Text style={[styles.textoTab, styles.textoTabActiva]}>Reportes</Text>
-          </View>
-        </View>
-      </View>
+      <BarraSuperior accessibilityLabelVolver="Volver a Jornadas" titulo={grupo.nombre} />
+      <PestanasGrupo actual="reportes" esResponsable grupoId={grupo.id} />
 
       <ScrollView contentContainerStyle={styles.contenido} showsVerticalScrollIndicator={false}>
 
-        {__DEV__ ? (
+        {mostrarControlesDePrueba ? (
           <View style={styles.barraEstados}>
             {(['normal', 'cargando', 'vacio', 'error'] as const).map((modo) => {
               const activo = estadoVista === modo;
@@ -164,7 +139,10 @@ export default function ReportesGrupoScreen() {
                   key={opcion.id}
                   accessibilityRole="button"
                   accessibilityState={{ selected: activo }}
-                  onPress={() => setPeriodo(opcion.id)}
+                  onPress={() => {
+                    setPeriodo(opcion.id);
+                    setExpandidoId(null);
+                  }}
                   style={[styles.chipPeriodo, activo && styles.chipPeriodoActivo]}
                 >
                   <Text style={[styles.textoPeriodo, activo && styles.textoPeriodoActivo]}>
@@ -176,12 +154,25 @@ export default function ReportesGrupoScreen() {
           </View>
 
           {periodo === 'personalizado' ? (
-            <View style={styles.filaFechas}>
-              <View style={styles.colFecha}>
-                <DatePickerField label="Desde" onChange={setDesde} value={desde} />
+            <View style={[styles.fechas, fechasEnFila && styles.fechasEnFila]}>
+              <View style={fechasEnFila ? styles.colFecha : undefined}>
+                <DatePickerField
+                  label="Desde"
+                  maxDate={hasta}
+                  onChange={setDesde}
+                  permitirLimpiar={false}
+                  value={desde}
+                />
               </View>
-              <View style={styles.colFecha}>
-                <DatePickerField label="Hasta" onChange={setHasta} value={hasta} />
+              <View style={fechasEnFila ? styles.colFecha : undefined}>
+                <DatePickerField
+                  label="Hasta"
+                  maxDate={fechaEnZona()}
+                  minDate={desde}
+                  onChange={setHasta}
+                  permitirLimpiar={false}
+                  value={hasta}
+                />
               </View>
             </View>
           ) : null}
@@ -211,7 +202,7 @@ export default function ReportesGrupoScreen() {
 
         {estadoVista !== 'cargando' && estadoVista !== 'error' && sinDatos ? (
           <EstadoVacio
-            descripcion="Cambia el rango de fechas o registra asistencias para ver las métricas del grupo."
+            descripcion="Prueba otro período. Las asistencias registradas aparecerán aquí."
             icono="calendario"
             titulo="No hay registros de asistencia en el período seleccionado"
           />
@@ -226,15 +217,7 @@ export default function ReportesGrupoScreen() {
             />
 
             <View style={styles.tabla}>
-              <View style={styles.encabezadoTabla}>
-                <Text style={[styles.colNombre, styles.textoEncabezado]}>Integrante</Text>
-                <Text style={[styles.colNum, styles.textoEncabezado]}>Pres.</Text>
-                <Text style={[styles.colNum, styles.textoEncabezado]}>Aus.</Text>
-                <Text style={[styles.colTasa, styles.textoEncabezado]}>Tasa</Text>
-                {grupo.control_horas ? (
-                  <Text style={[styles.colHoras, styles.textoEncabezado]}>Horas</Text>
-                ) : null}
-              </View>
+              <Text accessibilityRole="header" style={styles.encabezadoTabla}>Por integrante</Text>
 
               {reporte.filas.map((fila) => {
                 const expandida = expandidoId === fila.participante.id;
@@ -244,27 +227,29 @@ export default function ReportesGrupoScreen() {
                   <Pressable
                     key={fila.participante.id}
                     accessibilityRole="button"
+                    accessibilityState={{ expanded: expandida }}
                     onPress={() =>
                       setExpandidoId(expandida ? null : fila.participante.id)
                     }
-                    style={styles.filaTabla}
+                    style={({ pressed }) => [styles.filaTabla, pressed && styles.filaPresionada]}
                   >
                     <View style={styles.filaResumen}>
-                      <Text numberOfLines={1} style={[styles.colNombre, styles.textoNombre]}>
-                        {fila.participante.nombre}
-                      </Text>
-                      <Text style={[styles.colNum, styles.textoDato, cifrasTabulares]}>
-                        {fila.presentes}
-                      </Text>
-                      <Text style={[styles.colNum, styles.textoDato, cifrasTabulares]}>
-                        {totalAusencias}
-                      </Text>
-                      <Text style={[styles.colTasa, styles.textoTasa, cifrasTabulares]}>
-                        {fila.tasaAsistencia !== null ? `${fila.tasaAsistencia}%` : '—'}
+                      <Text style={styles.textoNombre}>{fila.participante.nombre}</Text>
+                      <Icono
+                        color={colores.tintaSuave}
+                        nombre={expandida ? 'contraer' : 'expandir'}
+                      />
+                    </View>
+
+                    <View style={styles.metricas}>
+                      <Text style={[styles.textoDato, cifrasTabulares]}>{fila.presentes} presentes</Text>
+                      <Text style={[styles.textoDato, cifrasTabulares]}>{totalAusencias} ausencias</Text>
+                      <Text style={[styles.textoTasa, cifrasTabulares]}>
+                        {fila.tasaAsistencia === null ? 'Tasa —' : fila.tasaAsistencia + '% de asistencia'}
                       </Text>
                       {grupo.control_horas ? (
-                        <Text style={[styles.colHoras, styles.textoHoras, cifrasTabulares]}>
-                          {formatearHorasDesdeMinutos(fila.minutosReconocidos)}
+                        <Text style={[styles.textoDato, cifrasTabulares]}>
+                          {formatearHorasDesdeMinutos(fila.minutosReconocidos)} reconocidas
                         </Text>
                       ) : null}
                     </View>
@@ -309,45 +294,10 @@ const styles = StyleSheet.create({
     backgroundColor: colores.papel,
     flex: 1,
   },
-  contenedorTabs: {
-    backgroundColor: colores.superficie,
-    borderBottomColor: colores.borde,
-    borderBottomWidth: 1,
-    paddingHorizontal: espaciados.lg,
-    paddingVertical: espaciados.sm,
-  },
   contenido: {
     gap: espaciados.lg,
     padding: espaciados.lg,
     paddingBottom: espaciados.xxxl,
-  },
-  tabsInternas: {
-    backgroundColor: colores.superficieAlt,
-    borderColor: colores.borde,
-    borderRadius: radios.campo,
-    borderWidth: 1,
-    flexDirection: 'row',
-    padding: espaciados.xs,
-  },
-  tabInterna: {
-    alignItems: 'center',
-    borderRadius: radios.sm,
-    flex: 1,
-    paddingVertical: espaciados.sm,
-  },
-  tabInternaActiva: {
-    backgroundColor: colores.superficie,
-    borderColor: colores.borde,
-    borderWidth: 1,
-  },
-  textoTab: {
-    color: colores.tintaSuave,
-    fontSize: tipografia.cuerpoSm,
-    fontWeight: pesos.medio,
-  },
-  textoTabActiva: {
-    color: colores.tinta,
-    fontWeight: pesos.fuerte,
   },
   barraEstados: {
     flexDirection: 'row',
@@ -402,7 +352,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flexBasis: '48%',
     flexGrow: 1,
-    minHeight: 42,
+    minHeight: 48,
     justifyContent: 'center',
     paddingHorizontal: espaciados.sm,
     paddingVertical: espaciados.sm,
@@ -420,10 +370,8 @@ const styles = StyleSheet.create({
     color: colores.acento,
     fontWeight: pesos.fuerte,
   },
-  filaFechas: {
-    flexDirection: 'row',
-    gap: espaciados.md,
-  },
+  fechas: { gap: espaciados.sm },
+  fechasEnFila: { flexDirection: 'row' },
   colFecha: {
     flex: 1,
   },
@@ -445,60 +393,43 @@ const styles = StyleSheet.create({
   },
   encabezadoTabla: {
     backgroundColor: colores.superficieAlt,
-    borderBottomColor: colores.borde,
-    borderBottomWidth: 1,
-    flexDirection: 'row',
-    paddingHorizontal: espaciados.md,
-    paddingVertical: espaciados.sm,
-  },
-  textoEncabezado: {
-    color: colores.tintaSuave,
-    fontSize: tipografia.micro,
+    color: colores.tinta,
+    fontSize: tipografia.cuerpo,
     fontWeight: pesos.fuerte,
+    padding: espaciados.md,
   },
   filaTabla: {
-    borderBottomColor: colores.borde,
-    borderBottomWidth: 1,
-    paddingHorizontal: espaciados.md,
-    paddingVertical: espaciados.md,
+    borderTopColor: colores.borde,
+    borderTopWidth: 1,
+    gap: espaciados.xs,
+    minHeight: 48,
+    padding: espaciados.md,
   },
+  filaPresionada: { backgroundColor: colores.superficieAlt },
   filaResumen: {
     alignItems: 'center',
     flexDirection: 'row',
   },
-  colNombre: {
-    flex: 2,
-    paddingRight: espaciados.xs,
-  },
-  colNum: {
-    textAlign: 'center',
-    width: 40,
-  },
-  colTasa: {
-    textAlign: 'right',
-    width: 48,
-  },
-  colHoras: {
-    textAlign: 'right',
-    width: 68,
+  metricas: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    columnGap: espaciados.md,
+    rowGap: espaciados.xs,
   },
   textoNombre: {
     color: colores.tinta,
-    fontSize: tipografia.cuerpoSm,
+    flex: 1,
+    fontSize: tipografia.cuerpo,
     fontWeight: pesos.fuerte,
   },
   textoDato: {
-    color: colores.tinta,
+    color: colores.tintaSuave,
     fontSize: tipografia.cuerpoSm,
   },
   textoTasa: {
     color: colores.acento,
     fontSize: tipografia.cuerpoSm,
     fontWeight: pesos.fuerte,
-  },
-  textoHoras: {
-    color: colores.tintaSuave,
-    fontSize: tipografia.micro,
   },
   detalleExpandido: {
     backgroundColor: colores.papel,
@@ -513,7 +444,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   notaPie: {
-    color: colores.tintaTenue,
+    color: colores.tintaSuave,
     fontSize: tipografia.micro,
     lineHeight: 17,
   },
