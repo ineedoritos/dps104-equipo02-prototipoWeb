@@ -237,10 +237,10 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
 
             {/* Acceso a la página de selección de grupo */}
             <Button
-              type="button"
               variant="outline"
               size="sm"
               className="gap-2 max-w-[240px] sm:max-w-[340px] bg-secondary"
+              nativeButton={false}
               render={<Link href="/grupos" />}
             >
               <span className="truncate">
