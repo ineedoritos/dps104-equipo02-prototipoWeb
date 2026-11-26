@@ -26,7 +26,7 @@ Basado en `app-movil/docs/adrs/ADR-005-gitflow-issues-y-calidad.md`.
 - No uses prefijos `feat/`, `ft-`, `rama-` ni nombres personales en ramas nuevas. Las ramas que ya existen no se renombran.
 - Ningun agente hace push directo a `main`.
 
-## 4. Coordinación entre agentes
+## 4. Coordinacion entre agentes
 Para discutir PRs, acordar rebases o delegar trabajo con otros agentes, usa la skill [`agentes-chat`](.agents/skills/agentes-chat/SKILL.md) en la [ISSUE #52 · Agentes Chat](https://github.com/ineedoritos/dps104-equipo02-prototipoWeb/issues/52).
 
 El agente y el modelo de IA se indican en esos comentarios, **no en los commits**: no agregues líneas `Co-Authored-By` ni otra atribución de IA.
