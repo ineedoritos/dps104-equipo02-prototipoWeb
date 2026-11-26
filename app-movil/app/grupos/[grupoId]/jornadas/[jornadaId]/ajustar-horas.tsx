@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Aviso } from '@/components/ui/Aviso';
 import { Boton } from '@/components/ui/Boton';
 import { CampoTexto } from '@/components/ui/CampoTexto';
+import { HoraPickerField } from '@/components/ui/HoraPickerField';
 import { Icono } from '@/components/ui/Icono';
 import { fechaEnZona, fechaHoraEnZona, horaEnZona } from '@/lib/fecha';
 import {
@@ -262,20 +263,21 @@ export default function AjustarHorasScreen() {
 
               <View style={styles.filaHoras}>
                 <View style={styles.colHora}>
-                  <CampoTexto
-                    etiqueta="Hora de entrada (HH:mm)"
-                    keyboardType="numbers-and-punctuation"
-                    onChangeText={setHoraEntrada}
-                    placeholder="08:00"
+                  <HoraPickerField
+                    label="Hora de entrada"
+                    onChange={setHoraEntrada}
                     value={horaEntrada}
                   />
                 </View>
                 <View style={styles.colHora}>
-                  <CampoTexto
-                    etiqueta="Hora de salida (HH:mm)"
-                    keyboardType="numbers-and-punctuation"
-                    onChangeText={setHoraSalida}
-                    placeholder="12:00"
+                  <HoraPickerField
+                    error={
+                      horaSalida <= horaEntrada
+                        ? 'La hora de salida debe ser posterior a la de entrada.'
+                        : undefined
+                    }
+                    label="Hora de salida"
+                    onChange={setHoraSalida}
                     value={horaSalida}
                   />
                 </View>

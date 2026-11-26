@@ -16,6 +16,7 @@ import { Aviso } from '@/components/ui/Aviso';
 import { Boton } from '@/components/ui/Boton';
 import { CampoTexto } from '@/components/ui/CampoTexto';
 import { DatePickerField } from '@/components/ui/DatePickerField';
+import { HoraPickerField } from '@/components/ui/HoraPickerField';
 import { Icono } from '@/components/ui/Icono';
 import { fechaEnZona, horaEnZona } from '@/lib/fecha';
 import {
@@ -96,6 +97,11 @@ export default function CrearOEditarJornadaScreen() {
     grupo.modalidad_asistencia === 'qr' ? 'Asistencia por QR' : 'Asistencia manual';
   const horasTexto = grupo.control_horas ? 'con control de horas' : 'sin control de horas';
 
+  const errorHoraFin =
+    !horarioBloqueado && horaFin <= horaInicio
+      ? 'La hora de fin debe ser posterior a la de inicio.'
+      : undefined;
+
   const manejarGuardar = () => {
     setErrorGeneral('');
 
@@ -109,6 +115,10 @@ export default function CrearOEditarJornadaScreen() {
     }
     if (!fecha.trim()) {
       setErrorGeneral('Selecciona la fecha de la jornada.');
+      return;
+    }
+    if (errorHoraFin) {
+      setErrorGeneral(errorHoraFin);
       return;
     }
 
@@ -256,22 +266,19 @@ export default function CrearOEditarJornadaScreen() {
 
                 <View style={styles.filaHoras}>
                   <View style={styles.colHora}>
-                    <CampoTexto
-                      editable={!horarioBloqueado}
-                      etiqueta="Hora de inicio (HH:mm)"
-                      keyboardType="numbers-and-punctuation"
-                      onChangeText={setHoraInicio}
-                      placeholder="08:00"
+                    <HoraPickerField
+                      deshabilitado={horarioBloqueado}
+                      label="Hora de inicio"
+                      onChange={setHoraInicio}
                       value={horaInicio}
                     />
                   </View>
                   <View style={styles.colHora}>
-                    <CampoTexto
-                      editable={!horarioBloqueado}
-                      etiqueta="Hora de fin (HH:mm)"
-                      keyboardType="numbers-and-punctuation"
-                      onChangeText={setHoraFin}
-                      placeholder="12:00"
+                    <HoraPickerField
+                      deshabilitado={horarioBloqueado}
+                      error={errorHoraFin}
+                      label="Hora de fin"
+                      onChange={setHoraFin}
                       value={horaFin}
                     />
                   </View>
