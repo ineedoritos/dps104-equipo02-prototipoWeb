@@ -1,0 +1,74 @@
+[
+  {
+    "id": "int-01",
+    "grupo_id": "grp-01",
+    "usuario_id": "usr-01",
+    "rol": "responsable",
+    "unido_en": "2026-11-02T08:00:00-06:00",
+    "retirado_en": null
+  },
+  {
+    "id": "int-02",
+    "grupo_id": "grp-01",
+    "usuario_id": "usr-02",
+    "rol": "participante",
+    "unido_en": "2026-11-02T08:30:00-06:00",
+    "retirado_en": null
+  },
+  {
+    "id": "int-03",
+    "grupo_id": "grp-01",
+    "usuario_id": "usr-03",
+    "rol": "participante",
+    "unido_en": "2026-11-03T09:00:00-06:00",
+    "retirado_en": null
+  },
+  {
+    "id": "int-04",
+    "grupo_id": "grp-01",
+    "usuario_id": "usr-04",
+    "rol": "participante",
+    "unido_en": "2026-11-03T10:00:00-06:00",
+    "retirado_en": "2026-11-15T18:00:00-06:00"
+  },
+  {
+    "id": "int-05",
+    "grupo_id": "grp-02",
+    "usuario_id": "usr-02",
+    "rol": "responsable",
+    "unido_en": "2026-11-04T11:00:00-06:00",
+    "retirado_en": null
+  },
+  {
+    "id": "int-06",
+    "grupo_id": "grp-02",
+    "usuario_id": "usr-01",
+    "rol": "participante",
+    "unido_en": "2026-11-04T11:30:00-06:00",
+    "retirado_en": null
+  },
+  {
+    "id": "int-07",
+    "grupo_id": "grp-02",
+    "usuario_id": "usr-04",
+    "rol": "participante",
+    "unido_en": "2026-11-05T12:00:00-06:00",
+    "retirado_en": null
+  },
+  {
+    "id": "int-08",
+    "grupo_id": "grp-03",
+    "usuario_id": "usr-01",
+    "rol": "responsable",
+    "unido_en": "2026-11-06T09:00:00-06:00",
+    "retirado_en": null
+  },
+  {
+    "id": "int-09",
+    "grupo_id": "grp-03",
+    "usuario_id": "usr-03",
+    "rol": "responsable",
+    "unido_en": "2026-11-06T09:15:00-06:00",
+    "retirado_en": null
+  }
+]

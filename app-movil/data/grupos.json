@@ -1,0 +1,41 @@
+[
+  {
+    "id": "grp-01",
+    "nombre": "Banco de Alimentos",
+    "descripcion": "Entrega semanal de paquetes alimentarios en zona norte.",
+    "modalidad_asistencia": "qr",
+    "control_horas": true,
+    "gps_habilitado": false,
+    "fotos_habilitadas": false,
+    "requiere_validacion": false,
+    "notificaciones_habilitadas": false,
+    "creado_por": "usr-01",
+    "creado_en": "2026-11-02T08:00:00-06:00"
+  },
+  {
+    "id": "grp-02",
+    "nombre": "Fútbol Comunitario",
+    "descripcion": "Entrenamientos y partidos amistosos de los sábados.",
+    "modalidad_asistencia": "manual",
+    "control_horas": false,
+    "gps_habilitado": false,
+    "fotos_habilitadas": false,
+    "requiere_validacion": false,
+    "notificaciones_habilitadas": false,
+    "creado_por": "usr-02",
+    "creado_en": "2026-11-04T11:00:00-06:00"
+  },
+  {
+    "id": "grp-03",
+    "nombre": "Voluntariado Parroquial",
+    "descripcion": "Apoyo logístico en jornadas comunitarias y refuerzo escolar.",
+    "modalidad_asistencia": "manual",
+    "control_horas": true,
+    "gps_habilitado": false,
+    "fotos_habilitadas": false,
+    "requiere_validacion": false,
+    "notificaciones_habilitadas": false,
+    "creado_por": "usr-01",
+    "creado_en": "2026-11-06T09:00:00-06:00"
+  }
+]
