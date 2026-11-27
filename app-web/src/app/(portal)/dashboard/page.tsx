@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, CalendarDays, ClipboardList } from "lucide-react";
+import { ArrowRight, CalendarDays, ClipboardList, Clock3, HeartPulse, Users } from "lucide-react";
 
 import { GraficosDashboard } from "@/components/charts/graficos-dashboard";
 import { rutaPortal, useContextoPortal } from "@/components/layout/contexto-portal";
@@ -12,9 +12,9 @@ import {
   EstadoVacioVista,
   type EstadoVistaForzado,
 } from "@/components/reportes/estados-vista";
+import { Metrica } from "@/components/reportes/metrica";
 import { FiltroPeriodo } from "@/components/reportes/filtro-periodo";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatearDuracion } from "@/lib/fecha";
 import {
@@ -126,76 +126,22 @@ export default function DashboardPage() {
       ) : (
         <>
           {/* Grid de tarjetas KPI */}
-          <div
-            className={
-              resumen.mostrarHoras
-                ? "grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
-                : "grid gap-4 sm:grid-cols-3"
-            }
-          >
-            <Card>
-              <CardContent className="p-4">
-                <p className="text-xs text-muted-foreground">
-                  Tasa de asistencia
-                </p>
-                <p className="text-2xl font-semibold tabular-nums mt-1">
-                  {formatearTasa(resumen.tasaAsistencia)}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Sobre {resumen.totalPresentes + resumen.totalAusencias}{" "}
-                  registros válidos
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-4">
-                <p className="text-xs text-muted-foreground">
-                  Presentes vs Ausencias
-                </p>
-                <p className="text-2xl font-semibold tabular-nums mt-1">
-                  {resumen.totalPresentes} / {resumen.totalAusencias}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {resumen.totalAusentesSinMotivo} sin motivo ·{" "}
-                  {resumen.totalJustificadas} justificadas
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-4">
-                <p className="text-xs text-muted-foreground">
-                  Jornadas contabilizadas
-                </p>
-                <p className="text-2xl font-semibold tabular-nums mt-1">
-                  {resumen.jornadasContabilizadas}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {resumen.jornadasCanceladas === 0
-                    ? "Sin jornadas canceladas"
-                    : `${resumen.jornadasCanceladas} cancelada(s) excluida(s)`}
-                </p>
-              </CardContent>
-            </Card>
-
+          <dl aria-label="Indicadores del período" className="grid gap-2 rounded-[28px] bg-forma-paper p-3 sm:grid-cols-2">
+            <Metrica icono={HeartPulse} tono="blue" etiqueta="Tasa de asistencia"
+              valor={formatearTasa(resumen.tasaAsistencia)}
+              detalle={`${resumen.totalPresentes + resumen.totalAusencias} registros válidos`} />
+            <Metrica icono={Users} tono="mint" etiqueta="Presentes / ausencias"
+              valor={`${resumen.totalPresentes} / ${resumen.totalAusencias}`}
+              detalle={`${resumen.totalAusentesSinMotivo} sin motivo · ${resumen.totalJustificadas} justificadas`} />
+            <Metrica icono={CalendarDays} tono="peach" etiqueta="Jornadas contabilizadas"
+              valor={resumen.jornadasContabilizadas}
+              detalle={resumen.jornadasCanceladas ? `${resumen.jornadasCanceladas} canceladas excluidas` : "Sin jornadas canceladas"} />
             {resumen.mostrarHoras && (
-              <Card>
-                <CardContent className="p-4">
-                  <p className="text-xs text-muted-foreground">
-                    Horas reconocidas / registradas
-                  </p>
-                  <p className="text-2xl font-semibold tabular-nums mt-1">
-                    {formatearDuracion(resumen.minutosReconocidos)}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    De {formatearDuracion(resumen.minutosRegistrados)}{" "}
-                    registradas
-                  </p>
-                </CardContent>
-              </Card>
+              <Metrica icono={Clock3} tono="lilac" etiqueta="Horas reconocidas"
+                valor={formatearDuracion(resumen.minutosReconocidos)}
+                detalle={`De ${formatearDuracion(resumen.minutosRegistrados)} registradas`} />
             )}
-          </div>
+          </dl>
 
           <GraficosDashboard
             presentes={resumen.totalPresentes}

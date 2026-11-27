@@ -55,22 +55,28 @@ const ITEMS_NAVEGACION: readonly ItemNavegacion[] = [
 
 interface ListaNavegacionProps {
   colapsado?: boolean;
-  alNavegar?: () => void;
+  inferior?: boolean;
 }
 
 export function ListaNavegacion({
   colapsado = false,
-  alNavegar,
+  inferior = false,
 }: ListaNavegacionProps) {
   const { contextoActivo } = useContextoPortal();
   const esResponsable = contextoActivo?.rol === "responsable";
   const pathname = usePathname();
   const items = ITEMS_NAVEGACION.filter(
-    (item) => !item.soloResponsable || esResponsable,
+    (item) => (!item.soloResponsable || esResponsable) &&
+      !(inferior && esResponsable && item.href === "/grupos"),
   );
 
   return (
-    <nav className="flex flex-col gap-1 px-2 py-3" aria-label="Navegación principal">
+    <nav
+      className={inferior
+        ? "flex w-full gap-1.5 rounded-[34px] bg-forma-paper p-1.5"
+        : "flex flex-col gap-1 px-2 py-3"}
+      aria-label="Navegación principal"
+    >
       {items.map((item) => {
         const Icono = item.icono;
         const paginaActual = pathname === item.href;
@@ -80,7 +86,6 @@ export function ListaNavegacion({
           <Link
             key={item.href}
             href={rutaPortal(item.href, contextoActivo?.id)}
-            onNavigate={alNavegar}
             aria-label={colapsado ? item.etiqueta : undefined}
             aria-current={paginaActual ? "page" : activo ? "location" : undefined}
             className={cn(
@@ -88,11 +93,12 @@ export function ListaNavegacion({
               activo
                 ? "bg-forma-canvas font-semibold text-forma-ink"
                 : "text-forma-muted hover:bg-forma-fill hover:text-forma-ink",
+              inferior && "min-h-14 min-w-0 flex-1 flex-col justify-center gap-0.5 rounded-[28px] px-1 py-1 text-[11px] leading-tight",
               colapsado && "justify-center px-2",
             )}
           >
-            <Icono aria-hidden="true" className="h-4 w-4 shrink-0" />
-            {!colapsado && <span className="truncate">{item.etiqueta}</span>}
+            <Icono aria-hidden="true" size={20} strokeWidth={activo ? 2.1 : 1.8} className="shrink-0" />
+            {!colapsado && <span className="max-w-full truncate">{item.etiqueta}</span>}
           </Link>
         );
 

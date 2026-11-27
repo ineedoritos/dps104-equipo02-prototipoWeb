@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { rutaPortal, useContextoPortal } from "@/components/layout/contexto-portal";
-import { Download } from "lucide-react";
+import { Clock3, Download, HeartPulse, ListChecks, Timer } from "lucide-react";
 
 import {
   ControlEstadoVista,
@@ -11,6 +11,7 @@ import {
   EstadoVacioVista,
   type EstadoVistaForzado,
 } from "@/components/reportes/estados-vista";
+import { Metrica } from "@/components/reportes/metrica";
 import { FiltroPeriodo } from "@/components/reportes/filtro-periodo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -178,72 +179,23 @@ export default function MiReportePage() {
         />
       ) : (
         <>
-          {/* Tarjetas KPI personales */}
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Card>
-              <CardContent className="p-4">
-                <p className="text-xs text-muted-foreground">
-                  Tasa de asistencia personal
-                </p>
-                <p className="text-2xl font-semibold tabular-nums mt-1">
-                  {formatearTasa(reporte.tasa)}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Calculada sobre jornadas activas
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-4">
-                <p className="text-xs text-muted-foreground">
-                  Desglose de registros
-                </p>
-                <p className="text-2xl font-semibold tabular-nums mt-1">
-                  {reporte.presentes} presentes
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {reporte.justificadas} justificadas ·{" "}
-                  {reporte.ausentesSinMotivo} sin motivo
-                </p>
-              </CardContent>
-            </Card>
-
+          <dl aria-label="Indicadores personales" className="grid gap-2 rounded-[28px] bg-forma-paper p-3 sm:grid-cols-2">
+            <Metrica icono={HeartPulse} tono="blue" etiqueta="Tasa de asistencia"
+              valor={formatearTasa(reporte.tasa)} detalle="Sobre jornadas activas" />
+            <Metrica icono={ListChecks} tono="mint" etiqueta="Registros de asistencia"
+              valor={`${reporte.presentes} presentes`}
+              detalle={`${reporte.justificadas} justificadas · ${reporte.ausentesSinMotivo} sin motivo`} />
             {reporte.mostrarHoras && (
               <>
-                <Card>
-                  <CardContent className="p-4">
-                    <p className="text-xs text-muted-foreground">
-                      Duración registrada
-                    </p>
-                    <p className="text-2xl font-semibold tabular-nums mt-1">
-                      {formatearDuracion(reporte.duracionRegistrada)}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Tiempo total marcado en jornadas
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardContent className="p-4">
-                    <p className="text-xs text-muted-foreground">
-                      Tiempo reconocido
-                    </p>
-                    <p className="text-2xl font-semibold tabular-nums mt-1">
-                      {formatearDuracion(reporte.tiempoReconocido)}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Pendiente:{" "}
-                      {formatearDuracion(reporte.tiempoPendiente)}
-                    </p>
-                  </CardContent>
-                </Card>
+                <Metrica icono={Timer} tono="lilac" etiqueta="Duración registrada"
+                  valor={formatearDuracion(reporte.duracionRegistrada)} detalle="Tiempo marcado en jornadas" />
+                <Metrica icono={Clock3} tono="blue" etiqueta="Tiempo reconocido"
+                  valor={formatearDuracion(reporte.tiempoReconocido)}
+                  detalle={`Pendiente: ${formatearDuracion(reporte.tiempoPendiente)}`} />
               </>
             )}
-          </div>
+          </dl>
 
-          {/* Tabla de registros propios */}
           <Card>
             <CardContent className="p-0">
               <Table aria-label="Mis registros de asistencia">

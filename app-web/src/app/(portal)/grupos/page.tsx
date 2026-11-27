@@ -9,14 +9,10 @@ import {
   rutaPortal,
   useContextoPortal,
 } from "@/components/layout/contexto-portal";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
@@ -84,55 +80,33 @@ export default function GruposPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid max-w-4xl gap-3">
+        <ul className="grid max-w-4xl gap-2 rounded-[28px] bg-forma-paper p-2">
           {gruposFiltrados.map((grupo) => {
-            const esActivo = contextoActivo?.id === grupo.id;
+            const responsable = grupo.rol === "responsable";
+            const actual = contextoActivo?.id === grupo.id;
+            const href = responsable
+              ? rutaPortal("/dashboard", grupo.id)
+              : rutaPortal("/mi-reporte", grupo.id, { alcance: grupo.id });
+
             return (
-              <Card
-                key={grupo.id}
-              >
-                <CardHeader className="space-y-2">
-                  <div className="flex items-start justify-between gap-2">
-                    <CardTitle className="text-base leading-snug">
-                      {grupo.nombre}
-                    </CardTitle>
-                    {grupo.rol && (
-                      <Badge
-                        variant={
-                          grupo.rol === "responsable" ? "default" : "secondary"
-                        }
-                      >
-                        {grupo.rol === "responsable"
-                          ? "Responsable"
-                          : "Participante"}
-                      </Badge>
-                    )}
-                  </div>
-                  <CardDescription>{grupo.descripcion}</CardDescription>
-                </CardHeader>
-                <CardContent className="flex items-center justify-between gap-2">
-                  <span className="text-xs text-muted-foreground">
-                    {esActivo ? "Grupo actual" : null}
+              <li key={grupo.id}>
+                <Link href={href} className="flex min-h-16 items-center gap-3 rounded-[20px] p-2.5 hover:bg-forma-canvas focus-visible:outline-2 focus-visible:outline-ring">
+                  <span className={`grid size-11 shrink-0 place-items-center rounded-full ${responsable ? "bg-forma-blue text-forma-blue-ink" : "bg-forma-lilac text-forma-lilac-ink"}`}>
+                    <Users aria-hidden="true" size={21} strokeWidth={1.8} />
                   </span>
-                  <Button
-                    nativeButton={false}
-                    variant="outline"
-                    render={
-                      <Link href={grupo.rol === "responsable"
-                        ? rutaPortal("/dashboard", grupo.id)
-                        : rutaPortal("/mi-reporte", grupo.id, { alcance: grupo.id })
-                      } />
-                    }
-                    className="gap-1.5"
-                  >
-                    <span>{grupo.rol === "responsable" ? "Ver resumen" : "Ver mi reporte"}</span>
-                    <ArrowRight className="h-3.5 w-3.5" />
-                  </Button>
-                </CardContent>
-              </Card>
+                  <div className="min-w-0 flex-1">
+                    <h2 className="break-words font-semibold tracking-tight text-forma-ink">{grupo.nombre}</h2>
+                    <p className="text-sm leading-snug text-forma-muted">{grupo.descripcion}</p>
+                    <p className="mt-1 text-xs font-medium text-forma-muted">
+                      {responsable ? "Responsable" : "Participante"}{actual ? " · Grupo actual" : ""}
+                    </p>
+                  </div>
+                  <ArrowRight aria-hidden="true" size={19} strokeWidth={1.8} className="shrink-0 text-forma-muted" />
+                </Link>
+              </li>
             );
           })}
-        </div>
+        </ul>
       )}
     </div>
   );

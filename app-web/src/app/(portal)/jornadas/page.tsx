@@ -35,14 +35,18 @@ import type { EstadoJornadaDerivado } from "@/types/dominio";
 
 type FiltroEstadoJornada = "todas" | EstadoJornadaDerivado;
 
-const ETIQUETA_ESTADO: Record<
-  EstadoJornadaDerivado,
-  { texto: string; variante: "default" | "secondary" | "outline" | "destructive" }
-> = {
-  programada: { texto: "Programada", variante: "outline" },
-  en_curso: { texto: "En curso", variante: "default" },
-  finalizada: { texto: "Finalizada", variante: "secondary" },
-  cancelada: { texto: "Cancelada · excluida de totales", variante: "destructive" },
+const TONO_JORNADA = {
+  programada: "bg-forma-blue text-forma-blue-ink",
+  en_curso: "bg-forma-mint text-forma-mint-ink",
+  finalizada: "bg-forma-fill text-forma-muted",
+  cancelada: "bg-forma-rose text-forma-rose-ink",
+};
+
+const ETIQUETA_ESTADO: Record<EstadoJornadaDerivado, string> = {
+  programada: "Programada",
+  en_curso: "En curso",
+  finalizada: "Finalizada",
+  cancelada: "Cancelada · excluida de totales",
 };
 
 export default function JornadasPage() {
@@ -151,7 +155,7 @@ export default function JornadasPage() {
           onValueChange={(val) => aplicarFiltros({ ...filtros, estado: val ?? "todas" })}
         >
           <SelectTrigger aria-label="Estado de jornada" className="w-full bg-forma-canvas sm:w-auto">
-            <SelectValue>{estadoFiltro === "todas" ? "Todas las jornadas" : ETIQUETA_ESTADO[estadoFiltro].texto}</SelectValue>
+            <SelectValue>{estadoFiltro === "todas" ? "Todas las jornadas" : ETIQUETA_ESTADO[estadoFiltro]}</SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="todas">Todas las jornadas</SelectItem>
@@ -211,16 +215,20 @@ export default function JornadasPage() {
             return (
               <Card
                 key={jornada.id}
-                className="transition-colors hover:border-primary/50"
+                className="py-3"
               >
-                <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                  <div className="space-y-1.5 min-w-0">
+                <CardContent className="flex flex-wrap items-center gap-3">
+                  <div aria-hidden="true" className="grid min-h-14 w-12 shrink-0 place-content-center rounded-2xl bg-forma-lilac text-center text-forma-lilac-ink">
+                    <span className="text-[11px] font-semibold uppercase">{formatearFecha(jornada.inicio_en, { month: "short" })}</span>
+                    <span className="text-xl font-semibold leading-none tabular-nums">{dia.slice(-2)}</span>
+                  </div>
+                  <div className="min-w-0 flex-1 basis-[55%] space-y-1.5 sm:basis-auto">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="text-base font-semibold truncate">
+                      <h2 className="break-words text-base font-semibold tracking-tight">
                         {jornada.titulo}
                       </h2>
-                      <Badge variant={infoEstado.variante}>
-                        {infoEstado.texto}
+                      <Badge variant="secondary" className={TONO_JORNADA[estadoDerivado]}>
+                        {infoEstado}
                       </Badge>
                     </div>
 
@@ -249,7 +257,7 @@ export default function JornadasPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0">
+                  <div className="flex w-full flex-wrap items-center justify-between gap-2 pl-[60px] lg:w-auto lg:justify-end lg:pl-0">
                     <div className="text-left sm:text-right text-xs">
                       <p className="font-medium text-foreground">
                         {item.totalRegistros} registros
