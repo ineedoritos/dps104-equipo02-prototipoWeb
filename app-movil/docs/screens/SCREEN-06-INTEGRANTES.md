@@ -8,11 +8,11 @@
 
 ## Contenido y acciones
 - Formulario superior: campo `Agregar por correo (cuenta existente)` + selector de rol inicial (`Participante` por defecto / `Responsable`) + botón **Agregar**.
-- Contador (*ej. "8 integrantes"*) y lista de integrantes activos (`retirado_en IS NULL`):
-  - Nombre (indicando `(tú)` en la propia fila) y correo.
+- Contador (*ej. "7 integrantes además de ti"*) y lista de los **demás** integrantes activos (`retirado_en IS NULL`). La propia fila no aparece: para salir del grupo se usa `SCREEN-05`.
+  - Nombre y correo.
   - Selector de rol `Participante | Responsable` (un solo rol por grupo).
-  - Acción **Retirar** (o **Salir del grupo** en la propia fila), con confirmación.
-- Nota al pie: *"Un rol por grupo. El último responsable no puede salir ni ser retirado. Al retirar a alguien, su historial se conserva."*
+  - Acción **Retirar**, con confirmación.
+- Nota al pie: *"Un rol por grupo. Siempre debe quedar al menos un responsable. Al retirar a alguien, su historial se conserva. Para salir tú del grupo, ve a Ajustes."*
 
 ## Estados obligatorios (`RNF04`)
 - **Cargando:** spinner en listado y en acciones de agregar/cambiar rol/retirar.
@@ -20,4 +20,4 @@
   - `ERR_USUARIO_NO_ENCONTRADO` → *"No existe una cuenta registrada con ese correo."*
   - `ERR_YA_ES_INTEGRANTE` → *"Esta persona ya pertenece al grupo."*
   - `ERR_ULTIMO_RESPONSABLE` → *"Debe quedar al menos un responsable en el grupo."*
-- **Vacío:** nunca ocurre porque siempre hay al menos 1 responsable activo.
+- **Vacío:** si no hay otros integrantes, la lista queda vacía y solo se ve el formulario para agregar.

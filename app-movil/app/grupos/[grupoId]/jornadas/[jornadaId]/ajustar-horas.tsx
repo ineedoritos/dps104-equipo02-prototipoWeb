@@ -26,7 +26,7 @@ import {
   obtenerMiRolEnGrupo,
   obtenerParticipantesActivos,
 } from '@/lib/gruposStore';
-import { cifrasTabulares, colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
+import { cifrasTabulares, colores, espaciados, fuentes, interletrado, radios, tipografia } from '@/lib/tema';
 import { ErrorDominio } from '@/types/dominio';
 
 type EstadoVista = 'normal' | 'cargando' | 'error';
@@ -204,24 +204,6 @@ export default function AjustarHorasScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {__DEV__ ? (
-            <View style={styles.barraEstados}>
-              {(['normal', 'cargando', 'error'] as const).map((modo) => {
-                const activo = estadoVista === modo;
-                return (
-                  <Pressable
-                    key={modo}
-                    onPress={() => setEstadoVista(modo)}
-                    style={[styles.chipEstado, activo && styles.chipEstadoActivo]}
-                  >
-                    <Text style={[styles.textoChipEstado, activo && styles.textoChipEstadoActivo]}>
-                      {modo}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-          ) : null}
 
           {estadoVista === 'cargando' ? (
             <View style={styles.estadoCentro}>
@@ -360,7 +342,8 @@ const styles = StyleSheet.create({
     color: colores.tinta,
     flex: 1,
     fontSize: tipografia.tituloSm,
-    fontWeight: pesos.fuerte,
+    letterSpacing: interletrado.tituloSm,
+    fontFamily: fuentes.fuerte,
     textAlign: 'center',
   },
   espacioDerecha: {
@@ -371,32 +354,6 @@ const styles = StyleSheet.create({
     padding: espaciados.lg,
     paddingBottom: espaciados.xxxl,
   },
-  barraEstados: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: espaciados.xs,
-  },
-  chipEstado: {
-    backgroundColor: colores.superficie,
-    borderColor: colores.borde,
-    borderRadius: radios.pill,
-    borderWidth: 1,
-    paddingHorizontal: espaciados.md,
-    paddingVertical: espaciados.xs,
-  },
-  chipEstadoActivo: {
-    backgroundColor: colores.acentoSuave,
-    borderColor: colores.acentoBorde,
-  },
-  textoChipEstado: {
-    color: colores.tintaSuave,
-    fontSize: tipografia.micro,
-    fontWeight: pesos.medio,
-  },
-  textoChipEstadoActivo: {
-    color: colores.acento,
-    fontWeight: pesos.fuerte,
-  },
   estadoCentro: {
     alignItems: 'center',
     gap: espaciados.md,
@@ -404,29 +361,30 @@ const styles = StyleSheet.create({
   },
   textoCarga: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
   },
   cabecera: {
     backgroundColor: colores.superficie,
-    borderColor: colores.borde,
     borderRadius: radios.tarjeta,
-    borderWidth: 1,
     gap: espaciados.xs,
     padding: espaciados.lg,
   },
   tituloCabecera: {
     color: colores.tinta,
     fontSize: tipografia.tituloSm,
-    fontWeight: pesos.fuerte,
+    letterSpacing: interletrado.tituloSm,
+    fontFamily: fuentes.fuerte,
   },
   subtituloCabecera: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
   },
   origenQR: {
     color: colores.info,
     fontSize: tipografia.micro,
-    fontWeight: pesos.medio,
+    fontFamily: fuentes.medio,
   },
   filaHoras: {
     flexDirection: 'row',
@@ -437,27 +395,27 @@ const styles = StyleSheet.create({
   },
   tarjetaDuracion: {
     backgroundColor: colores.superficieAlt,
-    borderColor: colores.borde,
     borderRadius: radios.tarjeta,
-    borderWidth: 1,
     gap: espaciados.xs,
     padding: espaciados.md,
   },
   etiquetaDuracion: {
     color: colores.tintaSuave,
     fontSize: tipografia.micro,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
   },
   valorDuracion: {
     color: colores.tinta,
     fontSize: tipografia.tituloSm,
-    fontWeight: pesos.fuerte,
+    letterSpacing: interletrado.tituloSm,
+    fontFamily: fuentes.fuerte,
   },
   campoConAyuda: {
     gap: espaciados.xs,
   },
   textoAyuda: {
     color: colores.tintaTenue,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.micro,
     lineHeight: 16,
   },

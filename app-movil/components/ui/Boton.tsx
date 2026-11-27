@@ -3,7 +3,7 @@ import type { StyleProp, ViewStyle } from 'react-native';
 
 import { Icono } from '@/components/ui/Icono';
 import type { NombreIcono } from '@/components/ui/Icono';
-import { colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
+import { espaciados, forma, fuentes, radios, tamanos, tipografia } from '@/lib/tema';
 
 export type VarianteBoton = 'primario' | 'secundario' | 'fantasma' | 'peligro';
 
@@ -20,10 +20,10 @@ export interface BotonProps {
 }
 
 const COLORES_VARIANTE: Record<VarianteBoton, { fondo: string; texto: string; borde: string }> = {
-  primario: { fondo: colores.acento, texto: colores.superficie, borde: colores.acento },
-  secundario: { fondo: colores.superficie, texto: colores.tinta, borde: colores.bordeFuerte },
-  fantasma: { fondo: 'transparent', texto: colores.acento, borde: 'transparent' },
-  peligro: { fondo: colores.ausenteSuave, texto: colores.ausente, borde: colores.ausenteSuave },
+  primario: { fondo: forma.action, texto: forma.onAction, borde: forma.action },
+  secundario: { fondo: forma.fill, texto: forma.ink, borde: forma.fill },
+  fantasma: { fondo: 'transparent', texto: forma.ink, borde: 'transparent' },
+  peligro: { fondo: forma.rose, texto: forma.roseInk, borde: forma.rose },
 };
 
 export function Boton({
@@ -60,7 +60,7 @@ export function Boton({
         <ActivityIndicator color={paleta.texto} size="small" />
       ) : (
         <View style={styles.contenido}>
-          {icono ? <Icono color={paleta.texto} nombre={icono} tamano={tamano === 'sm' ? 16 : 18} /> : null}
+          {icono ? <Icono color={paleta.texto} nombre={icono} tamano={tamano === 'sm' ? 17 : 19} /> : null}
           <Text
             style={[
               styles.texto,
@@ -79,17 +79,17 @@ export function Boton({
 const styles = StyleSheet.create({
   base: {
     alignItems: 'center',
-    borderRadius: radios.campo,
+    borderRadius: radios.pill,
     borderWidth: 1,
     justifyContent: 'center',
-    paddingHorizontal: espaciados.lg,
+    paddingHorizontal: espaciados.xl,
   },
   tamanoMd: {
-    minHeight: 48,
+    minHeight: tamanos.control,
   },
   tamanoSm: {
-    minHeight: 40,
-    paddingHorizontal: espaciados.md,
+    minHeight: tamanos.objetivo,
+    paddingHorizontal: espaciados.lg,
   },
   contenido: {
     alignItems: 'center',
@@ -98,18 +98,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   texto: {
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
   },
   textoMd: {
-    fontSize: tipografia.cuerpo,
+    fontSize: tipografia.cuerpoSm,
+    lineHeight: 18,
   },
   textoSm: {
-    fontSize: tipografia.cuerpoSm,
+    fontSize: 13,
+    lineHeight: 18,
   },
   presionado: {
-    opacity: 0.82,
+    transform: [{ scale: 0.98 }],
   },
   inactivo: {
-    opacity: 0.45,
+    opacity: 0.42,
   },
 });

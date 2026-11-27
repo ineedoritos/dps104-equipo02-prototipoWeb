@@ -13,7 +13,7 @@ import {
   obtenerMiRolEnGrupo,
   registrarAsistenciaQR,
 } from '@/lib/gruposStore';
-import { colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
+import { colores, espaciados, fuentes, interletrado, radios, tipografia } from '@/lib/tema';
 import { ErrorDominio } from '@/types/dominio';
 
 type EstadoCamara = 'activa' | 'sin_permiso' | 'procesando' | 'error_qr';
@@ -293,10 +293,12 @@ const styles = StyleSheet.create({
   tituloBarra: {
     color: colores.tinta,
     fontSize: tipografia.tituloSm,
-    fontWeight: pesos.fuerte,
+    letterSpacing: interletrado.tituloSm,
+    fontFamily: fuentes.fuerte,
   },
   subtituloBarra: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.micro,
   },
   espacioDerecha: {
@@ -364,15 +366,13 @@ const styles = StyleSheet.create({
   textoVisor: {
     color: colores.superficie,
     fontSize: tipografia.cuerpo,
-    fontWeight: pesos.medio,
+    fontFamily: fuentes.medio,
     textAlign: 'center',
   },
   tarjetaPermiso: {
     alignItems: 'center',
     backgroundColor: colores.superficie,
-    borderColor: colores.borde,
     borderRadius: radios.tarjeta,
-    borderWidth: 1,
     gap: espaciados.md,
     padding: espaciados.xl,
   },
@@ -387,16 +387,19 @@ const styles = StyleSheet.create({
   tituloPermiso: {
     color: colores.tinta,
     fontSize: tipografia.tituloSm,
-    fontWeight: pesos.fuerte,
+    letterSpacing: interletrado.tituloSm,
+    fontFamily: fuentes.fuerte,
     textAlign: 'center',
   },
   descripcionPermiso: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
     textAlign: 'center',
   },
   notaManual: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.micro,
     textAlign: 'center',
   },
@@ -410,19 +413,18 @@ const styles = StyleSheet.create({
   },
   chipPrueba: {
     backgroundColor: colores.superficie,
-    borderColor: colores.borde,
     borderRadius: radios.pill,
-    borderWidth: 1,
     paddingHorizontal: espaciados.md,
     paddingVertical: espaciados.xs,
   },
   textoChipPrueba: {
     color: colores.tintaSuave,
     fontSize: tipografia.micro,
-    fontWeight: pesos.medio,
+    fontFamily: fuentes.medio,
   },
   notaPie: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
     textAlign: 'center',
   },

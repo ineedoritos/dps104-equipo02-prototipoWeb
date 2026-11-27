@@ -13,6 +13,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Aviso } from '@/components/ui/Aviso';
 import { Boton } from '@/components/ui/Boton';
+import { Encabezado } from '@/components/ui/Encabezado';
+import { HojaAcciones } from '@/components/ui/HojaAcciones';
 import { Estado, type TonoEstado } from '@/components/ui/Estado';
 import { Icono } from '@/components/ui/Icono';
 import { formatearDia, horaEnZona } from '@/lib/fecha';
@@ -25,7 +27,7 @@ import {
   obtenerResumenAsistenciaJornada,
   suscribirStore,
 } from '@/lib/gruposStore';
-import { cifrasTabulares, colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
+import { cifrasTabulares, colores, espaciados, fuentes, interletrado, radios, tipografia } from '@/lib/tema';
 import type { EstadoJornada, Jornada } from '@/types/dominio';
 
 type EstadoVista = 'normal' | 'cargando' | 'error';
@@ -54,6 +56,7 @@ export default function DetalleJornadaScreen() {
   );
   const [estadoVista, setEstadoVista] = useState<EstadoVista>('normal');
   const [modalCancelar, setModalCancelar] = useState(false);
+  const [hojaAbierta, setHojaAbierta] = useState(false);
 
   const grupo = grupoId ? obtenerGrupoPorId(grupoId) : undefined;
   const rol = grupoId ? obtenerMiRolEnGrupo(grupoId) : null;
@@ -75,19 +78,14 @@ export default function DetalleJornadaScreen() {
 
   if (!grupo || !jornada || rol !== 'responsable') {
     return (
-      <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
-        <View style={styles.barraSuperior}>
-          <Pressable
-            accessibilityLabel="Volver"
-            accessibilityRole="button"
-            onPress={() => router.back()}
-            style={styles.botonIcono}
-          >
-            <Icono color={colores.tinta} nombre="volver" tamano={22} />
-          </Pressable>
-          <Text style={styles.tituloBarra}>Detalle de jornada</Text>
-          <View style={styles.espacioDerecha} />
-        </View>
+      <SafeAreaView edges={['bottom']} style={styles.pantalla}>
+        <Encabezado
+          derecha={
+            null
+          }
+          onVolver={() => router.back()}
+          titulo="Detalle de jornada"
+        />
         <View style={styles.contenido}>
           <Aviso
             accion={
@@ -128,41 +126,25 @@ export default function DetalleJornadaScreen() {
   };
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
-      <View style={styles.barraSuperior}>
-        <Pressable
-          accessibilityLabel="Volver al grupo"
-          accessibilityRole="button"
-          onPress={() => router.back()}
-          style={styles.botonIcono}
-        >
-          <Icono color={colores.tinta} nombre="volver" tamano={22} />
-        </Pressable>
-        <Text numberOfLines={1} style={styles.tituloBarra}>
-          Detalle de jornada
-        </Text>
-        <View style={styles.espacioDerecha} />
-      </View>
+    <SafeAreaView edges={['bottom']} style={styles.pantalla}>
+      <Encabezado
+        derecha={
+          !jornada.cancelada ? (
+            <Pressable
+              accessibilityLabel="Más acciones"
+              accessibilityRole="button"
+              onPress={() => setHojaAbierta(true)}
+              style={styles.botonIcono}
+            >
+              <Icono color={colores.tinta} nombre="mas" tamano={22} />
+            </Pressable>
+          ) : null
+        }
+        onVolver={() => router.back()}
+        titulo="Detalle de jornada"
+      />
 
       <ScrollView contentContainerStyle={styles.contenido} showsVerticalScrollIndicator={false}>
-        {__DEV__ ? (
-          <View style={styles.barraEstados}>
-            {(['normal', 'cargando', 'error'] as const).map((modo) => {
-              const activo = estadoVista === modo;
-              return (
-                <Pressable
-                  key={modo}
-                  onPress={() => setEstadoVista(modo)}
-                  style={[styles.chipEstado, activo && styles.chipEstadoActivo]}
-                >
-                  <Text style={[styles.textoChipEstado, activo && styles.textoChipEstadoActivo]}>
-                    {modo}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        ) : null}
 
         {estadoVista === 'cargando' ? (
           <View style={styles.estadoCentro}>
@@ -272,31 +254,32 @@ export default function DetalleJornadaScreen() {
                 />
               ) : null}
 
-              {!jornada.cancelada ? (
-                <Boton
-                  onPress={() =>
-                    router.push({
-                      pathname: '/grupos/[grupoId]/jornadas/crear',
-                      params: { grupoId: grupo.id, jornadaId: jornada.id },
-                    })
-                  }
-                  titulo="Editar jornada"
-                  variante="secundario"
-                />
-              ) : null}
-
-              {!jornada.cancelada ? (
-                <Boton
-                  onPress={() => setModalCancelar(true)}
-                  titulo="Cancelar jornada"
-                  variante="peligro"
-                />
-              ) : null}
             </View>
           </>
         ) : null}
       </ScrollView>
 
+      <HojaAcciones
+        acciones={[
+          {
+            etiqueta: 'Editar jornada',
+            icono: 'editar',
+            onPress: () =>
+              router.push({
+                pathname: '/grupos/[grupoId]/jornadas/crear',
+                params: { grupoId: grupo.id, jornadaId: jornada.id },
+              }),
+          },
+          {
+            etiqueta: 'Cancelar jornada',
+            icono: 'cancelar',
+            peligro: true,
+            onPress: () => setModalCancelar(true),
+          },
+        ]}
+        onCerrar={() => setHojaAbierta(false)}
+        visible={hojaAbierta}
+      />
       <Modal
         animationType="fade"
         onRequestClose={() => setModalCancelar(false)}
@@ -358,7 +341,8 @@ const styles = StyleSheet.create({
     color: colores.tinta,
     flex: 1,
     fontSize: tipografia.tituloSm,
-    fontWeight: pesos.fuerte,
+    letterSpacing: interletrado.tituloSm,
+    fontFamily: fuentes.fuerte,
     textAlign: 'center',
   },
   espacioDerecha: {
@@ -369,32 +353,6 @@ const styles = StyleSheet.create({
     padding: espaciados.lg,
     paddingBottom: espaciados.xxxl,
   },
-  barraEstados: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: espaciados.xs,
-  },
-  chipEstado: {
-    backgroundColor: colores.superficie,
-    borderColor: colores.borde,
-    borderRadius: radios.pill,
-    borderWidth: 1,
-    paddingHorizontal: espaciados.md,
-    paddingVertical: espaciados.xs,
-  },
-  chipEstadoActivo: {
-    backgroundColor: colores.acentoSuave,
-    borderColor: colores.acentoBorde,
-  },
-  textoChipEstado: {
-    color: colores.tintaSuave,
-    fontSize: tipografia.micro,
-    fontWeight: pesos.medio,
-  },
-  textoChipEstadoActivo: {
-    color: colores.acento,
-    fontWeight: pesos.fuerte,
-  },
   estadoCentro: {
     alignItems: 'center',
     gap: espaciados.md,
@@ -402,13 +360,12 @@ const styles = StyleSheet.create({
   },
   textoCarga: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
   },
   tarjetaPrincipal: {
     backgroundColor: colores.superficie,
-    borderColor: colores.borde,
     borderRadius: radios.tarjeta,
-    borderWidth: 1,
     gap: espaciados.sm,
     padding: espaciados.lg,
   },
@@ -422,15 +379,17 @@ const styles = StyleSheet.create({
   etiquetaModalidad: {
     color: colores.tintaSuave,
     fontSize: tipografia.micro,
-    fontWeight: pesos.medio,
+    fontFamily: fuentes.medio,
   },
   tituloJornada: {
     color: colores.tinta,
     fontSize: tipografia.titulo,
-    fontWeight: pesos.fuerte,
+    letterSpacing: interletrado.titulo,
+    fontFamily: fuentes.fuerte,
   },
   descripcionJornada: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpo,
     lineHeight: 22,
   },
@@ -443,6 +402,7 @@ const styles = StyleSheet.create({
   textoHorario: {
     color: colores.tintaSuave,
     flex: 1,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
   },
   gridResumen: {
@@ -452,9 +412,7 @@ const styles = StyleSheet.create({
   tarjetaStat: {
     alignItems: 'center',
     backgroundColor: colores.superficie,
-    borderColor: colores.borde,
     borderRadius: radios.tarjeta,
-    borderWidth: 1,
     flex: 1,
     gap: espaciados.xs,
     paddingHorizontal: espaciados.sm,
@@ -463,7 +421,8 @@ const styles = StyleSheet.create({
   valorStat: {
     color: colores.tinta,
     fontSize: tipografia.titulo,
-    fontWeight: pesos.fuerte,
+    letterSpacing: interletrado.titulo,
+    fontFamily: fuentes.fuerte,
   },
   colorPresente: {
     color: colores.presente,
@@ -474,7 +433,7 @@ const styles = StyleSheet.create({
   etiquetaStat: {
     color: colores.tintaSuave,
     fontSize: tipografia.micro,
-    fontWeight: pesos.medio,
+    fontFamily: fuentes.medio,
     textAlign: 'center',
   },
   acciones: {
@@ -489,9 +448,7 @@ const styles = StyleSheet.create({
   },
   tarjetaModal: {
     backgroundColor: colores.superficie,
-    borderColor: colores.borde,
     borderRadius: radios.tarjeta,
-    borderWidth: 1,
     gap: espaciados.md,
     padding: espaciados.lg,
     width: '100%',
@@ -499,10 +456,12 @@ const styles = StyleSheet.create({
   tituloModal: {
     color: colores.tinta,
     fontSize: tipografia.tituloSm,
-    fontWeight: pesos.fuerte,
+    letterSpacing: interletrado.tituloSm,
+    fontFamily: fuentes.fuerte,
   },
   cuerpoModal: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
     lineHeight: 20,
   },

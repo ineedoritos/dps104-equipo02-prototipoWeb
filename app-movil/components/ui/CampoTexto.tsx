@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { AccessibilityInfo, Animated, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { StyleProp, TextInputProps, ViewStyle } from 'react-native';
 
-import { colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
+import { colores, espaciados, forma, fuentes, radios, tamanos, tipografia } from '@/lib/tema';
 
 export interface CampoTextoProps extends Omit<TextInputProps, 'style'> {
   etiqueta: string;
@@ -24,18 +24,34 @@ export function CampoTexto({
   ...propiedades
 }: CampoTextoProps) {
   const [enfocado, setEnfocado] = useState(false);
+  // Anillo de foco de Forma: 2 px, sólido, con transición de 180 ms (0 si el sistema pide menos movimiento).
+  const [anillo] = useState(() => new Animated.Value(0));
+  const [reducirMovimiento, setReducirMovimiento] = useState(false);
+
+  useEffect(() => {
+    let activo = true;
+    AccessibilityInfo.isReduceMotionEnabled().then((valor) => {
+      if (activo) setReducirMovimiento(valor);
+    });
+    return () => {
+      activo = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    Animated.timing(anillo, {
+      duration: reducirMovimiento ? 0 : 180,
+      toValue: enfocado ? 1 : 0,
+      useNativeDriver: true,
+    }).start();
+  }, [enfocado, anillo, reducirMovimiento]);
 
   return (
     <View style={[styles.contenedor, estilo]}>
       <Text style={styles.etiqueta}>{etiqueta}</Text>
 
-      <View
-        style={[
-          styles.campoContenedor,
-          enfocado && styles.campoEnfocado,
-          error ? styles.campoConError : null,
-        ]}
-      >
+      <View style={[styles.campoContenedor, error ? styles.campoConError : null]}>
+        <Animated.View pointerEvents="none" style={[styles.anillo, { opacity: anillo }]} />
         <TextInput
           {...propiedades}
           multiline={multilinea}
@@ -65,32 +81,43 @@ const styles = StyleSheet.create({
     gap: espaciados.xs,
   },
   etiqueta: {
-    color: colores.tintaSuave,
-    fontSize: tipografia.micro,
-    fontWeight: pesos.fuerte,
-    letterSpacing: 0.2,
+    color: colores.tinta,
+    fontSize: tipografia.cuerpoSm,
+    fontFamily: fuentes.fuerte,
+    lineHeight: 18,
   },
+  // Relleno tonal sin borde; el foco solo agrega el anillo.
   campoContenedor: {
     alignItems: 'center',
-    backgroundColor: colores.superficie,
-    borderColor: colores.borde,
+    backgroundColor: forma.fill,
+    borderColor: forma.fill,
     borderRadius: radios.campo,
     borderWidth: 1,
     flexDirection: 'row',
-    minHeight: 48,
+    minHeight: tamanos.control,
   },
-  campoEnfocado: {
-    borderColor: colores.acento,
+  // Separado 3 px del campo (inset negativo); el radio suma la separación para quedar concéntrico.
+  anillo: {
+    borderColor: forma.lineStrong,
+    borderRadius: radios.campo + 3,
+    borderWidth: 2,
+    bottom: -3,
+    left: -3,
+    position: 'absolute',
+    right: -3,
+    top: -3,
   },
   campoConError: {
-    borderColor: colores.ausente,
+    backgroundColor: forma.rose,
+    borderColor: forma.roseInk,
   },
   campo: {
     color: colores.tinta,
     flex: 1,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpo,
     minHeight: 46,
-    paddingHorizontal: espaciados.md,
+    paddingHorizontal: espaciados.lg,
     paddingVertical: espaciados.sm,
   },
   campoMultilinea: {
@@ -98,8 +125,9 @@ const styles = StyleSheet.create({
     paddingTop: espaciados.md,
   },
   textoError: {
-    color: colores.ausente,
-    fontSize: tipografia.micro,
-    lineHeight: 15,
+    color: forma.roseInk,
+    fontFamily: fuentes.normal,
+    fontSize: 13,
+    lineHeight: 18,
   },
 });

@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ESTADO_JORNADA, Estado } from '@/components/ui/Estado';
 import { Icono } from '@/components/ui/Icono';
 import { formatearDia } from '@/lib/fecha';
-import { cifrasTabulares, colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
+import { cifrasTabulares, colores, espaciados, fuentes, radios, tipografia } from '@/lib/tema';
 import type { Actividad } from '@/types/actividad';
 
 export interface ActivityRowProps {
@@ -80,9 +80,7 @@ export function ActivityRow({ activity, onPress }: ActivityRowProps) {
 const styles = StyleSheet.create({
   tarjeta: {
     backgroundColor: colores.superficie,
-    borderColor: colores.borde,
     borderRadius: radios.tarjeta,
-    borderWidth: 1,
     padding: espaciados.lg,
   },
   presionado: {
@@ -106,14 +104,14 @@ const styles = StyleSheet.create({
     ...cifrasTabulares,
     color: colores.tintaSuave,
     fontSize: tipografia.micro,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
     letterSpacing: 0.6,
     textTransform: 'uppercase',
   },
   titulo: {
     color: colores.tinta,
     fontSize: tipografia.cuerpo,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
     lineHeight: 21,
   },
   meta: {
@@ -124,15 +122,18 @@ const styles = StyleSheet.create({
   hora: {
     ...cifrasTabulares,
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
   },
   separador: {
     color: colores.tintaTenue,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
   },
   ubicacion: {
     color: colores.tintaSuave,
     flex: 1,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
   },
   estadisticas: {
@@ -143,11 +144,12 @@ const styles = StyleSheet.create({
   },
   estadistica: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.micro,
   },
   estadisticaNumero: {
     ...cifrasTabulares,
     color: colores.tinta,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
   },
 });

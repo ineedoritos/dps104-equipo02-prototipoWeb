@@ -107,9 +107,7 @@ const styles = StyleSheet.create({
   marco: {
     alignSelf: 'center',
     backgroundColor: colores.superficie,
-    borderColor: colores.borde,
     borderRadius: radios.tarjeta,
-    borderWidth: 1,
     padding: espaciados.lg,
   },
   atenuado: {

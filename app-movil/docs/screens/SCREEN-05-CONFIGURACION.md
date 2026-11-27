@@ -20,6 +20,11 @@
   - *(En `MVP · Alta`, estos switches pueden mostrarse claramente etiquetados como `Próximamente / Media` o deshabilitados hasta habilitar su issue.)*
 - Nota al pie: *"Los cambios aplican a jornadas nuevas. Los registros anteriores no cambian."*
 - Botón principal: **Guardar cambios** → actualiza `grupos` y vuelve a `SCREEN-04`.
+- Bloque **Salir del grupo** (al final, separado de la configuración):
+  - Si hay otro responsable activo: botón **Salir del grupo** con confirmación.
+  - Si soy el **último responsable**: elijo entre los demás integrantes quién queda a cargo; el botón **Salir y dejar a {nombre}** asciende a esa persona a `responsable` y me retira en un solo paso. El grupo nunca queda sin responsable (`HU03 CA02`, `ERR_ULTIMO_RESPONSABLE`).
+  - Si soy el **único integrante**: aviso *"Agrega a alguien desde Integrantes antes de salir"* y sin botón.
+  - Al salir se vuelve a `SCREEN-02`; el historial se conserva.
 
 ## Estados obligatorios (`RNF04`)
 - **Cargando / Guardando:** bloquear controles durante guardado.

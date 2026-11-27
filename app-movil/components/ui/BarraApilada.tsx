@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { cifrasTabulares, colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
+import { cifrasTabulares, colores, espaciados, fuentes, radios, tipografia } from '@/lib/tema';
 
 interface BarraApiladaProps {
   presentes: number;
@@ -68,16 +68,14 @@ export function BarraApilada({
 const styles = StyleSheet.create({
   tarjeta: {
     backgroundColor: colores.superficie,
-    borderColor: colores.borde,
     borderRadius: radios.tarjeta,
-    borderWidth: 1,
     gap: espaciados.md,
     padding: espaciados.lg,
   },
   titulo: {
     color: colores.tinta,
     fontSize: tipografia.cuerpo,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
   },
   barra: {
     backgroundColor: colores.papel,
@@ -117,6 +115,6 @@ const styles = StyleSheet.create({
   textoLeyenda: {
     color: colores.tintaSuave,
     fontSize: tipografia.cuerpoSm,
-    fontWeight: pesos.medio,
+    fontFamily: fuentes.medio,
   },
 });

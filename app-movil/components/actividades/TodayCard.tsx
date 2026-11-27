@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { ESTADO_JORNADA, Estado } from '@/components/ui/Estado';
 import { Icono } from '@/components/ui/Icono';
-import { cifrasTabulares, colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
+import { cifrasTabulares, colores, espaciados, fuentes, interletrado, radios, tipografia } from '@/lib/tema';
 import type { Actividad } from '@/types/actividad';
 
 export interface TodayCardProps {
@@ -102,14 +102,14 @@ const styles = StyleSheet.create({
   textoHoy: {
     color: colores.acento,
     fontSize: tipografia.micro,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
     letterSpacing: 1.2,
   },
   horario: {
     ...cifrasTabulares,
     color: colores.tinta,
     fontSize: tipografia.display,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
     letterSpacing: -0.4,
     lineHeight: tipografia.display + 8,
     marginTop: espaciados.xs,
@@ -117,7 +117,8 @@ const styles = StyleSheet.create({
   titulo: {
     color: colores.tinta,
     fontSize: tipografia.tituloSm,
-    fontWeight: pesos.fuerte,
+    letterSpacing: interletrado.tituloSm,
+    fontFamily: fuentes.fuerte,
     lineHeight: 23,
   },
   meta: {
@@ -128,6 +129,7 @@ const styles = StyleSheet.create({
   metaTexto: {
     color: colores.tintaSuave,
     flex: 1,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
     lineHeight: 18,
   },
@@ -154,10 +156,11 @@ const styles = StyleSheet.create({
     ...cifrasTabulares,
     color: colores.tinta,
     fontSize: tipografia.cuerpoSm,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
   },
   estadisticaTexto: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.micro,
   },
 });

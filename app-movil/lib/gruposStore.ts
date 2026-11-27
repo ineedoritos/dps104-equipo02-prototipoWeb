@@ -373,6 +373,53 @@ export function retirarIntegrante(grupoId: string, integranteId: string): void {
   notificar();
 }
 
+/**
+ * El responsable actual sale del grupo. Si es el ultimo responsable activo,
+ * primero asciende a `sucesorIntegranteId` y despues se retira, en un solo
+ * paso: el grupo nunca queda sin responsable (`ERR_ULTIMO_RESPONSABLE`).
+ */
+export function salirDelGrupo(grupoId: string, sucesorIntegranteId?: string): void {
+  const actual = exigirResponsable(grupoId);
+  const miMembresia = integrantes.find(
+    (i) => i.grupo_id === grupoId && i.usuario_id === actual.id && i.retirado_en === null,
+  );
+  if (!miMembresia) {
+    return;
+  }
+
+  const soyUltimoResponsable = contarResponsablesActivos(grupoId) <= 1;
+  let sucesorId: string | null = null;
+
+  if (soyUltimoResponsable) {
+    const sucesor = integrantes.find(
+      (i) =>
+        i.id === sucesorIntegranteId &&
+        i.grupo_id === grupoId &&
+        i.retirado_en === null &&
+        i.id !== miMembresia.id,
+    );
+    if (!sucesor) {
+      throw new ErrorDominio(
+        'ERR_ULTIMO_RESPONSABLE',
+        'Elige quién quedará como responsable antes de salir.',
+      );
+    }
+    sucesorId = sucesor.id;
+  }
+
+  const ahora = dayjs().toISOString();
+  integrantes = integrantes.map((i) => {
+    if (i.id === sucesorId) {
+      return { ...i, rol: 'responsable' };
+    }
+    if (i.id === miMembresia.id) {
+      return { ...i, retirado_en: ahora };
+    }
+    return i;
+  });
+  notificar();
+}
+
 export function obtenerJornadasDeGrupo(grupoId: string): Jornada[] {
   return jornadas
     .filter((j) => j.grupo_id === grupoId)
@@ -1025,6 +1072,10 @@ export function obtenerMisGruposParaHistorial(): Array<{ grupo: Grupo; retirado:
     if (membresia.usuario_id !== sesionActual.id) {
       continue;
     }
+    // Mi historial es de participación: un responsable activo no aparece como grupo del historial.
+    if (membresia.rol === 'responsable' && membresia.retirado_en === null) {
+      continue;
+    }
     const grupo = grupos.find((g) => g.id === membresia.grupo_id);
     if (!grupo) {
       continue;
@@ -1066,6 +1117,15 @@ export function obtenerMiHistorial(grupoId?: string): ResumenMiHistorial {
     }
   }
 
+  const esResponsableActivoEn = (grupoId: string): boolean =>
+    integrantes.some(
+      (i) =>
+        i.usuario_id === sesionActual?.id &&
+        i.grupo_id === grupoId &&
+        i.rol === 'responsable' &&
+        i.retirado_en === null,
+    );
+
   const registros: RegistroHistorial[] = asistencias
     .filter((a) => a.participante_id === sesionActual?.id)
     .map((asistencia) => {
@@ -1077,7 +1137,7 @@ export function obtenerMiHistorial(grupoId?: string): ResumenMiHistorial {
         return null;
       }
       const grupo = grupos.find((g) => g.id === jornada.grupo_id);
-      if (!grupo) {
+      if (!grupo || esResponsableActivoEn(grupo.id)) {
         return null;
       }
       return {

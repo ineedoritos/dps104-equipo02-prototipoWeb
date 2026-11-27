@@ -25,7 +25,7 @@ import {
   obtenerParticipantesActivos,
   suscribirStore,
 } from '@/lib/gruposStore';
-import { cifrasTabulares, colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
+import { cifrasTabulares, colores, espaciados, fuentes, interletrado, radios, tipografia } from '@/lib/tema';
 import { ErrorDominio, type Asistencia, type EstadoAsistencia, type IntegranteConUsuario } from '@/types/dominio';
 
 type EstadoVista = 'normal' | 'cargando' | 'vacio' | 'error';
@@ -268,24 +268,6 @@ export default function AsistenciaManualScreen() {
           </Text>
         </View>
 
-        {__DEV__ ? (
-          <View style={styles.barraEstados}>
-            {(['normal', 'cargando', 'vacio', 'error'] as const).map((modo) => {
-              const activo = estadoVista === modo;
-              return (
-                <Pressable
-                  key={modo}
-                  onPress={() => setEstadoVista(modo)}
-                  style={[styles.chipEstado, activo && styles.chipEstadoActivo]}
-                >
-                  <Text style={[styles.textoChipEstado, activo && styles.textoChipEstadoActivo]}>
-                    {modo}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        ) : null}
 
         {errorGuardar ? <Aviso texto={errorGuardar} tipo="error" /> : null}
 
@@ -461,7 +443,8 @@ const styles = StyleSheet.create({
     color: colores.tinta,
     flex: 1,
     fontSize: tipografia.tituloSm,
-    fontWeight: pesos.fuerte,
+    letterSpacing: interletrado.tituloSm,
+    fontFamily: fuentes.fuerte,
     textAlign: 'center',
   },
   espacioDerecha: {
@@ -474,51 +457,26 @@ const styles = StyleSheet.create({
   },
   cabecera: {
     backgroundColor: colores.superficie,
-    borderColor: colores.borde,
     borderRadius: radios.tarjeta,
-    borderWidth: 1,
     gap: espaciados.xs,
     padding: espaciados.lg,
   },
   tituloJornada: {
     color: colores.tinta,
     fontSize: tipografia.tituloSm,
-    fontWeight: pesos.fuerte,
+    letterSpacing: interletrado.tituloSm,
+    fontFamily: fuentes.fuerte,
   },
   subtituloJornada: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
   },
   leyenda: {
     color: colores.tintaTenue,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.micro,
     marginTop: espaciados.xs,
-  },
-  barraEstados: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: espaciados.xs,
-  },
-  chipEstado: {
-    backgroundColor: colores.superficie,
-    borderColor: colores.borde,
-    borderRadius: radios.pill,
-    borderWidth: 1,
-    paddingHorizontal: espaciados.md,
-    paddingVertical: espaciados.xs,
-  },
-  chipEstadoActivo: {
-    backgroundColor: colores.acentoSuave,
-    borderColor: colores.acentoBorde,
-  },
-  textoChipEstado: {
-    color: colores.tintaSuave,
-    fontSize: tipografia.micro,
-    fontWeight: pesos.medio,
-  },
-  textoChipEstadoActivo: {
-    color: colores.acento,
-    fontWeight: pesos.fuerte,
   },
   estadoCentro: {
     alignItems: 'center',
@@ -527,6 +485,7 @@ const styles = StyleSheet.create({
   },
   textoCarga: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
   },
   lista: {
@@ -534,9 +493,7 @@ const styles = StyleSheet.create({
   },
   tarjetaParticipante: {
     backgroundColor: colores.superficie,
-    borderColor: colores.borde,
     borderRadius: radios.tarjeta,
-    borderWidth: 1,
     gap: espaciados.sm,
     padding: espaciados.lg,
   },
@@ -553,10 +510,11 @@ const styles = StyleSheet.create({
   nombreParticipante: {
     color: colores.tinta,
     fontSize: tipografia.cuerpo,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
   },
   correoParticipante: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.micro,
   },
   grupoBotonesEstado: {
@@ -566,9 +524,7 @@ const styles = StyleSheet.create({
   botonLetra: {
     alignItems: 'center',
     backgroundColor: colores.papel,
-    borderColor: colores.borde,
     borderRadius: radios.campo,
-    borderWidth: 1,
     height: 40,
     justifyContent: 'center',
     width: 40,
@@ -588,7 +544,7 @@ const styles = StyleSheet.create({
   textoBotonLetra: {
     color: colores.tintaSuave,
     fontSize: tipografia.cuerpoSm,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
   },
   textoPresente: {
     color: colores.presente,
@@ -601,6 +557,7 @@ const styles = StyleSheet.create({
   },
   advertenciaLimpieza: {
     color: colores.justificada,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.micro,
     lineHeight: 16,
   },
@@ -616,6 +573,7 @@ const styles = StyleSheet.create({
   },
   textoResumenHoras: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
   },
   enlaceHoras: {
@@ -624,7 +582,7 @@ const styles = StyleSheet.create({
   textoEnlaceHoras: {
     color: colores.acento,
     fontSize: tipografia.cuerpoSm,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
   },
   pie: {
     backgroundColor: colores.superficie,
@@ -636,7 +594,7 @@ const styles = StyleSheet.create({
   resumenPie: {
     color: colores.tintaSuave,
     fontSize: tipografia.cuerpoSm,
-    fontWeight: pesos.medio,
+    fontFamily: fuentes.medio,
     textAlign: 'center',
   },
 });

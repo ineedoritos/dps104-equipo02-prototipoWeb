@@ -4,7 +4,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Boton } from '@/components/ui/Boton';
 import { cerrarSesion, obtenerSesionActual } from '@/lib/gruposStore';
-import { colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
+import { colores, espaciados, fuentes, interletrado, radios, tipografia } from '@/lib/tema';
 import type { UsuarioCuenta } from '@/types/dominio';
 
 export default function CuentaScreen() {
@@ -103,7 +103,8 @@ const styles = StyleSheet.create({
   avatarTexto: {
     color: colores.acento,
     fontSize: tipografia.display,
-    fontWeight: pesos.fuerte,
+    letterSpacing: interletrado.display,
+    fontFamily: fuentes.fuerte,
   },
   perfilInfo: {
     flex: 1,
@@ -112,24 +113,24 @@ const styles = StyleSheet.create({
   nombre: {
     color: colores.tinta,
     fontSize: tipografia.titulo,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
     letterSpacing: -0.2,
   },
   correo: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
   },
   tarjeta: {
     backgroundColor: colores.superficie,
-    borderColor: colores.borde,
     borderRadius: radios.tarjeta,
-    borderWidth: 1,
     padding: espaciados.lg,
   },
   tituloTarjeta: {
     color: colores.tinta,
     fontSize: tipografia.tituloSm,
-    fontWeight: pesos.fuerte,
+    letterSpacing: interletrado.tituloSm,
+    fontFamily: fuentes.fuerte,
   },
   fila: {
     alignItems: 'center',
@@ -143,17 +144,19 @@ const styles = StyleSheet.create({
   },
   etiqueta: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
   },
   valor: {
     color: colores.tinta,
     flexShrink: 1,
     fontSize: tipografia.cuerpo,
-    fontWeight: pesos.medio,
+    fontFamily: fuentes.medio,
     textAlign: 'right',
   },
   descripcion: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
     lineHeight: 20,
     marginTop: espaciados.xs,

@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { Icono } from '@/components/ui/Icono';
 import type { NombreIcono } from '@/components/ui/Icono';
-import { colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
+import { colores, espaciados, fuentes, radios, tipografia } from '@/lib/tema';
 
 export type TipoAviso = 'error' | 'exito' | 'info';
 
@@ -46,7 +46,7 @@ export function Aviso({ tipo, texto, accion }: AvisoProps) {
         { backgroundColor: configuracion.fondo, borderColor: configuracion.borde },
       ]}
     >
-      <Icono color={configuracion.texto} nombre={configuracion.icono} tamano={18} />
+      <Icono color={configuracion.texto} nombre={configuracion.icono} tamano={21} />
       <View style={styles.cuerpo}>
         <Text style={[styles.texto, { color: configuracion.texto }]}>{texto}</Text>
         {accion}
@@ -58,11 +58,12 @@ export function Aviso({ tipo, texto, accion }: AvisoProps) {
 const styles = StyleSheet.create({
   contenedor: {
     alignItems: 'flex-start',
-    borderRadius: radios.campo,
+    // Superficie tonal de Forma: el borde toma el tono del fondo, sin sombra.
+    borderRadius: radios.superficie,
     borderWidth: 1,
     flexDirection: 'row',
-    gap: espaciados.sm,
-    padding: espaciados.md,
+    gap: espaciados.md,
+    padding: espaciados.tonal,
   },
   cuerpo: {
     flex: 1,
@@ -70,7 +71,7 @@ const styles = StyleSheet.create({
   },
   texto: {
     fontSize: tipografia.cuerpoSm,
-    fontWeight: pesos.medio,
-    lineHeight: 19,
+    fontFamily: fuentes.medio,
+    lineHeight: 20,
   },
 });

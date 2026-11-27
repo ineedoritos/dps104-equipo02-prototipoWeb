@@ -9,7 +9,7 @@ import { EstadoVacio } from '@/components/ui/EstadoVacio';
 import { Icono } from '@/components/ui/Icono';
 import { Seccion } from '@/components/ui/Seccion';
 import { fechaEnZona } from '@/lib/fecha';
-import { colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
+import { colores, espaciados, fuentes, radios, tipografia } from '@/lib/tema';
 import type {
   Actividad,
   EstadoActividad,
@@ -229,20 +229,21 @@ const styles = StyleSheet.create({
   sobreTitulo: {
     color: colores.acento,
     fontSize: tipografia.micro,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
     letterSpacing: 1.2,
     textTransform: 'uppercase',
   },
   nombre: {
     color: colores.tinta,
     fontSize: tipografia.display,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
     letterSpacing: -0.4,
     lineHeight: tipografia.display + 4,
     marginTop: 2,
   },
   subtitulo: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
     lineHeight: 19,
   },
@@ -259,9 +260,7 @@ const styles = StyleSheet.create({
   chip: {
     alignItems: 'center',
     backgroundColor: colores.superficie,
-    borderColor: colores.borde,
     borderRadius: radios.pill,
-    borderWidth: 1,
     flexDirection: 'row',
     gap: espaciados.xs + 2,
     justifyContent: 'center',
@@ -278,11 +277,11 @@ const styles = StyleSheet.create({
   chipTexto: {
     color: colores.tintaSuave,
     fontSize: tipografia.cuerpoSm,
-    fontWeight: pesos.medio,
+    fontFamily: fuentes.medio,
   },
   chipTextoActivo: {
     color: colores.superficie,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
   },
   chipFecha: {
     borderStyle: 'dashed',
@@ -295,7 +294,7 @@ const styles = StyleSheet.create({
   },
   chipFechaTextoActivo: {
     color: colores.acento,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
   },
   lista: {
     gap: espaciados.md,

@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { Icono } from '@/components/ui/Icono';
 import type { NombreIcono } from '@/components/ui/Icono';
-import { colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
+import { colores, espaciados, forma, fuentes, interletrado, interlineado, radios, tipografia } from '@/lib/tema';
 
 export interface EstadoVacioProps {
   icono: NombreIcono;
@@ -16,7 +16,7 @@ export function EstadoVacio({ icono, titulo, descripcion, accion }: EstadoVacioP
   return (
     <View style={styles.contenedor}>
       <View style={styles.iconoFondo}>
-        <Icono color={colores.acento} nombre={icono} tamano={26} />
+        <Icono color={forma.blueInk} nombre={icono} tamano={28} />
       </View>
       <Text accessibilityRole="header" style={styles.titulo}>
         {titulo}
@@ -30,32 +30,35 @@ export function EstadoVacio({ icono, titulo, descripcion, accion }: EstadoVacioP
 const styles = StyleSheet.create({
   contenedor: {
     alignItems: 'center',
-    backgroundColor: colores.superficieAlt,
-    borderColor: colores.borde,
-    borderRadius: radios.tarjeta,
-    borderWidth: 1,
+    // Centrado sobre `paper`, sin borde; aire vertical `space-32`.
+    backgroundColor: forma.paper,
+    borderRadius: radios.superficie,
     gap: espaciados.sm,
-    padding: espaciados.xl,
+    paddingHorizontal: espaciados.xl,
+    paddingVertical: espaciados.xxl,
   },
   iconoFondo: {
     alignItems: 'center',
-    backgroundColor: colores.acentoSuave,
+    backgroundColor: forma.blue,
     borderRadius: radios.pill,
-    height: 56,
+    height: 66,
     justifyContent: 'center',
     marginBottom: espaciados.xs,
-    width: 56,
+    width: 66,
   },
   titulo: {
     color: colores.tinta,
-    fontSize: tipografia.cuerpo,
-    fontWeight: pesos.fuerte,
+    fontSize: tipografia.tituloSm,
+    fontFamily: fuentes.fuerte,
+    letterSpacing: interletrado.tituloSm,
+    lineHeight: interlineado.tituloSm,
     textAlign: 'center',
   },
   descripcion: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
-    lineHeight: 19,
+    lineHeight: interlineado.cuerpoSm,
     textAlign: 'center',
   },
   accion: {

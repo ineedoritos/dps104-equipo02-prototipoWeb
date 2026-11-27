@@ -9,7 +9,6 @@ import {
   Text,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Aviso } from '@/components/ui/Aviso';
 import { Boton } from '@/components/ui/Boton';
@@ -26,7 +25,7 @@ import {
   obtenerMiRolEnGrupo,
   suscribirStore,
 } from '@/lib/gruposStore';
-import { cifrasTabulares, colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
+import {cifrasTabulares, colores, espaciados, fuentes, radios, tipografia} from '@/lib/tema';
 import type { EstadoJornada, Grupo, Jornada, RolGrupo } from '@/types/dominio';
 
 type EstadoVista = 'normal' | 'cargando' | 'vacio' | 'error';
@@ -85,19 +84,7 @@ export default function GrupoDetalleScreen() {
 
   if (!grupo || !rol) {
     return (
-      <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
-        <View style={styles.barraSuperior}>
-          <Pressable
-            accessibilityLabel="Volver"
-            accessibilityRole="button"
-            onPress={() => router.replace('/(tabs)')}
-            style={styles.botonIcono}
-          >
-            <Icono color={colores.tinta} nombre="volver" tamano={22} />
-          </Pressable>
-          <Text style={styles.tituloBarra}>Grupo</Text>
-          <View style={styles.espacioDerecha} />
-        </View>
+      <View style={styles.pantalla}>
         <View style={styles.contenido}>
           <Aviso
             accion={
@@ -127,7 +114,7 @@ export default function GrupoDetalleScreen() {
             tipo="error"
           />
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -212,41 +199,7 @@ export default function GrupoDetalleScreen() {
   };
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
-      <View style={styles.barraSuperior}>
-        <Pressable
-          accessibilityLabel="Volver a Mis grupos"
-          accessibilityRole="button"
-          onPress={() => router.back()}
-          style={styles.botonIcono}
-        >
-          <Icono color={colores.tinta} nombre="volver" tamano={22} />
-        </Pressable>
-
-        <View style={styles.centroBarra}>
-          <Text numberOfLines={1} style={styles.tituloBarra}>
-            {grupo.nombre}
-          </Text>
-        </View>
-
-        {esResponsable ? (
-          <Pressable
-            accessibilityLabel="Configuración del grupo"
-            accessibilityRole="button"
-            onPress={() =>
-              router.push({
-                pathname: '/grupos/[grupoId]/configuracion',
-                params: { grupoId: grupo.id },
-              })
-            }
-            style={styles.botonAjustes}
-          >
-            <Text style={styles.textoAjustes}>Ajustes</Text>
-          </Pressable>
-        ) : (
-          <View style={styles.espacioDerecha} />
-        )}
-      </View>
+    <View style={styles.pantalla}>
 
       <ScrollView
         contentContainerStyle={styles.contenido}
@@ -281,74 +234,6 @@ export default function GrupoDetalleScreen() {
           </View>
         </View>
 
-        {esResponsable ? (
-          <View style={styles.tabsInternas}>
-            <View style={[styles.tabInterna, styles.tabInternaActiva]}>
-              <Text style={[styles.textoTab, styles.textoTabActiva]}>Jornadas</Text>
-            </View>
-            <Pressable
-              accessibilityRole="button"
-              onPress={() =>
-                router.push({
-                  pathname: '/grupos/[grupoId]/integrantes',
-                  params: { grupoId: grupo.id },
-                })
-              }
-              style={styles.tabInterna}
-            >
-              <Text style={styles.textoTab}>Integrantes</Text>
-            </Pressable>
-            <Pressable
-              accessibilityRole="button"
-              onPress={() =>
-                router.push({
-                  pathname: '/grupos/[grupoId]/reportes',
-                  params: { grupoId: grupo.id },
-                })
-              }
-              style={styles.tabInterna}
-            >
-              <Text style={styles.textoTab}>Reportes</Text>
-            </Pressable>
-          </View>
-        ) : (
-          <View style={styles.tabsInternas}>
-            <View style={[styles.tabInterna, styles.tabInternaActiva]}>
-              <Text style={[styles.textoTab, styles.textoTabActiva]}>Jornadas</Text>
-            </View>
-            <Pressable
-              accessibilityRole="button"
-              onPress={() =>
-                router.push({
-                  pathname: '/(tabs)/historial',
-                  params: { grupoId: grupo.id },
-                })
-              }
-              style={styles.tabInterna}
-            >
-              <Text style={styles.textoTab}>Mi historial</Text>
-            </Pressable>
-          </View>
-        )}
-
-        {__DEV__ ? (
-          <View style={styles.barraEstados}>
-            {(['normal', 'cargando', 'vacio', 'error'] as const).map((modo) => {
-              const activo = estadoVista === modo;
-              return (
-                <Pressable
-                  key={modo}
-                  onPress={() => setEstadoVista(modo)}
-                  style={[styles.chipEstado, activo && styles.chipEstadoActivo]}
-                >
-                  <Text style={[styles.textoChipEstado, activo && styles.textoChipEstadoActivo]}>
-                    {modo}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        ) : null}
 
         {estadoVista === 'cargando' ? (
           <View style={styles.estadoCentro}>
@@ -432,7 +317,7 @@ export default function GrupoDetalleScreen() {
           />
         ) : null}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -441,47 +326,7 @@ const styles = StyleSheet.create({
     backgroundColor: colores.papel,
     flex: 1,
   },
-  barraSuperior: {
-    alignItems: 'center',
-    borderBottomColor: colores.borde,
-    borderBottomWidth: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: espaciados.md,
-    paddingVertical: espaciados.sm,
-  },
-  botonIcono: {
-    alignItems: 'center',
-    borderRadius: radios.pill,
-    height: 40,
-    justifyContent: 'center',
-    width: 40,
-  },
-  centroBarra: {
-    alignItems: 'center',
-    flex: 1,
-    paddingHorizontal: espaciados.sm,
-  },
-  tituloBarra: {
-    color: colores.tinta,
-    fontSize: tipografia.tituloSm,
-    fontWeight: pesos.fuerte,
-  },
-  botonAjustes: {
-    borderColor: colores.bordeFuerte,
-    borderRadius: radios.pill,
-    borderWidth: 1,
-    paddingHorizontal: espaciados.md,
-    paddingVertical: espaciados.xs,
-  },
-  textoAjustes: {
-    color: colores.tinta,
-    fontSize: tipografia.micro,
-    fontWeight: pesos.fuerte,
-  },
-  espacioDerecha: {
-    width: 40,
-  },
+  // Boton redondo de Forma: relleno `fill`, sin borde, area tactil de 44 px.
   contenido: {
     gap: espaciados.lg,
     padding: espaciados.lg,
@@ -509,7 +354,7 @@ const styles = StyleSheet.create({
   },
   textoRol: {
     fontSize: tipografia.micro,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
   },
   textoResponsable: {
     color: colores.acento,
@@ -519,61 +364,8 @@ const styles = StyleSheet.create({
   },
   resumenConfig: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
-  },
-  tabsInternas: {
-    backgroundColor: colores.superficieAlt,
-    borderColor: colores.borde,
-    borderRadius: radios.campo,
-    borderWidth: 1,
-    flexDirection: 'row',
-    padding: 3,
-  },
-  tabInterna: {
-    alignItems: 'center',
-    borderRadius: radios.sm,
-    flex: 1,
-    paddingVertical: espaciados.sm,
-  },
-  tabInternaActiva: {
-    backgroundColor: colores.superficie,
-    borderColor: colores.borde,
-    borderWidth: 1,
-  },
-  textoTab: {
-    color: colores.tintaSuave,
-    fontSize: tipografia.cuerpoSm,
-    fontWeight: pesos.medio,
-  },
-  textoTabActiva: {
-    color: colores.tinta,
-    fontWeight: pesos.fuerte,
-  },
-  barraEstados: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: espaciados.xs,
-  },
-  chipEstado: {
-    backgroundColor: colores.superficie,
-    borderColor: colores.borde,
-    borderRadius: radios.pill,
-    borderWidth: 1,
-    paddingHorizontal: espaciados.md,
-    paddingVertical: espaciados.xs,
-  },
-  chipEstadoActivo: {
-    backgroundColor: colores.acentoSuave,
-    borderColor: colores.acentoBorde,
-  },
-  textoChipEstado: {
-    color: colores.tintaSuave,
-    fontSize: tipografia.micro,
-    fontWeight: pesos.medio,
-  },
-  textoChipEstadoActivo: {
-    color: colores.acento,
-    fontWeight: pesos.fuerte,
   },
   estadoCentro: {
     alignItems: 'center',
@@ -582,6 +374,7 @@ const styles = StyleSheet.create({
   },
   textoCarga: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
   },
   gruposJornadas: {
@@ -592,9 +385,7 @@ const styles = StyleSheet.create({
   },
   tarjetaJornada: {
     backgroundColor: colores.superficie,
-    borderColor: colores.borde,
     borderRadius: radios.tarjeta,
-    borderWidth: 1,
     gap: espaciados.sm,
     padding: espaciados.lg,
   },
@@ -611,7 +402,7 @@ const styles = StyleSheet.create({
     color: colores.tinta,
     flex: 1,
     fontSize: tipografia.cuerpo,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
   },
   filaMeta: {
     alignItems: 'center',
@@ -620,10 +411,12 @@ const styles = StyleSheet.create({
   },
   textoHorario: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
   },
   notaCancelada: {
     color: colores.ausente,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.micro,
   },
   tarjetaDestacada: {

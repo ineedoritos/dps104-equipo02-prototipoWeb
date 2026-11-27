@@ -1,12 +1,11 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Aviso } from '@/components/ui/Aviso';
 import { Boton } from '@/components/ui/Boton';
 import { CampoTexto } from '@/components/ui/CampoTexto';
-import { Icono } from '@/components/ui/Icono';
+import { SelectorTarjeta, type OpcionTarjeta } from '@/components/ui/SelectorTarjeta';
 import {
   agregarIntegrantePorCorreo,
   cambiarRolIntegrante,
@@ -17,10 +16,15 @@ import {
   retirarIntegrante,
   suscribirStore,
 } from '@/lib/gruposStore';
-import { cifrasTabulares, colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
+import { cifrasTabulares, colores, espaciados, fuentes, interletrado, radios, tipografia } from '@/lib/tema';
 import { ErrorDominio, type IntegranteConUsuario, type RolGrupo } from '@/types/dominio';
 
 const REGEX_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const OPCIONES_ROL: OpcionTarjeta<RolGrupo>[] = [
+  { valor: 'participante', titulo: 'Participante', icono: 'participante' },
+  { valor: 'responsable', titulo: 'Responsable', icono: 'responsable' },
+];
 
 export default function IntegrantesScreen() {
   const router = useRouter();
@@ -39,6 +43,8 @@ export default function IntegrantesScreen() {
   const [errorAccion, setErrorAccion] = useState('');
 
   const sesion = obtenerSesionActual();
+  // Uno no se administra a si mismo: para salir del grupo se usa Ajustes.
+  const otrosIntegrantes = integrantes.filter((i) => i.usuario_id !== sesion?.id);
   const grupo = grupoId ? obtenerGrupoPorId(grupoId) : undefined;
 
   const recargar = useCallback(() => {
@@ -107,25 +113,18 @@ export default function IntegrantesScreen() {
     if (!grupoId) {
       return;
     }
-    const esPropio = integrante.usuario_id === sesion?.id;
     Alert.alert(
-      esPropio ? 'Salir del grupo' : 'Retirar integrante',
-      esPropio
-        ? '¿Seguro que quieres salir de este grupo? Tu historial se conservará.'
-        : `¿Seguro que quieres retirar a ${integrante.usuario.nombre}? Su historial se conservará.`,
+      'Retirar integrante',
+      `¿Seguro que quieres retirar a ${integrante.usuario.nombre}? Su historial se conservará.`,
       [
         { text: 'Cancelar', style: 'cancel' },
         {
-          text: esPropio ? 'Salir' : 'Retirar',
+          text: 'Retirar',
           style: 'destructive',
           onPress: () => {
             setErrorAccion('');
             try {
               retirarIntegrante(grupoId, integrante.id);
-              if (esPropio) {
-                router.replace('/(tabs)');
-                return;
-              }
               recargar();
             } catch (err) {
               if (err instanceof ErrorDominio) {
@@ -140,19 +139,7 @@ export default function IntegrantesScreen() {
 
   if (!grupo || rolActual !== 'responsable') {
     return (
-      <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
-        <View style={styles.barraSuperior}>
-          <Pressable
-            accessibilityLabel="Volver"
-            accessibilityRole="button"
-            onPress={() => router.back()}
-            style={styles.botonVolver}
-          >
-            <Icono color={colores.tinta} nombre="volver" tamano={22} />
-          </Pressable>
-          <Text style={styles.tituloBarra}>Integrantes</Text>
-          <View style={styles.espacioDerecha} />
-        </View>
+      <View style={styles.pantalla}>
         <View style={styles.contenido}>
           <Aviso
             accion={
@@ -167,26 +154,12 @@ export default function IntegrantesScreen() {
             tipo="error"
           />
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
-      <View style={styles.barraSuperior}>
-        <Pressable
-          accessibilityLabel="Volver"
-          accessibilityRole="button"
-          onPress={() => router.back()}
-          style={styles.botonVolver}
-        >
-          <Icono color={colores.tinta} nombre="volver" tamano={22} />
-        </Pressable>
-        <Text accessibilityRole="header" style={styles.tituloBarra}>
-          Integrantes
-        </Text>
-        <View style={styles.espacioDerecha} />
-      </View>
+    <View style={styles.pantalla}>
 
       <ScrollView contentContainerStyle={styles.contenido} keyboardShouldPersistTaps="handled">
         {errorAccion ? <Aviso texto={errorAccion} tipo="error" /> : null}
@@ -208,88 +181,60 @@ export default function IntegrantesScreen() {
             value={correoNuevo}
           />
 
-          <View style={styles.selectorRol}>
-            {(['participante', 'responsable'] as const).map((rolOpcion) => {
-              const activo = rolInicial === rolOpcion;
-              return (
-                <Pressable
-                  key={rolOpcion}
-                  accessibilityRole="button"
-                  onPress={() => setRolInicial(rolOpcion)}
-                  style={[styles.opcionRol, activo && styles.opcionRolActiva]}
-                >
-                  <Text style={[styles.textoOpcionRol, activo && styles.textoOpcionRolActiva]}>
-                    {rolOpcion === 'participante' ? 'Participante' : 'Responsable'}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
+          <SelectorTarjeta
+            accessibilityLabel="Rol del nuevo integrante"
+            onCambiar={setRolInicial}
+            opciones={OPCIONES_ROL}
+            valor={rolInicial}
+          />
 
           <Boton cargando={cargando} onPress={manejarAgregar} titulo="Agregar" />
         </View>
 
         <View style={styles.encabezadoLista}>
           <Text style={[styles.contador, cifrasTabulares]}>
-            {integrantes.length} {integrantes.length === 1 ? 'integrante' : 'integrantes'}
+            {otrosIntegrantes.length}{' '}
+            {otrosIntegrantes.length === 1 ? 'integrante además de ti' : 'integrantes además de ti'}
           </Text>
         </View>
 
         <View style={styles.lista}>
-          {integrantes.map((item) => {
-            const esPropio = item.usuario_id === sesion?.id;
+          {otrosIntegrantes.map((item) => {
             return (
               <View key={item.id} style={styles.tarjetaIntegrante}>
                 <View style={styles.filaInfo}>
                   <View style={styles.datosPersona}>
-                    <Text style={styles.nombrePersona}>
-                      {item.usuario.nombre}
-                      {esPropio ? ' (tú)' : ''}
-                    </Text>
+                    <Text style={styles.nombrePersona}>{item.usuario.nombre}</Text>
                     <Text style={styles.correoPersona}>{item.usuario.correo}</Text>
                   </View>
 
                   <Pressable
+                    accessibilityLabel={`Retirar a ${item.usuario.nombre}`}
                     accessibilityRole="button"
                     onPress={() => confirmarRetiro(item)}
                     style={styles.botonRetirar}
                   >
-                    <Text style={styles.textoRetirar}>
-                      {esPropio ? 'Salir del grupo' : 'Retirar'}
-                    </Text>
+                    <Text style={styles.textoRetirar}>Retirar</Text>
                   </Pressable>
                 </View>
 
-                <View style={styles.selectorRol}>
-                  {(['participante', 'responsable'] as const).map((rolOpcion) => {
-                    const activo = item.rol === rolOpcion;
-                    return (
-                      <Pressable
-                        key={rolOpcion}
-                        accessibilityRole="button"
-                        onPress={() => manejarCambiarRol(item, rolOpcion)}
-                        style={[styles.opcionRol, activo && styles.opcionRolActiva]}
-                      >
-                        <Text
-                          style={[styles.textoOpcionRol, activo && styles.textoOpcionRolActiva]}
-                        >
-                          {rolOpcion === 'participante' ? 'Participante' : 'Responsable'}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
+                <SelectorTarjeta
+                  accessibilityLabel={`Rol de ${item.usuario.nombre}`}
+                  onCambiar={(nuevoRol) => manejarCambiarRol(item, nuevoRol)}
+                  opciones={OPCIONES_ROL}
+                  valor={item.rol}
+                />
               </View>
             );
           })}
         </View>
 
         <Text style={styles.notaPie}>
-          Un rol por grupo. El último responsable no puede salir ni ser retirado. Al retirar a
-          alguien, su historial se conserva.
+          Un rol por grupo. Siempre debe quedar al menos un responsable. Al retirar a alguien, su
+          historial se conserva. Para salir tú del grupo, ve a Ajustes.
         </Text>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -298,30 +243,6 @@ const styles = StyleSheet.create({
     backgroundColor: colores.papel,
     flex: 1,
   },
-  barraSuperior: {
-    alignItems: 'center',
-    borderBottomColor: colores.borde,
-    borderBottomWidth: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: espaciados.md,
-    paddingVertical: espaciados.sm,
-  },
-  botonVolver: {
-    alignItems: 'center',
-    borderRadius: radios.pill,
-    height: 40,
-    justifyContent: 'center',
-    width: 40,
-  },
-  tituloBarra: {
-    color: colores.tinta,
-    fontSize: tipografia.tituloSm,
-    fontWeight: pesos.fuerte,
-  },
-  espacioDerecha: {
-    width: 40,
-  },
   contenido: {
     gap: espaciados.lg,
     padding: espaciados.lg,
@@ -329,44 +250,15 @@ const styles = StyleSheet.create({
   },
   tarjeta: {
     backgroundColor: colores.superficie,
-    borderColor: colores.borde,
     borderRadius: radios.tarjeta,
-    borderWidth: 1,
     gap: espaciados.md,
     padding: espaciados.lg,
   },
   tituloBloque: {
     color: colores.tinta,
     fontSize: tipografia.tituloSm,
-    fontWeight: pesos.fuerte,
-  },
-  selectorRol: {
-    backgroundColor: colores.superficieAlt,
-    borderColor: colores.borde,
-    borderRadius: radios.campo,
-    borderWidth: 1,
-    flexDirection: 'row',
-    padding: 3,
-  },
-  opcionRol: {
-    alignItems: 'center',
-    borderRadius: radios.sm,
-    flex: 1,
-    paddingVertical: espaciados.sm,
-  },
-  opcionRolActiva: {
-    backgroundColor: colores.superficie,
-    borderColor: colores.borde,
-    borderWidth: 1,
-  },
-  textoOpcionRol: {
-    color: colores.tintaSuave,
-    fontSize: tipografia.cuerpoSm,
-    fontWeight: pesos.medio,
-  },
-  textoOpcionRolActiva: {
-    color: colores.acento,
-    fontWeight: pesos.fuerte,
+    letterSpacing: interletrado.tituloSm,
+    fontFamily: fuentes.fuerte,
   },
   encabezadoLista: {
     flexDirection: 'row',
@@ -375,16 +267,14 @@ const styles = StyleSheet.create({
   contador: {
     color: colores.tintaSuave,
     fontSize: tipografia.cuerpoSm,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
   },
   lista: {
     gap: espaciados.md,
   },
   tarjetaIntegrante: {
     backgroundColor: colores.superficie,
-    borderColor: colores.borde,
     borderRadius: radios.tarjeta,
-    borderWidth: 1,
     gap: espaciados.md,
     padding: espaciados.lg,
   },
@@ -401,10 +291,11 @@ const styles = StyleSheet.create({
   nombrePersona: {
     color: colores.tinta,
     fontSize: tipografia.cuerpo,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
   },
   correoPersona: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
   },
   botonRetirar: {
@@ -416,10 +307,11 @@ const styles = StyleSheet.create({
   textoRetirar: {
     color: colores.ausente,
     fontSize: tipografia.micro,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
   },
   notaPie: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
     lineHeight: 19,
     textAlign: 'center',

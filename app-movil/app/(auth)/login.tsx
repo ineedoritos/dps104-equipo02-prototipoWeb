@@ -8,7 +8,7 @@ import { Boton } from '@/components/ui/Boton';
 import { CampoTexto } from '@/components/ui/CampoTexto';
 import { Icono } from '@/components/ui/Icono';
 import { crearCuenta, iniciarSesion, obtenerSesionActual } from '@/lib/gruposStore';
-import { colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
+import { colores, espaciados, fuentes, interletrado, radios, tipografia } from '@/lib/tema';
 import { ErrorDominio } from '@/types/dominio';
 
 const REGEX_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -105,9 +105,6 @@ export default function LoginScreen() {
       >
         <ScrollView contentContainerStyle={styles.contenido} keyboardShouldPersistTaps="handled">
           <View style={styles.encabezado}>
-            <View style={styles.marca}>
-              <Icono color={colores.acento} nombre="gente" tamano={26} />
-            </View>
             <Text accessibilityRole="header" style={styles.titulo}>
               Registro de actividades
             </Text>
@@ -158,9 +155,14 @@ export default function LoginScreen() {
                     }
                     accessibilityRole="button"
                     onPress={() => setMostrarContrasena((visible) => !visible)}
+                    hitSlop={8}
                     style={styles.botonVer}
                   >
-                    <Text style={styles.textoVer}>{mostrarContrasena ? 'Ocultar' : 'Ver'}</Text>
+                    <Icono
+                      color={colores.tintaSuave}
+                      nombre={mostrarContrasena ? 'ocultar' : 'ver'}
+                      tamano={21}
+                    />
                   </Pressable>
                 }
                 autoCapitalize="none"
@@ -231,52 +233,38 @@ const styles = StyleSheet.create({
   encabezado: {
     gap: espaciados.sm,
   },
-  marca: {
-    alignItems: 'center',
-    backgroundColor: colores.acentoSuave,
-    borderColor: colores.acentoBorde,
-    borderRadius: radios.tarjeta,
-    borderWidth: 1,
-    height: 52,
-    justifyContent: 'center',
-    marginBottom: espaciados.xs,
-    width: 52,
-  },
   titulo: {
     color: colores.tinta,
     fontSize: tipografia.display,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
     letterSpacing: -0.4,
   },
   subtitulo: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpo,
     lineHeight: 22,
   },
   tarjeta: {
     backgroundColor: colores.superficie,
-    borderColor: colores.borde,
     borderRadius: radios.tarjeta,
-    borderWidth: 1,
     gap: espaciados.md,
     padding: espaciados.lg,
   },
   tituloFormulario: {
     color: colores.tinta,
     fontSize: tipografia.titulo,
-    fontWeight: pesos.fuerte,
+    letterSpacing: interletrado.titulo,
+    fontFamily: fuentes.fuerte,
   },
   formulario: {
     gap: espaciados.md,
   },
   botonVer: {
-    paddingHorizontal: espaciados.sm,
-    paddingVertical: espaciados.xs,
-  },
-  textoVer: {
-    color: colores.acento,
-    fontSize: tipografia.cuerpoSm,
-    fontWeight: pesos.fuerte,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 44,
+    minWidth: 44,
   },
   boton: {
     marginTop: espaciados.xs,
@@ -288,7 +276,7 @@ const styles = StyleSheet.create({
   textoEnlace: {
     color: colores.acento,
     fontSize: tipografia.cuerpoSm,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
   },
   atajoDemo: {
     alignItems: 'center',
@@ -298,10 +286,12 @@ const styles = StyleSheet.create({
   },
   textoAtajo: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.micro,
   },
   notaPie: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
     textAlign: 'center',
   },
