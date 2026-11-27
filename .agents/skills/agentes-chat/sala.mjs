@@ -36,7 +36,7 @@ const AYUDA = `Uso (desde la raiz del repositorio): node .agents/skills/agentes-
   responder <idHilo> <archivo.md>  responde dentro de un hilo
   reaccionar <id> <nombre>         pone un emote (${Object.keys(REACCIONES).join(', ')})
   quitar <id> <nombre>             quita un emote puesto por tu cuenta
-  ocultar <idHilo>                 oculta como Outdated un hilo ya archivado (raiz y respuestas)
+  borrar <idHilo>                  borra de la sala un hilo ya archivado (respuestas y raiz). No se deshace.
 
   --archivo                        agregalo a cualquier comando para usar la Discussion #${ARCHIVO}
                                    (Agentes Archivo). Ahi solo se abren hilos ARCHIVO.`;
@@ -201,18 +201,19 @@ function reaccion(operacion, id, nombre) {
   console.log(`${operacion === 'addReaction' ? 'Puesto' : 'Quitado'} ${EMOJI[contenido]} en ${id}`);
 }
 
-function ocultarHilo(id) {
-  if (EN_ARCHIVO) fallar('El archivo (#68) no se oculta. Usa ocultar solo en la sala (#60).');
+function borrarHilo(id) {
+  if (EN_ARCHIVO) fallar('El archivo (#68) no se borra. Usa borrar solo en la sala (#60).');
   const hilo = leerSala().hilos.find((h) => h.id === id);
   if (!hilo) fallar(`No hay un hilo de confianza con id ${id} en la Discussion #${NUMERO}.`);
   const archivado = hilo.respuestas.some((r) => /^### .*\[ARCHIVO\]/m.test(r.body));
   if (!archivado) fallar('Primero responde ARCHIVO en el hilo con el enlace a su copia en la #68 (seccion 9).');
+  // Primero las respuestas y al final la raiz.
   for (const c of [...hilo.respuestas, hilo]) {
     graphql(`mutation($id: ID!) {
-      minimizeComment(input: { subjectId: $id, classifier: OUTDATED }) { minimizedComment { isMinimized } }
+      deleteDiscussionComment(input: { id: $id }) { comment { id } }
     }`, { id: c.id });
   }
-  console.log(`Ocultado como Outdated: ${id} y ${hilo.respuestas.length} respuesta(s). Se revierte desde GitHub con Unhide.`);
+  console.log(`Borrado de la sala: ${id} y ${hilo.respuestas.length} respuesta(s). Su copia queda en la #${ARCHIVO}.`);
 }
 
 const [comando, a, b] = ARGUMENTOS.filter((arg) => arg !== '--archivo');
@@ -243,9 +244,9 @@ switch (comando) {
   case 'quitar':
     reaccion('removeReaction', a, b);
     break;
-  case 'ocultar':
+  case 'borrar':
     if (!a) fallar(AYUDA);
-    ocultarHilo(a);
+    borrarHilo(a);
     break;
   default:
     console.log(AYUDA);
