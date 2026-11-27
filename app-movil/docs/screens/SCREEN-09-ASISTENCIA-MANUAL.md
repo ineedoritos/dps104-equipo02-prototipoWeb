@@ -15,7 +15,7 @@
   - Si `J` está seleccionado: campo obligatorio **`Motivo de la ausencia`** (texto breve informativo, sin adjuntos).
   - Si `P` está seleccionado y `jornada.control_horas === true`: resumen de horas (*ej. "Entrada 8:02 · Salida 12:00"*) + acción **`Registrar / Ajustar horas ›`** → `SCREEN-10`.
   - Si `jornada.control_horas === false`: ocultar cualquier campo o enlace de horas (`HU09 CA05`).
-  - **[Media · `HU12`]** Si `requiere_validacion === true`: badge `Pendiente` / `Aprobado` y botón **Aprobar** (deshabilitado si horas incompletas).
+  - **[Media · `HU12`]** Si `requiere_validacion === true`: muestra badge `Pendiente` / `Aprobado` en cada participante con registro, botón **Aprobar** individual (oculto en el registro propio `validado_por <> participante_id` y deshabilitado si tiene entrada sin salida) y acción superior **Aprobar los completos (N)** con resumen de aprobados y omitidos. Si la jornada no exige validación, lo indica en la cabecera. Al editar asistencia u horas de un registro aprobado, regresa a `pendiente`.
 - Pie con resumen en vivo (*"4 presentes · 1 ausente · 1 justificada"*) + botón **Guardar cambios** → ejecuta `registrar_asistencia_manual` y regresa a `SCREEN-08`.
 
 ## Estados obligatorios (`RNF04`)

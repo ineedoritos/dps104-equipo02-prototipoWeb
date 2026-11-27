@@ -63,6 +63,9 @@ export default function ConfiguracionGrupoScreen() {
   const [controlHoras, setControlHoras] = useState<boolean>(grupo?.control_horas ?? false);
   const [gpsHabilitado, setGpsHabilitado] = useState<boolean>(grupo?.gps_habilitado ?? false);
   const [modoFotos, setModoFotos] = useState<ModoFotos>(grupo?.modo_fotos ?? 'no_permitidas');
+  const [requiereValidacion, setRequiereValidacion] = useState<boolean>(
+    grupo?.requiere_validacion ?? false,
+  );
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState('');
   const [sucesorId, setSucesorId] = useState<string | null>(null);
@@ -89,6 +92,7 @@ export default function ConfiguracionGrupoScreen() {
           control_horas: controlHoras,
           gps_habilitado: modalidad === 'qr' ? gpsHabilitado : false,
           modo_fotos: modoFotos,
+          requiere_validacion: requiereValidacion,
         });
         setGuardando(false);
         router.back();
@@ -246,6 +250,31 @@ export default function ConfiguracionGrupoScreen() {
         </View>
 
         <View style={styles.tarjeta}>
+          <Pressable
+            accessibilityLabel="Exigir validación"
+            accessibilityRole="switch"
+            accessibilityState={{ checked: requiereValidacion, disabled: guardando }}
+            disabled={guardando}
+            onPress={() => setRequiereValidacion((prev) => !prev)}
+            style={styles.filaSwitch}
+          >
+            <View style={styles.opcionTexto}>
+              <Text style={styles.tituloBloque}>Exigir validación</Text>
+              <Text style={styles.descOpcion}>
+                Los registros cuentan cuando un responsable los aprueba.
+              </Text>
+            </View>
+            <Switch
+              disabled={guardando}
+              onValueChange={setRequiereValidacion}
+              thumbColor={colores.superficie}
+              trackColor={{ false: colores.bordeFuerte, true: colores.acento }}
+              value={requiereValidacion}
+            />
+          </Pressable>
+        </View>
+
+        <View style={styles.tarjeta}>
           <View style={styles.encabezadoOpcional}>
             <Text style={styles.tituloBloque}>Funciones opcionales</Text>
             <View style={styles.etiquetaProximamente}>
@@ -257,14 +286,6 @@ export default function ConfiguracionGrupoScreen() {
             <View style={styles.opcionTexto}>
               <Text style={styles.tituloOpcion}>Notificaciones</Text>
               <Text style={styles.descOpcion}>Avisos de cambios en asistencia o revisiones.</Text>
-            </View>
-            <Switch disabled thumbColor={colores.superficie} trackColor={{ false: colores.borde, true: colores.acento }} value={false} />
-          </View>
-
-          <View style={[styles.filaSwitch, styles.filaSeparada]}>
-            <View style={styles.opcionTexto}>
-              <Text style={styles.tituloOpcion}>Exigir validación</Text>
-              <Text style={styles.descOpcion}>Aprobación previa del responsable antes de acreditar.</Text>
             </View>
             <Switch disabled thumbColor={colores.superficie} trackColor={{ false: colores.borde, true: colores.acento }} value={false} />
           </View>

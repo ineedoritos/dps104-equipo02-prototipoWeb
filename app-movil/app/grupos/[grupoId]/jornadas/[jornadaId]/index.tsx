@@ -29,6 +29,7 @@ import {
 } from '@/lib/fotosStore';
 import {
   cancelarJornada,
+  contarPendientesValidacion,
   derivarEstadoJornada,
   obtenerGrupoPorId,
   obtenerJornadaPorId,
@@ -166,6 +167,7 @@ export default function DetalleJornadaScreen() {
   const horaFin = horaEnZona(jornada.fin_en).slice(0, 5);
 
   const esQR = jornada.modalidad_asistencia === 'qr';
+  const pendientesValidacion = contarPendientesValidacion(jornada.id);
   const puedeMostrarQR = esQR && estado === 'en_curso' && !jornada.cancelada;
   const puedePasarLista =
     !jornada.cancelada && (estado === 'en_curso' || estado === 'finalizada');
@@ -318,6 +320,33 @@ export default function DetalleJornadaScreen() {
                   />
                 )
               ) : null}
+
+              <View style={styles.filaHorario}>
+                <Icono
+                  color={
+                    jornada.requiere_validacion && pendientesValidacion > 0
+                      ? forma.peachInk
+                      : forma.muted
+                  }
+                  nombre={jornada.requiere_validacion ? 'responsable' : 'info'}
+                  tamano={16}
+                />
+                <Text
+                  style={[
+                    styles.textoValidacion,
+                    jornada.requiere_validacion && pendientesValidacion > 0
+                      ? styles.textoValidacionPendiente
+                      : null,
+                    cifrasTabulares,
+                  ]}
+                >
+                  {jornada.requiere_validacion
+                    ? pendientesValidacion > 0
+                      ? `${pendientesValidacion} ${pendientesValidacion === 1 ? 'pendiente' : 'pendientes'} de aprobar`
+                      : 'Validación activa · sin registros pendientes'
+                    : 'Esta jornada no exige validación'}
+                </Text>
+              </View>
             </View>
 
             <View style={styles.gridResumen}>
@@ -665,6 +694,16 @@ const styles = StyleSheet.create({
     flex: 1,
     fontFamily: fuentes.medio,
     fontSize: tipografia.cuerpoSm,
+  },
+  textoValidacion: {
+    color: forma.muted,
+    flex: 1,
+    fontFamily: fuentes.normal,
+    fontSize: tipografia.cuerpoSm,
+  },
+  textoValidacionPendiente: {
+    color: forma.peachInk,
+    fontFamily: fuentes.fuerte,
   },
   gridResumen: {
     flexDirection: 'row',

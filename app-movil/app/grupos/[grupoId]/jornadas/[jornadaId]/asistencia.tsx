@@ -13,19 +13,24 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Aviso } from '@/components/ui/Aviso';
 import { Boton } from '@/components/ui/Boton';
 import { CampoTexto } from '@/components/ui/CampoTexto';
+import { Estado } from '@/components/ui/Estado';
 import { EstadoVacio } from '@/components/ui/EstadoVacio';
 import { Icono } from '@/components/ui/Icono';
 import { horaEnZona } from '@/lib/fecha';
 import {
+  aprobarAsistencia,
+  aprobarCompletos,
   guardarAsistenciasManual,
   obtenerAsistenciasDeJornada,
   obtenerGrupoPorId,
   obtenerJornadaPorId,
   obtenerMiRolEnGrupo,
   obtenerParticipantesActivos,
+  obtenerSesionActual,
   suscribirStore,
+  tieneHorasIncompletas,
 } from '@/lib/gruposStore';
-import { cifrasTabulares, colores, espaciados, fuentes, interletrado, radios, tipografia } from '@/lib/tema';
+import { cifrasTabulares, colores, espaciados, forma, fuentes, interletrado, radios, tipografia } from '@/lib/tema';
 import { ErrorDominio, type Asistencia, type EstadoAsistencia, type IntegranteConUsuario } from '@/types/dominio';
 
 type EstadoVista = 'normal' | 'cargando' | 'vacio' | 'error';
@@ -57,10 +62,13 @@ export default function AsistenciaManualScreen() {
     grupoId ? obtenerParticipantesActivos(grupoId) : [],
   );
   const [borradores, setBorradores] = useState<Record<string, BorradorFila>>({});
+  const [registrosMapa, setRegistrosMapa] = useState<Record<string, Asistencia>>({});
   const [estadoVista, setEstadoVista] = useState<EstadoVista>('normal');
   const [errorGuardar, setErrorGuardar] = useState('');
+  const [avisoValidacion, setAvisoValidacion] = useState('');
   const [guardando, setGuardando] = useState(false);
 
+  const sesionActual = obtenerSesionActual();
   const grupo = grupoId ? obtenerGrupoPorId(grupoId) : undefined;
   const rol = grupoId ? obtenerMiRolEnGrupo(grupoId) : null;
   const jornada = jornadaId ? obtenerJornadaPorId(jornadaId) : undefined;
@@ -74,8 +82,12 @@ export default function AsistenciaManualScreen() {
     const mapa = new Map(registros.map((r) => [r.participante_id, r]));
 
     const siguiente: Record<string, BorradorFila> = {};
+    const siguienteRegistros: Record<string, Asistencia> = {};
     for (const p of lista) {
       const reg = mapa.get(p.usuario_id);
+      if (reg) {
+        siguienteRegistros[p.usuario_id] = reg;
+      }
       siguiente[p.usuario_id] = {
         estado: reg?.estado ?? null,
         motivoAusencia: reg?.motivo_ausencia ?? '',
@@ -86,6 +98,7 @@ export default function AsistenciaManualScreen() {
 
     setParticipantes(lista);
     setBorradores(siguiente);
+    setRegistrosMapa(siguienteRegistros);
   }, [grupoId, jornadaId]);
 
   useFocusEffect(
@@ -239,6 +252,54 @@ export default function AsistenciaManualScreen() {
         ? 'Manual · con horas'
         : 'Manual · sin horas';
 
+  const completosAprobables = jornada.requiere_validacion
+    ? listaVisible.filter((p) => {
+        const reg = registrosMapa[p.usuario_id];
+        return (
+          reg &&
+          reg.estado_validacion === 'pendiente' &&
+          p.usuario_id !== sesionActual?.id &&
+          !tieneHorasIncompletas(jornada, reg)
+        );
+      }).length
+    : 0;
+
+  const manejarAprobarUno = (asistenciaId: string) => {
+    setErrorGuardar('');
+    setAvisoValidacion('');
+    try {
+      aprobarAsistencia(asistenciaId);
+      setAvisoValidacion('Registro aprobado.');
+      sincronizarDesdeStore();
+    } catch (error) {
+      setErrorGuardar(
+        error instanceof ErrorDominio
+          ? error.message
+          : 'No pudimos aprobar el registro. Intenta de nuevo.',
+      );
+    }
+  };
+
+  const manejarAprobarCompletos = () => {
+    setErrorGuardar('');
+    setAvisoValidacion('');
+    try {
+      const { aprobados, omitidos } = aprobarCompletos(jornada.id);
+      setAvisoValidacion(
+        omitidos > 0
+          ? `Aprobados: ${aprobados} · Omitidos por horas incompletas o propios: ${omitidos}.`
+          : `Se aprobaron ${aprobados} ${aprobados === 1 ? 'registro completo' : 'registros completos'}.`,
+      );
+      sincronizarDesdeStore();
+    } catch (error) {
+      setErrorGuardar(
+        error instanceof ErrorDominio
+          ? error.message
+          : 'No pudimos aprobar los registros completos. Intenta de nuevo.',
+      );
+    }
+  };
+
   return (
     <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
       <View style={styles.barraSuperior}>
@@ -266,8 +327,28 @@ export default function AsistenciaManualScreen() {
           <Text style={styles.leyenda}>
             P presente · A ausente · J justificada (sin marca = sin registro)
           </Text>
+          {jornada.requiere_validacion ? (
+            <Text style={styles.notaValidacionCabecera}>
+              Validación previa activa: los registros nuevos o modificados quedan pendientes hasta aprobarse.
+            </Text>
+          ) : (
+            <Text style={styles.notaValidacionCabecera}>
+              Esta jornada no exige validación previa.
+            </Text>
+          )}
         </View>
 
+        {jornada.requiere_validacion && estadoVista === 'normal' && listaVisible.length > 0 ? (
+          <Boton
+            deshabilitado={completosAprobables === 0 || jornada.cancelada}
+            icono="hecho"
+            onPress={manejarAprobarCompletos}
+            titulo={`Aprobar los completos (${completosAprobables})`}
+            variante="secundario"
+          />
+        ) : null}
+
+        {avisoValidacion ? <Aviso texto={avisoValidacion} tipo="exito" /> : null}
 
         {errorGuardar ? <Aviso texto={errorGuardar} tipo="error" /> : null}
 
@@ -392,6 +473,43 @@ export default function AsistenciaManualScreen() {
                         <Text style={styles.textoEnlaceHoras}>Registrar / Ajustar horas ›</Text>
                       </Pressable>
                     </View>
+                  ) : null}
+
+                  {jornada.requiere_validacion && registrosMapa[integrante.usuario_id] ? (
+                    (() => {
+                      const reg = registrosMapa[integrante.usuario_id];
+                      const esPropio = integrante.usuario_id === sesionActual?.id;
+                      const incompleto = tieneHorasIncompletas(jornada, reg);
+                      return (
+                        <View style={styles.filaValidacion}>
+                          <View style={styles.bloqueEstadoValidacion}>
+                            <Estado
+                              tono={
+                                reg.estado_validacion === 'aprobado'
+                                  ? 'aprobadoValidacion'
+                                  : 'pendienteValidacion'
+                              }
+                            />
+                            {incompleto && reg.estado_validacion === 'pendiente' ? (
+                              <Text style={styles.textoHorasIncompletas}>
+                                Completa la hora de salida antes de aprobar.
+                              </Text>
+                            ) : null}
+                          </View>
+
+                          {reg.estado_validacion === 'pendiente' && !esPropio && !jornada.cancelada ? (
+                            <Boton
+                              accessibilityLabel={`Aprobar registro de ${integrante.usuario.nombre}`}
+                              deshabilitado={incompleto}
+                              onPress={() => manejarAprobarUno(reg.id)}
+                              tamano="sm"
+                              titulo="Aprobar"
+                              variante="secundario"
+                            />
+                          ) : null}
+                        </View>
+                      );
+                    })()
                   ) : null}
                 </View>
               );
@@ -596,5 +714,30 @@ const styles = StyleSheet.create({
     fontSize: tipografia.cuerpoSm,
     fontFamily: fuentes.medio,
     textAlign: 'center',
+  },
+  notaValidacionCabecera: {
+    color: forma.muted,
+    fontFamily: fuentes.normal,
+    fontSize: tipografia.micro,
+    lineHeight: 16,
+  },
+  filaValidacion: {
+    alignItems: 'center',
+    borderTopColor: forma.line,
+    borderTopWidth: 1,
+    flexDirection: 'row',
+    gap: espaciados.sm,
+    justifyContent: 'space-between',
+    paddingTop: espaciados.sm,
+  },
+  bloqueEstadoValidacion: {
+    flex: 1,
+    gap: espaciados.xs,
+  },
+  textoHorasIncompletas: {
+    color: forma.peachInk,
+    fontFamily: fuentes.normal,
+    fontSize: tipografia.micro,
+    lineHeight: 16,
   },
 });

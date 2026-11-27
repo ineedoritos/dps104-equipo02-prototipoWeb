@@ -18,9 +18,10 @@
   - **Obligatorias (`obligatorias`):** cada integrante debe subir al menos una foto para que su asistencia cuente.
 - Switch **Comprobar cercanía por GPS (`gps_habilitado`)**:
   - Activo cuando `modalidad_asistencia === 'qr'`; deshabilitado automáticamente y forzado a `false` si la modalidad es `manual` (`HU11`).
+- Switch **Exigir validación (`requiere_validacion`)**:
+  - Activo: *"Los registros cuentan cuando un responsable los aprueba."* (`HU12`).
 - Bloque **Funciones opcionales (`MEDIA`)**:
   - `Notificaciones` (`notificaciones_habilitadas`).
-  - `Exigir validación` (`requiere_validacion`).
   - *(Los switches aún sin flujo completo muestran claramente `Próximamente` hasta habilitar su historia.)*
 - Nota al pie: *"Los cambios aplican a jornadas nuevas. Los registros anteriores no cambian."*
 - Botón principal: **Guardar cambios** → actualiza `grupos` y vuelve a `SCREEN-04`.

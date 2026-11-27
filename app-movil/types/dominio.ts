@@ -104,6 +104,7 @@ export interface FilaReporteGrupo {
   tasaAsistencia: number | null;
   minutosRegistrados: number;
   minutosReconocidos: number;
+  minutosPendientes: number;
 }
 
 export interface ResumenReporteGrupo {

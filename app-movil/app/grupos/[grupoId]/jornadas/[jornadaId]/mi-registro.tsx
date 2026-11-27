@@ -312,6 +312,30 @@ export default function DetalleRegistroScreen() {
               </View>
               <Text style={styles.metaGrupo}>{grupo.nombre}</Text>
               <Text style={styles.metaFecha}>{fechaTexto}</Text>
+              {jornada.requiere_validacion ? (
+                asistencia ? (
+                  <View style={styles.filaValidacion}>
+                    <Estado
+                      tono={
+                        asistencia.estado_validacion === 'aprobado'
+                          ? 'aprobadoValidacion'
+                          : 'pendienteValidacion'
+                      }
+                    />
+                    <Text style={styles.textoValidacion}>
+                      {asistencia.estado_validacion === 'aprobado'
+                        ? 'Este registro fue aprobado y cuenta en tus totales.'
+                        : 'Tus horas cuentan cuando el responsable las apruebe.'}
+                    </Text>
+                  </View>
+                ) : (
+                  <Text style={styles.textoValidacion}>
+                    Esta jornada exige validación previa del responsable.
+                  </Text>
+                )
+              ) : (
+                <Text style={styles.textoValidacion}>Esta jornada no exige validación previa.</Text>
+              )}
             </View>
 
             {jornada.cancelada ? (
@@ -648,6 +672,19 @@ const styles = StyleSheet.create({
     color: colores.tintaSuave,
     fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
+  },
+  filaValidacion: {
+    borderTopColor: forma.line,
+    borderTopWidth: 1,
+    gap: espaciados.xs,
+    marginTop: espaciados.xs,
+    paddingTop: espaciados.sm,
+  },
+  textoValidacion: {
+    color: forma.muted,
+    fontFamily: fuentes.normal,
+    fontSize: tipografia.micro,
+    lineHeight: 16,
   },
   tarjetaDatos: {
     backgroundColor: colores.superficie,

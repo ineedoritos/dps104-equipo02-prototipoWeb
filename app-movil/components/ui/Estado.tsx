@@ -14,7 +14,9 @@ export type TonoEstado =
   | 'cancelada'
   | 'pendiente'
   | 'resuelta'
-  | 'rechazada';
+  | 'rechazada'
+  | 'pendienteValidacion'
+  | 'aprobadoValidacion';
 
 type ConfiguracionEstado = {
   fondo: string;
@@ -42,6 +44,8 @@ const CONFIGURACION: Record<TonoEstado, ConfiguracionEstado> = {
   pendiente: { fondo: forma.peach, texto: forma.peachInk, etiqueta: 'Pendiente' },
   resuelta: { fondo: forma.mint, texto: forma.mintInk, etiqueta: 'Resuelta' },
   rechazada: { fondo: forma.rose, texto: forma.roseInk, etiqueta: 'Rechazada' },
+  pendienteValidacion: { fondo: forma.peach, texto: forma.peachInk, etiqueta: 'Pendiente' },
+  aprobadoValidacion: { fondo: forma.mint, texto: forma.mintInk, etiqueta: 'Aprobado' },
 };
 
 /** Semántica única del estado de una jornada. */

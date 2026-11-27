@@ -7,7 +7,7 @@
 - **Tablas:** `asistencias`, `jornadas`, `grupos` *(+ `solicitudes_revision` en Media)*
 
 ## Contenido y acciones
-- Encabezado: título de la jornada, fecha, grupo y estado (`Presente`, `Ausente`, `Justificada`).
+- Encabezado: título de la jornada, fecha, grupo, estado (`Presente`, `Ausente`, `Justificada`) y estado de validación (`Pendiente` / `Aprobado` con explicación si `requiere_validacion === true`, o texto explícito indicando que la jornada no exige validación previa).
 - Si `jornada.control_horas === true` y `estado === 'presente'`:
   - `Entrada` (`HH:MM`), `Salida` (`HH:MM`), `Duración registrada` y `Tiempo reconocido`.
   - Si hubo ajuste (`minutos_reconocidos < duracion_minutos`): tarjeta destacada **"Motivo del ajuste, escrito por el responsable"** mostrando `motivo_ajuste`.
