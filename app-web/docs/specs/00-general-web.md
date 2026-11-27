@@ -41,7 +41,7 @@ Ofrecer una interfaz web cómoda en pantalla grande para **consultar estadístic
 | `RF-WEB-04` | Extiende `RF14`, `RF15` | Participante / Cualquier usuario | Vista **"Mi reporte personal"**: resumen de tasas por grupo (incluyendo ex-grupos), tabla filtrable de registros propios, horas registradas vs reconocidas y motivos visibles. |
 | `RF-WEB-05` | Extiende `RF06`, `RF14` | Responsable | Consulta analítica (solo lectura) de jornadas del grupo, su estado derivado, etiqueta de canceladas y detalle de asistencias/horas registradas en cada jornada. |
 | `RF-WEB-06` | Nuevo (complemento `RF14`/`RF15`) | Responsable / Participante | Exportación **client-side** a **PDF** del reporte actualmente filtrado (grupal para responsables; personal para participantes). |
-| `RF-WEB-07` | Nuevo (complemento `RF14`/`RF15`) | Responsable / Participante | Exportación **client-side** a **Excel (`.xlsx`)** con estilos y hojas separadas del reporte filtrado (grupal o personal). |
+| `RF-WEB-07` | Nuevo (complemento `RF14`/`RF15`) | Responsable / Participante | Exportación **client-side** a **Excel (`.xlsx`)** con hojas separadas del reporte filtrado (grupal o personal). |
 | `RF-WEB-08` | Extiende `RF10`, `RF12`, `RF13` *(Media)* | Responsable | Panel de auditoría solo lectura para consultar validaciones pendientes, solicitudes de revisión y galería de evidencias fotográficas activas del grupo. |
 
 ---
@@ -54,6 +54,6 @@ Ofrecer una interfaz web cómoda en pantalla grande para **consultar estadístic
 | `RNF03` | T1 (compartido) | **Seguridad e integridad:** autorización 100% en servidor mediante **RLS** y **RPCs** de Supabase. Jamás exponer `service_role` ni credenciales privadas en cliente o repositorio. |
 | `RNF04` | T1 (compartido) | **Estados de UI y resiliencia:** toda vista con datos remotos maneja estado `cargando` (skeleton), `vacío` (mensaje claro), `error visible con reintento seguro` y expiración de sesión. |
 | `RNF05` | T1 (compartido) | **Privacidad:** solo se muestran datos y fotografías autorizados por RLS (`retirada_en IS NULL` para evidencias). No exportar correos ni datos ajenos fuera del alcance del rol. |
-| `RNF-WEB-01` | Web | **Stack y usabilidad web:** Next.js (App Router, TypeScript), Tailwind CSS y shadcn/ui; diseño desktop-first responsive y accesible con teclado. |
+| `RNF-WEB-01` | Web | **Stack web:** Next.js (App Router, TypeScript), Tailwind CSS y shadcn/ui. |
 | `RNF-WEB-02` | Web | **Exportación 100% Client-Side:** los archivos PDF y Excel se generan íntegramente en la memoria del navegador sin backend propio ni transmisión de datos a terceros. |
 | `RNF-WEB-03` | Web / `ADR-006` | **Consistencia temporal:** todos los cálculos de rangos de fechas, estados derivados de jornadas y sellos de exportación usan `America/El_Salvador` (UTC-6). |

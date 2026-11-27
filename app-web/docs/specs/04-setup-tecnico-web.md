@@ -22,7 +22,7 @@ Especificación técnica para inicializar el proyecto Next.js en `app-web/` cuan
 ## 2. `WEB-SETUP-01` · Base Next.js + Tailwind + shadcn/ui
 ### Criterios de aceptación
 - `WEBSETUP01-CA01`: Proyecto Next.js (App Router + TypeScript) inicializado en `app-web/` sin afectar `app-movil/` ni `prototipo-web/`.
-- `WEBSETUP01-CA02`: Tailwind CSS y `shadcn/ui` configurados con componentes base (`Button`, `Card`, `Table`, `Badge`, `Select`, `Input`, `Skeleton`, `Dialog`/`Sheet`, `Tabs`, `Tooltip`).
+- `WEBSETUP01-CA02`: Tailwind CSS y `shadcn/ui` configurados en el proyecto.
 - `WEBSETUP01-CA03`: Layout administrativo responsive (sidebar colapsable + barra superior con selector de grupo/modo personal y menú de usuario) funcionando en desktop y móvil.
 - `WEBSETUP01-CA04`: Archivo `.env.example` documentando únicamente `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY` (sin secretos).
 - `WEBSETUP01-CA05`: Helper `src/lib/fecha.ts` para formateo y rangos en `America/El_Salvador`, y scripts `npm run typecheck`, `npm run lint` y `npm run build` pasando sin errores (sin tests automatizados).
