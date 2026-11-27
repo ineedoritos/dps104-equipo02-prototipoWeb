@@ -7,9 +7,9 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-instrument-sans);
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-geist-sans);
+  --font-heading: var(--font-instrument-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -39,49 +39,127 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  /* Radios de Forma: rounded-lg = campo (17), rounded-xl = tarjeta (24) */
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 17px;
+  --radius-xl: 24px;
+  --radius-2xl: 28px;
+  --radius-3xl: 32px;
+  --radius-4xl: 32px;
+
+  /* Tokens de Forma como utilidades: bg-forma-mint, text-forma-mint-ink, ... */
+  --color-forma-paper: var(--forma-paper);
+  --color-forma-canvas: var(--forma-canvas);
+  --color-forma-line: var(--forma-line);
+  --color-forma-line-strong: var(--forma-line-strong);
+  --color-forma-fill: var(--forma-fill);
+  --color-forma-fill-hover: var(--forma-fill-hover);
+  --color-forma-ink: var(--forma-ink);
+  --color-forma-muted: var(--forma-muted);
+  --color-forma-action: var(--forma-action);
+  --color-forma-action-hover: var(--forma-action-hover);
+  --color-forma-on-action: var(--forma-on-action);
+  --color-forma-focus: var(--forma-focus);
+  --color-forma-blue: var(--forma-blue);
+  --color-forma-mint: var(--forma-mint);
+  --color-forma-peach: var(--forma-peach);
+  --color-forma-lilac: var(--forma-lilac);
+  --color-forma-rose: var(--forma-rose);
+  --color-forma-blue-ink: var(--forma-blue-ink);
+  --color-forma-mint-ink: var(--forma-mint-ink);
+  --color-forma-peach-ink: var(--forma-peach-ink);
+  --color-forma-lilac-ink: var(--forma-lilac-ink);
+  --color-forma-rose-ink: var(--forma-rose-ink);
 }
 
 :root {
-  /* Paleta editorial alineada al sistema visual (papel calido + acento #0B6B58) */
-  --background: #f7f4ee;
-  --foreground: #1c1b1f;
-  --card: #ffffff;
-  --card-foreground: #1c1b1f;
-  --popover: #ffffff;
-  --popover-foreground: #1c1b1f;
-  --primary: #0b6b58;
-  --primary-foreground: #ffffff;
-  --secondary: #fbf9f4;
-  --secondary-foreground: #1c1b1f;
-  --muted: #f1eee8;
-  --muted-foreground: #5b5862;
-  --accent: #e3f1ed;
-  --accent-foreground: #0b6b58;
-  --destructive: #a82a20;
-  --border: #e6e1d7;
-  --input: #cfc8b8;
-  --ring: #0b6b58;
-  --chart-1: #0b6b58;
-  --chart-2: #8a4e0c;
-  --chart-3: #a82a20;
-  --chart-4: #2f5d8a;
-  --chart-5: #5b5862;
-  --radius: 0.625rem;
-  --sidebar: #ffffff;
-  --sidebar-foreground: #1c1b1f;
-  --sidebar-primary: #0b6b58;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #e3f1ed;
-  --sidebar-accent-foreground: #0b6b58;
-  --sidebar-border: #e6e1d7;
-  --sidebar-ring: #0b6b58;
+  /* Forma: design system de Registro de actividades (tema claro) */
+  --forma-paper: #ffffff;
+  --forma-canvas: #f4f5f5;
+  --forma-line: #e7e9e9;
+  --forma-line-strong: #858d93;
+  --forma-fill: #eff1f1;
+  --forma-fill-hover: #e5e8e8;
+  --forma-ink: #17191b;
+  --forma-muted: #60686e;
+  --forma-action: #17191b;
+  --forma-action-hover: #33383c;
+  --forma-on-action: #ffffff;
+  --forma-focus: #377ab8;
+  --forma-scrim: #202a3250;
+  --forma-blue: #e1edf9;
+  --forma-mint: #e0eee6;
+  --forma-peach: #f9eedc;
+  --forma-lilac: #ebe6f6;
+  --forma-rose: #f7e5e9;
+  --forma-blue-ink: #1f6aa3;
+  --forma-mint-ink: #28704b;
+  --forma-peach-ink: #86601b;
+  --forma-lilac-ink: #7657a8;
+  --forma-rose-ink: #9a4658;
+
+  /* Roles de shadcn/ui mapeados a Forma */
+  --background: var(--forma-canvas);
+  --foreground: var(--forma-ink);
+  --card: var(--forma-paper);
+  --card-foreground: var(--forma-ink);
+  --popover: var(--forma-paper);
+  --popover-foreground: var(--forma-ink);
+  --primary: var(--forma-action);
+  --primary-foreground: var(--forma-on-action);
+  --secondary: var(--forma-fill);
+  --secondary-foreground: var(--forma-ink);
+  --muted: var(--forma-fill);
+  --muted-foreground: var(--forma-muted);
+  --accent: var(--forma-blue);
+  --accent-foreground: var(--forma-blue-ink);
+  --destructive: var(--forma-rose-ink);
+  --border: var(--forma-line);
+  --input: var(--forma-line-strong);
+  --ring: var(--forma-focus);
+  /* Graficos por significado: presente, justificada, ausente, info, neutro */
+  --chart-1: var(--forma-mint-ink);
+  --chart-2: var(--forma-peach-ink);
+  --chart-3: var(--forma-rose-ink);
+  --chart-4: var(--forma-blue-ink);
+  --chart-5: var(--forma-muted);
+  --radius: 1.0625rem;
+  --sidebar: var(--forma-paper);
+  --sidebar-foreground: var(--forma-ink);
+  --sidebar-primary: var(--forma-action);
+  --sidebar-primary-foreground: var(--forma-on-action);
+  --sidebar-accent: var(--forma-canvas);
+  --sidebar-accent-foreground: var(--forma-ink);
+  --sidebar-border: var(--forma-line);
+  --sidebar-ring: var(--forma-focus);
+}
+
+.dark {
+  /* Forma (tema oscuro): mismos nombres, otros valores */
+  --forma-paper: #1b1d1f;
+  --forma-canvas: #121415;
+  --forma-line: #2b2f32;
+  --forma-line-strong: #7c868c;
+  --forma-fill: #2a2e31;
+  --forma-fill-hover: #353a3e;
+  --forma-ink: #f1f3f3;
+  --forma-muted: #b0b9be;
+  --forma-action: #f1f3f3;
+  --forma-action-hover: #d6dadb;
+  --forma-on-action: #17191b;
+  --forma-focus: #8cc0ee;
+  --forma-scrim: #00000099;
+  --forma-blue: #26394b;
+  --forma-mint: #24372d;
+  --forma-peach: #3d3322;
+  --forma-lilac: #342e47;
+  --forma-rose: #432c34;
+  --forma-blue-ink: #86bdea;
+  --forma-mint-ink: #7fd0a4;
+  --forma-peach-ink: #e2b565;
+  --forma-lilac-ink: #b9a1e6;
+  --forma-rose-ink: #e69aab;
 }
 
 @layer base {
@@ -90,6 +168,18 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  /* Forma no usa sombras: la profundidad vive en el tono de las superficies */
+  [data-slot="card"] {
+    box-shadow: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+    }
   }
   html {
     @apply font-sans;

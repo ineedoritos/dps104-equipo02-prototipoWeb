@@ -337,7 +337,7 @@ export default function MiReportePage() {
                               <span
                                 className={
                                   huboRecorte
-                                    ? "inline-block rounded bg-amber-500/15 px-2 py-1 text-amber-900 dark:text-amber-200 font-medium"
+                                    ? "inline-block rounded-full bg-forma-peach px-2 py-1 text-forma-peach-ink font-medium"
                                     : undefined
                                 }
                               >
