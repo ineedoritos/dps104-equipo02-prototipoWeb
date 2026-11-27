@@ -10,7 +10,7 @@ import { CampoTexto } from '@/components/ui/CampoTexto';
 import { DatePickerField } from '@/components/ui/DatePickerField';
 import { Icono } from '@/components/ui/Icono';
 import { agregarActividad } from '@/lib/mockStore';
-import { colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
+import { colores, espaciados, fuentes, radios, tipografia } from '@/lib/tema';
 
 const REGEX_HORA = /^([01]\d|2[0-3]):[0-5]\d$/;
 
@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
   textoVolver: {
     color: colores.acento,
     fontSize: tipografia.cuerpoSm,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
   },
   encabezado: {
     gap: espaciados.xs,
@@ -238,20 +238,19 @@ const styles = StyleSheet.create({
   titulo: {
     color: colores.tinta,
     fontSize: tipografia.display,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
     letterSpacing: -0.4,
     lineHeight: tipografia.display + 4,
   },
   subtitulo: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
     lineHeight: 19,
   },
   tarjeta: {
     backgroundColor: colores.superficie,
-    borderColor: colores.borde,
     borderRadius: radios.tarjeta,
-    borderWidth: 1,
     gap: espaciados.md,
     padding: espaciados.lg,
   },

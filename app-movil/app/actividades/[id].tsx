@@ -21,7 +21,7 @@ import {
   obtenerAsistenciasActividad,
   obtenerParticipantes,
 } from '@/lib/mockStore';
-import { cifrasTabulares, colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
+import { cifrasTabulares, colores, espaciados, fuentes, interletrado, radios, tipografia } from '@/lib/tema';
 import type { EstadoAsistencia, RegistroAsistencia } from '@/types/actividad';
 
 type MapaAsistencia = Record<number, { estado?: EstadoAsistencia; motivo: string }>;
@@ -282,7 +282,7 @@ export default function ActividadDetalleScreen() {
                               <Text
                                 style={[
                                   styles.textoEstado,
-                                  activo && { color: paleta.texto, fontWeight: pesos.fuerte },
+                                  activo && { color: paleta.texto, fontFamily: fuentes.fuerte },
                                 ]}
                               >
                                 {opcion.letra}
@@ -469,7 +469,7 @@ const styles = StyleSheet.create({
   textoVolver: {
     color: colores.acento,
     fontSize: tipografia.cuerpoSm,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
   },
   encabezado: {
     gap: espaciados.sm,
@@ -477,12 +477,13 @@ const styles = StyleSheet.create({
   titulo: {
     color: colores.tinta,
     fontSize: tipografia.display,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
     letterSpacing: -0.4,
     lineHeight: tipografia.display + 4,
   },
   descripcionJornada: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
     lineHeight: 20,
   },
@@ -498,14 +499,13 @@ const styles = StyleSheet.create({
   metaTexto: {
     color: colores.tintaSuave,
     flex: 1,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
     lineHeight: 18,
   },
   pestanas: {
     backgroundColor: colores.superficieAlt,
-    borderColor: colores.borde,
     borderRadius: radios.campo,
-    borderWidth: 1,
     flexDirection: 'row',
     padding: 4,
   },
@@ -522,17 +522,15 @@ const styles = StyleSheet.create({
   pestanaTexto: {
     color: colores.tintaSuave,
     fontSize: tipografia.cuerpoSm,
-    fontWeight: pesos.medio,
+    fontFamily: fuentes.medio,
   },
   pestanaTextoActiva: {
     color: colores.superficie,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
   },
   tarjeta: {
     backgroundColor: colores.superficie,
-    borderColor: colores.borde,
     borderRadius: radios.tarjeta,
-    borderWidth: 1,
     gap: espaciados.md,
     padding: espaciados.lg,
   },
@@ -542,10 +540,12 @@ const styles = StyleSheet.create({
   tituloSeccion: {
     color: colores.tinta,
     fontSize: tipografia.tituloSm,
-    fontWeight: pesos.fuerte,
+    letterSpacing: interletrado.tituloSm,
+    fontFamily: fuentes.fuerte,
   },
   leyenda: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.micro,
     lineHeight: 15,
   },
@@ -570,10 +570,11 @@ const styles = StyleSheet.create({
   nombreParticipante: {
     color: colores.tinta,
     fontSize: tipografia.cuerpo,
-    fontWeight: pesos.medio,
+    fontFamily: fuentes.medio,
   },
   correoParticipante: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.micro,
   },
   grupoBotones: {
@@ -583,9 +584,7 @@ const styles = StyleSheet.create({
   botonEstado: {
     alignItems: 'center',
     backgroundColor: colores.superficieAlt,
-    borderColor: colores.borde,
     borderRadius: radios.campo,
-    borderWidth: 1,
     height: 44,
     justifyContent: 'center',
     width: 44,
@@ -593,7 +592,7 @@ const styles = StyleSheet.create({
   textoEstado: {
     color: colores.tintaSuave,
     fontSize: tipografia.cuerpo,
-    fontWeight: pesos.medio,
+    fontFamily: fuentes.medio,
   },
   campoMotivo: {
     marginTop: espaciados.sm,
@@ -618,12 +617,13 @@ const styles = StyleSheet.create({
   },
   resumenTexto: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
   },
   resumenNumero: {
     ...cifrasTabulares,
     color: colores.tinta,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
   },
   reporteEncabezado: {
     alignItems: 'flex-start',
@@ -641,7 +641,7 @@ const styles = StyleSheet.create({
   etiquetaTasa: {
     color: colores.tintaSuave,
     fontSize: tipografia.micro,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
     letterSpacing: 0.6,
     textTransform: 'uppercase',
   },
@@ -649,7 +649,7 @@ const styles = StyleSheet.create({
     ...cifrasTabulares,
     color: colores.tinta,
     fontSize: tipografia.display,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
     letterSpacing: -0.4,
   },
   barraContenedor: {
@@ -676,7 +676,7 @@ const styles = StyleSheet.create({
   leyendaItemTexto: {
     color: colores.tintaSuave,
     fontSize: tipografia.cuerpoSm,
-    fontWeight: pesos.medio,
+    fontFamily: fuentes.medio,
   },
   filaReporte: {
     alignItems: 'center',
@@ -689,11 +689,13 @@ const styles = StyleSheet.create({
   },
   motivoReporte: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.micro,
     lineHeight: 16,
   },
   notaPie: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.micro,
     lineHeight: 16,
   },

@@ -24,7 +24,7 @@ import {
   obtenerSesionActual,
   suscribirStore,
 } from '@/lib/gruposStore';
-import { cifrasTabulares, colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
+import { cifrasTabulares, colores, espaciados, fuentes, interletrado, radios, tipografia } from '@/lib/tema';
 
 type EstadoVista = 'normal' | 'cargando' | 'error';
 
@@ -128,24 +128,6 @@ export default function DetalleRegistroScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.contenido} showsVerticalScrollIndicator={false}>
-        {__DEV__ ? (
-          <View style={styles.barraEstados}>
-            {(['normal', 'cargando', 'error'] as const).map((modo) => {
-              const activo = estadoVista === modo;
-              return (
-                <Pressable
-                  key={modo}
-                  onPress={() => setEstadoVista(modo)}
-                  style={[styles.chipEstado, activo && styles.chipEstadoActivo]}
-                >
-                  <Text style={[styles.textoChipEstado, activo && styles.textoChipEstadoActivo]}>
-                    {modo}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        ) : null}
 
         {estadoVista === 'cargando' ? (
           <View style={styles.estadoCentro}>
@@ -291,7 +273,8 @@ const styles = StyleSheet.create({
   tituloBarra: {
     color: colores.tinta,
     fontSize: tipografia.tituloSm,
-    fontWeight: pesos.fuerte,
+    letterSpacing: interletrado.tituloSm,
+    fontFamily: fuentes.fuerte,
   },
   espacioDerecha: {
     width: 40,
@@ -301,32 +284,6 @@ const styles = StyleSheet.create({
     padding: espaciados.lg,
     paddingBottom: espaciados.xxl,
   },
-  barraEstados: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: espaciados.xs,
-  },
-  chipEstado: {
-    backgroundColor: colores.superficie,
-    borderColor: colores.borde,
-    borderRadius: radios.pill,
-    borderWidth: 1,
-    paddingHorizontal: espaciados.md,
-    paddingVertical: espaciados.xs,
-  },
-  chipEstadoActivo: {
-    backgroundColor: colores.acentoSuave,
-    borderColor: colores.acentoBorde,
-  },
-  textoChipEstado: {
-    color: colores.tintaSuave,
-    fontSize: tipografia.micro,
-    fontWeight: pesos.medio,
-  },
-  textoChipEstadoActivo: {
-    color: colores.acento,
-    fontWeight: pesos.fuerte,
-  },
   estadoCentro: {
     alignItems: 'center',
     gap: espaciados.md,
@@ -334,13 +291,12 @@ const styles = StyleSheet.create({
   },
   textoCarga: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
   },
   tarjetaCabecera: {
     backgroundColor: colores.superficie,
-    borderColor: colores.borde,
     borderRadius: radios.tarjeta,
-    borderWidth: 1,
     gap: espaciados.xs,
     padding: espaciados.lg,
   },
@@ -354,22 +310,22 @@ const styles = StyleSheet.create({
     color: colores.tinta,
     flex: 1,
     fontSize: tipografia.tituloSm,
-    fontWeight: pesos.fuerte,
+    letterSpacing: interletrado.tituloSm,
+    fontFamily: fuentes.fuerte,
   },
   metaGrupo: {
     color: colores.tinta,
     fontSize: tipografia.cuerpoSm,
-    fontWeight: pesos.medio,
+    fontFamily: fuentes.medio,
   },
   metaFecha: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
   },
   tarjetaDatos: {
     backgroundColor: colores.superficie,
-    borderColor: colores.borde,
     borderRadius: radios.tarjeta,
-    borderWidth: 1,
     paddingHorizontal: espaciados.lg,
   },
   filaDato: {
@@ -380,12 +336,13 @@ const styles = StyleSheet.create({
   },
   etiquetaDato: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
   },
   valorDato: {
     color: colores.tinta,
     fontSize: tipografia.cuerpo,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
   },
   divisor: {
     backgroundColor: colores.borde,
@@ -393,36 +350,34 @@ const styles = StyleSheet.create({
   },
   tarjetaMotivo: {
     backgroundColor: colores.justificadaSuave,
-    borderColor: colores.borde,
     borderRadius: radios.tarjeta,
-    borderWidth: 1,
     gap: espaciados.xs,
     padding: espaciados.lg,
   },
   tituloMotivo: {
     color: colores.justificada,
     fontSize: tipografia.cuerpoSm,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
   },
   textoMotivo: {
     color: colores.tinta,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpo,
   },
   bloqueDuda: {
     backgroundColor: colores.superficieAlt,
-    borderColor: colores.borde,
     borderRadius: radios.tarjeta,
-    borderWidth: 1,
     gap: espaciados.xs,
     padding: espaciados.lg,
   },
   tituloDuda: {
     color: colores.tinta,
     fontSize: tipografia.cuerpo,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
   },
   textoDuda: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
   },
 });

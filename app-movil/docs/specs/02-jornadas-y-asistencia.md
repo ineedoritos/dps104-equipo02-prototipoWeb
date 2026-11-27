@@ -25,7 +25,7 @@ Módulo central de prioridad **Alta** (`RF05`–`RF09`).
 - **Historia:** Como integrante, quiero consultar las jornadas del grupo para conocer su programación y detalles.
 - **Criterios de aceptación:**
   - `CA01`: El estado mostrado se deriva de `cancelada`, `inicio_en`, `fin_en` y la hora actual (`America/El_Salvador`, ver `ADR-006`): **`cancelada`** (si `cancelada = true`), **`programada`** (antes de `inicio_en`), **`en_curso`** (entre `inicio_en` y `fin_en`) o **`finalizada`** (después de `fin_en`).
-  - `CA02`: Solo se consultan jornadas de grupos autorizados; las canceladas se distinguen visualmente con claridad.
+  - `CA02`: Solo se consultan jornadas de grupos autorizados; las canceladas se identifican como tales.
   - `CA03`: La pantalla de detalle muestra únicamente las acciones habilitadas para el rol del usuario en el grupo y la configuración copiada en esa jornada.
 
 ---

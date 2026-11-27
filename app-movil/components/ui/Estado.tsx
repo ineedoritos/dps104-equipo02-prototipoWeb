@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
+import { colores, espaciados, fuentes, radios, tipografia } from '@/lib/tema';
 import type { EstadoActividad, EstadoAsistencia } from '@/types/actividad';
 
 export type TonoEstado =
@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: espaciados.xs + 2,
     paddingHorizontal: espaciados.sm + 2,
-    paddingVertical: 4,
+    paddingVertical: espaciados.xs,
   },
   punto: {
     borderRadius: radios.pill,
@@ -96,6 +96,7 @@ const styles = StyleSheet.create({
   },
   texto: {
     fontSize: tipografia.micro,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
+    lineHeight: 16,
   },
 });

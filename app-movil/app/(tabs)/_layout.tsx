@@ -1,69 +1,32 @@
 import { Tabs } from 'expo-router';
-import { Platform } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Icono } from '@/components/ui/Icono';
-import { colores, pesos, tipografia } from '@/lib/tema';
+import { BarraTabs } from '@/components/ui/BarraTabs';
+import { Encabezado } from '@/components/ui/Encabezado';
+import { colores, fuentes, interletrado, tipografia } from '@/lib/tema';
 
 export default function TabsLayout() {
-  const insets = useSafeAreaInsets();
-  const bottomInset = Math.max(insets.bottom, Platform.OS === 'android' ? 16 : 0);
-
   return (
     <Tabs
       screenOptions={{
         headerStyle: { backgroundColor: colores.papel },
         headerTitleStyle: {
           color: colores.tinta,
+          fontFamily: fuentes.fuerte,
           fontSize: tipografia.tituloSm,
-          fontWeight: pesos.fuerte,
+          letterSpacing: interletrado.tituloSm,
         },
         headerShadowVisible: false,
-        tabBarActiveTintColor: colores.acento,
-        tabBarInactiveTintColor: colores.tintaTenue,
-        tabBarLabelStyle: {
-          fontSize: tipografia.micro,
-          fontWeight: pesos.fuerte,
-          letterSpacing: 0.2,
-        },
-        tabBarStyle: {
-          backgroundColor: colores.superficie,
-          borderTopColor: colores.borde,
-          height: 60 + bottomInset,
-          paddingBottom: bottomInset,
-          paddingTop: 8,
-        },
+        // Mismo encabezado en las tres pestañas; el cambio entre ellas se desplaza suavemente.
+        // Encabezado unico de la app (mismo que el del grupo y los formularios).
+        header: ({ options }) => <Encabezado titulo={options.title ?? ''} />,
+        animation: 'shift',
+        sceneStyle: { backgroundColor: colores.papel },
       }}
+      tabBar={(props) => <BarraTabs {...props} />}
     >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Mis grupos',
-          headerShown: false,
-          tabBarIcon: ({ color }) => (
-            <Icono color={typeof color === 'string' ? color : colores.tintaTenue} nombre="gente" tamano={24} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="historial"
-        options={{
-          title: 'Mi historial',
-          headerShown: false,
-          tabBarIcon: ({ color }) => (
-            <Icono color={typeof color === 'string' ? color : colores.tintaTenue} nombre="reloj" tamano={24} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="cuenta"
-        options={{
-          title: 'Cuenta',
-          tabBarIcon: ({ color }) => (
-            <Icono color={typeof color === 'string' ? color : colores.tintaTenue} nombre="cuenta" tamano={24} />
-          ),
-        }}
-      />
+      <Tabs.Screen name="index" options={{ title: 'Mis grupos' }} />
+      <Tabs.Screen name="historial" options={{ title: 'Mi historial' }} />
+      <Tabs.Screen name="cuenta" options={{ title: 'Cuenta' }} />
     </Tabs>
   );
 }

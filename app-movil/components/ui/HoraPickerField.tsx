@@ -5,7 +5,7 @@ import { Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native
 
 import { Boton } from '@/components/ui/Boton';
 import { Icono } from '@/components/ui/Icono';
-import { cifrasTabulares, colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
+import { cifrasTabulares, colores, espaciados, fuentes, interletrado, radios, tipografia } from '@/lib/tema';
 
 interface HoraPickerFieldProps {
   label: string;
@@ -125,13 +125,13 @@ const styles = StyleSheet.create({
   etiqueta: {
     color: colores.tintaSuave,
     fontSize: tipografia.micro,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
     letterSpacing: 0.2,
   },
   campoContenedor: {
     alignItems: 'center',
-    backgroundColor: colores.superficie,
-    borderColor: colores.borde,
+    backgroundColor: colores.superficieAlt,
+    borderColor: colores.superficieAlt,
     borderRadius: radios.campo,
     borderWidth: 1,
     flexDirection: 'row',
@@ -158,6 +158,7 @@ const styles = StyleSheet.create({
     ...cifrasTabulares,
     color: colores.tinta,
     flex: 1,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpo,
   },
   placeholder: {
@@ -165,6 +166,7 @@ const styles = StyleSheet.create({
   },
   textoError: {
     color: colores.ausente,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.micro,
     lineHeight: 15,
   },
@@ -177,9 +179,7 @@ const styles = StyleSheet.create({
   },
   modalTarjeta: {
     backgroundColor: colores.superficie,
-    borderColor: colores.borde,
     borderRadius: radios.tarjeta,
-    borderWidth: 1,
     gap: espaciados.md,
     padding: espaciados.lg,
     width: '100%',
@@ -187,6 +187,7 @@ const styles = StyleSheet.create({
   tituloModal: {
     color: colores.tinta,
     fontSize: tipografia.tituloSm,
-    fontWeight: pesos.fuerte,
+    letterSpacing: interletrado.tituloSm,
+    fontFamily: fuentes.fuerte,
   },
 });

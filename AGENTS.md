@@ -51,4 +51,7 @@ Todas las skills viven en la **raiz** del repositorio; no crees carpetas de skil
   ```
 - `skills-lock.json` (raiz) registra el origen de las skills externas.
 - `web-reporting-patterns` aplica a `app-web/`; las `awwwards-*`, `motion-authoring` y `recreate` son externas y de diseno web.
+- Para cambios de interfaz en `app-movil/`, usa `impeccable` para revisar los flujos y la claridad de las acciones. En la prueba manual de Android, revisa los headers y la barra de estado, el orden de tabs y filtros, el teclado en formularios, y las etiquetas de los botones con icono.
+- Para implementar interfaz nativa, usa `expo-native-ui` para componentes y layout, `expo-router` para navegacion, tabs y headers, y `vercel-react-native-skills` para patrones de React Native. Aplica las guias segun el SDK y las convenciones del proyecto.
+- Para revisar UX y accesibilidad en `app-web/` o `prototipo-web/`, usa `web-design-guidelines` de Vercel.
 - En `AGENTS.md` y en las skills propias se escribe **sin tildes**.

@@ -1,5 +1,31 @@
-import { SymbolView } from 'expo-symbols';
-import type { SymbolViewProps } from 'expo-symbols';
+import {
+  ArrowLeft,
+  Ban,
+  Calendar,
+  Pencil,
+  CalendarX,
+  Camera,
+  CircleCheck,
+  CircleUser,
+  ChartColumn,
+  Clock,
+  House,
+  Info,
+  ListFilter,
+  MapPin,
+  Plus,
+  TriangleAlert,
+  Users,
+  X,
+  ChevronRight,
+  Ellipsis,
+  Eye,
+  EyeOff,
+  Settings,
+  ShieldCheck,
+  User,
+} from 'lucide-react-native';
+import type { LucideIcon } from 'lucide-react-native';
 import type { StyleProp, ViewStyle } from 'react-native';
 
 export type NombreIcono =
@@ -18,46 +44,75 @@ export type NombreIcono =
   | 'alerta'
   | 'info'
   | 'hecho'
-  | 'sinEventos';
+  | 'sinEventos'
+  | 'ver'
+  | 'ocultar'
+  | 'participante'
+  | 'responsable'
+  | 'ajustes'
+  | 'reportes'
+  | 'editar'
+  | 'cancelar'
+  | 'mas';
 
-const NOMBRES: Record<NombreIcono, SymbolViewProps['name']> = {
-  inicio: { ios: 'house.fill', android: 'home', web: 'home' },
-  cuenta: { ios: 'person.crop.circle.fill', android: 'account_circle', web: 'account_circle' },
-  nueva: { ios: 'plus', android: 'add', web: 'add' },
-  filtro: { ios: 'line.3.horizontal.decrease', android: 'filter_list', web: 'filter_list' },
-  volver: { ios: 'chevron.left', android: 'arrow_back', web: 'arrow_back' },
-  cerrar: { ios: 'xmark', android: 'close', web: 'close' },
-  avanzar: { ios: 'chevron.right', android: 'chevron_right', web: 'chevron_right' },
-  calendario: { ios: 'calendar', android: 'calendar_today', web: 'calendar_today' },
-  lugar: { ios: 'mappin.and.ellipse', android: 'place', web: 'place' },
-  gente: { ios: 'person.2', android: 'group', web: 'group' },
-  camara: { ios: 'camera', android: 'photo_camera', web: 'photo_camera' },
-  reloj: { ios: 'clock', android: 'schedule', web: 'schedule' },
-  alerta: { ios: 'exclamationmark.triangle', android: 'error', web: 'error' },
-  info: { ios: 'info.circle', android: 'info', web: 'info' },
-  hecho: { ios: 'checkmark.circle', android: 'check_circle', web: 'check_circle' },
-  sinEventos: { ios: 'calendar.badge.exclamationmark', android: 'event_busy', web: 'event_busy' },
+const ICONOS: Record<NombreIcono, LucideIcon> = {
+  ver: Eye,
+  ocultar: EyeOff,
+  participante: User,
+  responsable: ShieldCheck,
+  ajustes: Settings,
+  reportes: ChartColumn,
+  editar: Pencil,
+  cancelar: Ban,
+  mas: Ellipsis,
+  inicio: House,
+  cuenta: CircleUser,
+  nueva: Plus,
+  filtro: ListFilter,
+  volver: ArrowLeft,
+  cerrar: X,
+  avanzar: ChevronRight,
+  calendario: Calendar,
+  lugar: MapPin,
+  gente: Users,
+  camara: Camera,
+  reloj: Clock,
+  alerta: TriangleAlert,
+  info: Info,
+  hecho: CircleCheck,
+  sinEventos: CalendarX,
 };
+
+/** Trazo de Forma: 1.8 en reposo, 2.1 para el estado activo. */
+export const TRAZO_ICONO = { normal: 1.8, activo: 2.1 } as const;
 
 export interface IconoProps {
   nombre: NombreIcono;
   color: string;
+  /** Forma: 21 px por defecto, 20 en TabBar y Metric, 19 en botones y toasts. */
   tamano?: number;
+  trazo?: number;
   estilo?: StyleProp<ViewStyle>;
 }
 
 /**
- * Icono de línea único de la app. Es decorativo por defecto: el texto o el
- * `accessibilityLabel` del control que lo contiene comunican el significado.
+ * Icono de Forma: Lucide solo en contorno, trazo redondeado de 1.8.
+ * Es decorativo: el texto o el `accessibilityLabel` del control que lo
+ * contiene comunican el significado.
  */
-export function Icono({ nombre, color, tamano = 20, estilo }: IconoProps) {
+export function Icono({ nombre, color, tamano = 21, trazo = TRAZO_ICONO.normal, estilo }: IconoProps) {
+  const Componente = ICONOS[nombre];
   return (
-    <SymbolView
+    <Componente
       accessible={false}
-      name={NOMBRES[nombre]}
+      color={color}
+      fill="none"
+      importantForAccessibility="no-hide-descendants"
       size={tamano}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={trazo}
       style={estilo}
-      tintColor={color}
     />
   );
 }

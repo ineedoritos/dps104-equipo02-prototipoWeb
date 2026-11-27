@@ -1,17 +1,21 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Aviso } from '@/components/ui/Aviso';
 import { Boton } from '@/components/ui/Boton';
+import { Encabezado } from '@/components/ui/Encabezado';
 import { Icono } from '@/components/ui/Icono';
 import {
   actualizarConfiguracionGrupo,
   obtenerGrupoPorId,
+  obtenerIntegrantesActivos,
   obtenerMiRolEnGrupo,
+  obtenerSesionActual,
+  salirDelGrupo,
 } from '@/lib/gruposStore';
-import { colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
+import { colores, espaciados, fuentes, interletrado, radios, tipografia } from '@/lib/tema';
 import { ErrorDominio, type ModalidadAsistencia } from '@/types/dominio';
 
 export default function ConfiguracionGrupoScreen() {
@@ -28,6 +32,8 @@ export default function ConfiguracionGrupoScreen() {
   const [gpsHabilitado, setGpsHabilitado] = useState<boolean>(grupo?.gps_habilitado ?? false);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState('');
+  const [sucesorId, setSucesorId] = useState<string | null>(null);
+  const [errorSalida, setErrorSalida] = useState('');
 
   const cambiarModalidad = (nueva: ModalidadAsistencia) => {
     setModalidad(nueva);
@@ -65,19 +71,8 @@ export default function ConfiguracionGrupoScreen() {
 
   if (!grupo || rol !== 'responsable') {
     return (
-      <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
-        <View style={styles.barraSuperior}>
-          <Pressable
-            accessibilityLabel="Volver"
-            accessibilityRole="button"
-            onPress={() => router.back()}
-            style={styles.botonVolver}
-          >
-            <Icono color={colores.tinta} nombre="volver" tamano={22} />
-          </Pressable>
-          <Text style={styles.tituloBarra}>Configuración</Text>
-          <View style={styles.espacioDerecha} />
-        </View>
+      <SafeAreaView edges={['bottom']} style={styles.pantalla}>
+        <Encabezado onVolver={() => router.back()} titulo="Configuración" />
         <View style={styles.contenido}>
           <Aviso
             accion={
@@ -96,22 +91,46 @@ export default function ConfiguracionGrupoScreen() {
     );
   }
 
+  const sesion = obtenerSesionActual();
+  const otrosIntegrantes = obtenerIntegrantesActivos(grupo.id).filter(
+    (i) => i.usuario_id !== sesion?.id,
+  );
+  const hayOtroResponsable = otrosIntegrantes.some((i) => i.rol === 'responsable');
+  const sucesor = otrosIntegrantes.find((i) => i.id === sucesorId);
+  const puedeSalir = otrosIntegrantes.length > 0 && (hayOtroResponsable || Boolean(sucesor));
+
+  const confirmarSalida = () => {
+    setErrorSalida('');
+    Alert.alert(
+      'Salir del grupo',
+      sucesor
+        ? `${sucesor.usuario.nombre} quedará como responsable. Tu historial se conservará.`
+        : '¿Seguro que quieres salir de este grupo? Tu historial se conservará.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Salir',
+          style: 'destructive',
+          onPress: () => {
+            try {
+              salirDelGrupo(grupo.id, sucesor?.id);
+              router.replace('/(tabs)');
+            } catch (err) {
+              setErrorSalida(
+                err instanceof ErrorDominio
+                  ? err.message
+                  : 'No pudimos sacarte del grupo. Intenta de nuevo.',
+              );
+            }
+          },
+        },
+      ],
+    );
+  };
+
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
-      <View style={styles.barraSuperior}>
-        <Pressable
-          accessibilityLabel="Volver"
-          accessibilityRole="button"
-          onPress={() => router.back()}
-          style={styles.botonVolver}
-        >
-          <Icono color={colores.tinta} nombre="volver" tamano={22} />
-        </Pressable>
-        <Text accessibilityRole="header" style={styles.tituloBarra}>
-          Configuración
-        </Text>
-        <View style={styles.espacioDerecha} />
-      </View>
+    <SafeAreaView edges={['bottom']} style={styles.pantalla}>
+      <Encabezado onVolver={() => router.back()} titulo="Configuración" />
 
       <ScrollView contentContainerStyle={styles.contenido}>
         {error ? (
@@ -235,39 +254,83 @@ export default function ConfiguracionGrupoScreen() {
         </Text>
 
         <Boton cargando={guardando} onPress={manejarGuardar} titulo="Guardar cambios" />
+
+        <View style={styles.tarjeta}>
+          <Text style={styles.tituloBloque}>Salir del grupo</Text>
+
+          {otrosIntegrantes.length === 0 ? (
+            <Text style={styles.descOpcion}>
+              Eres el único integrante. Agrega a alguien desde Integrantes antes de salir.
+            </Text>
+          ) : hayOtroResponsable ? (
+            <Text style={styles.descOpcion}>
+              Tu historial se conserva. Podrás volver si alguien te agrega de nuevo.
+            </Text>
+          ) : (
+            <>
+              <Text style={styles.descOpcion}>
+                Eres el único responsable. Elige quién quedará a cargo antes de salir.
+              </Text>
+              <View accessibilityRole="radiogroup" style={styles.listaSucesores}>
+                {otrosIntegrantes.map((integrante) => {
+                  const elegido = sucesorId === integrante.id;
+                  return (
+                    <Pressable
+                      accessibilityRole="radio"
+                      accessibilityState={{ checked: elegido }}
+                      key={integrante.id}
+                      onPress={() => setSucesorId(integrante.id)}
+                      style={[styles.sucesor, elegido && styles.sucesorElegido]}
+                    >
+                      <View style={styles.opcionTexto}>
+                        <Text style={styles.tituloOpcion}>{integrante.usuario.nombre}</Text>
+                        <Text style={styles.descOpcion}>{integrante.usuario.correo}</Text>
+                      </View>
+                      {elegido ? <Icono color={colores.info} nombre="hecho" tamano={20} /> : null}
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </>
+          )}
+
+          {errorSalida ? <Aviso texto={errorSalida} tipo="error" /> : null}
+
+          {otrosIntegrantes.length > 0 ? (
+            <Boton
+              deshabilitado={!puedeSalir}
+              icono="cancelar"
+              onPress={confirmarSalida}
+              titulo={sucesor ? `Salir y dejar a ${sucesor.usuario.nombre}` : 'Salir del grupo'}
+              variante="peligro"
+            />
+          ) : null}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  listaSucesores: {
+    gap: espaciados.sm,
+  },
+  sucesor: {
+    alignItems: 'center',
+    backgroundColor: colores.superficieAlt,
+    borderRadius: radios.lg,
+    flexDirection: 'row',
+    gap: espaciados.md,
+    minHeight: 56,
+    paddingHorizontal: espaciados.lg,
+    paddingVertical: espaciados.sm,
+  },
+  sucesorElegido: {
+    backgroundColor: colores.infoSuave,
+  },
   pantalla: {
     backgroundColor: colores.papel,
     flex: 1,
-  },
-  barraSuperior: {
-    alignItems: 'center',
-    borderBottomColor: colores.borde,
-    borderBottomWidth: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: espaciados.md,
-    paddingVertical: espaciados.sm,
-  },
-  botonVolver: {
-    alignItems: 'center',
-    borderRadius: radios.pill,
-    height: 40,
-    justifyContent: 'center',
-    width: 40,
-  },
-  tituloBarra: {
-    color: colores.tinta,
-    fontSize: tipografia.tituloSm,
-    fontWeight: pesos.fuerte,
-  },
-  espacioDerecha: {
-    width: 40,
   },
   contenido: {
     gap: espaciados.lg,
@@ -276,23 +339,20 @@ const styles = StyleSheet.create({
   },
   tarjeta: {
     backgroundColor: colores.superficie,
-    borderColor: colores.borde,
     borderRadius: radios.tarjeta,
-    borderWidth: 1,
     gap: espaciados.md,
     padding: espaciados.lg,
   },
   tituloBloque: {
     color: colores.tinta,
     fontSize: tipografia.tituloSm,
-    fontWeight: pesos.fuerte,
+    letterSpacing: interletrado.tituloSm,
+    fontFamily: fuentes.fuerte,
   },
   opcion: {
     alignItems: 'flex-start',
     backgroundColor: colores.superficieAlt,
-    borderColor: colores.borde,
     borderRadius: radios.campo,
-    borderWidth: 1,
     flexDirection: 'row',
     gap: espaciados.md,
     padding: espaciados.md,
@@ -324,10 +384,11 @@ const styles = StyleSheet.create({
   tituloOpcion: {
     color: colores.tinta,
     fontSize: tipografia.cuerpo,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
   },
   descOpcion: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
     lineHeight: 19,
   },
@@ -356,10 +417,11 @@ const styles = StyleSheet.create({
   textoProximamente: {
     color: colores.tintaSuave,
     fontSize: tipografia.micro,
-    fontWeight: pesos.medio,
+    fontFamily: fuentes.medio,
   },
   notaPie: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
     textAlign: 'center',
   },

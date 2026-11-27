@@ -8,7 +8,7 @@ import { Boton } from '@/components/ui/Boton';
 import { Icono } from '@/components/ui/Icono';
 import { formatearDuracion } from '@/lib/fecha';
 import { obtenerGrupoPorId, obtenerJornadaPorId } from '@/lib/gruposStore';
-import { cifrasTabulares, colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
+import { cifrasTabulares, colores, espaciados, fuentes, interletrado, radios, tipografia } from '@/lib/tema';
 import type { TipoConfirmacionQR } from '@/types/dominio';
 
 const TIPOS_VALIDOS: readonly TipoConfirmacionQR[] = [
@@ -141,9 +141,7 @@ const styles = StyleSheet.create({
   tarjetaConfirmacion: {
     alignItems: 'center',
     backgroundColor: colores.superficie,
-    borderColor: colores.borde,
     borderRadius: radios.tarjeta,
-    borderWidth: 1,
     gap: espaciados.md,
     padding: espaciados.xl,
   },
@@ -163,21 +161,20 @@ const styles = StyleSheet.create({
   titulo: {
     color: colores.tinta,
     fontSize: tipografia.titulo,
-    fontWeight: pesos.fuerte,
+    letterSpacing: interletrado.titulo,
+    fontFamily: fuentes.fuerte,
     textAlign: 'center',
   },
   subtituloHora: {
     color: colores.acento,
     fontSize: tipografia.cuerpo,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
     textAlign: 'center',
   },
   cajaContexto: {
     alignItems: 'center',
     backgroundColor: colores.superficieAlt,
-    borderColor: colores.borde,
     borderRadius: radios.campo,
-    borderWidth: 1,
     gap: espaciados.xs,
     padding: espaciados.md,
     width: '100%',
@@ -185,16 +182,17 @@ const styles = StyleSheet.create({
   etiquetaContexto: {
     color: colores.tintaTenue,
     fontSize: tipografia.micro,
-    fontWeight: pesos.medio,
+    fontFamily: fuentes.medio,
   },
   valorContexto: {
     color: colores.tinta,
     fontSize: tipografia.cuerpo,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
     textAlign: 'center',
   },
   grupoContexto: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
     textAlign: 'center',
   },

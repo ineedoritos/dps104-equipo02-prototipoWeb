@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Boton } from '@/components/ui/Boton';
 import { DatePickerField } from '@/components/ui/DatePickerField';
 import { Icono } from '@/components/ui/Icono';
-import { colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
+import { colores, espaciados, fuentes, interletrado, radios, tipografia } from '@/lib/tema';
 import type { FiltrosActividades } from '@/types/actividad';
 
 export interface FiltrosModalProps {
@@ -114,10 +114,12 @@ const styles = StyleSheet.create({
   titulo: {
     color: colores.tinta,
     fontSize: tipografia.tituloSm,
-    fontWeight: pesos.fuerte,
+    letterSpacing: interletrado.tituloSm,
+    fontFamily: fuentes.fuerte,
   },
   descripcion: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
     lineHeight: 18,
   },

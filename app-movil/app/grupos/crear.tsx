@@ -8,7 +8,7 @@ import { Boton } from '@/components/ui/Boton';
 import { CampoTexto } from '@/components/ui/CampoTexto';
 import { Icono } from '@/components/ui/Icono';
 import { crearGrupo } from '@/lib/gruposStore';
-import { colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
+import { colores, espaciados, fuentes, interletrado, radios, tipografia } from '@/lib/tema';
 import { ErrorDominio } from '@/types/dominio';
 
 export default function CrearGrupoScreen() {
@@ -138,7 +138,8 @@ const styles = StyleSheet.create({
   tituloBarra: {
     color: colores.tinta,
     fontSize: tipografia.tituloSm,
-    fontWeight: pesos.fuerte,
+    letterSpacing: interletrado.tituloSm,
+    fontFamily: fuentes.fuerte,
   },
   espacioDerecha: {
     width: 40,
@@ -150,9 +151,7 @@ const styles = StyleSheet.create({
   },
   tarjeta: {
     backgroundColor: colores.superficie,
-    borderColor: colores.borde,
     borderRadius: radios.tarjeta,
-    borderWidth: 1,
     gap: espaciados.md,
     padding: espaciados.lg,
   },

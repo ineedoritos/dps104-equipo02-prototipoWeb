@@ -13,7 +13,7 @@
     "android": {
       "package": "sv.udb.registroactividades",
       "adaptiveIcon": {
-        "backgroundColor": "#F7F4EE",
+        "backgroundColor": "#F4F5F5",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
@@ -29,7 +29,7 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#F7F4EE",
+          "backgroundColor": "#F4F5F5",
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }

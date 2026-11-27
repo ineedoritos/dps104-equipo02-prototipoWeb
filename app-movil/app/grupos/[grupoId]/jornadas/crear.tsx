@@ -4,7 +4,7 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
+  
   ScrollView,
   StyleSheet,
   Text,
@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Aviso } from '@/components/ui/Aviso';
 import { Boton } from '@/components/ui/Boton';
+import { Encabezado } from '@/components/ui/Encabezado';
 import { CampoTexto } from '@/components/ui/CampoTexto';
 import { DatePickerField } from '@/components/ui/DatePickerField';
 import { HoraPickerField } from '@/components/ui/HoraPickerField';
@@ -27,7 +28,7 @@ import {
   obtenerJornadaPorId,
   obtenerMiRolEnGrupo,
 } from '@/lib/gruposStore';
-import { colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
+import { colores, espaciados, fuentes, interletrado, radios, tipografia } from '@/lib/tema';
 import { ErrorDominio } from '@/types/dominio';
 
 type EstadoVista = 'normal' | 'cargando' | 'error';
@@ -62,19 +63,11 @@ export default function CrearOEditarJornadaScreen() {
 
   if (!grupo || rol !== 'responsable' || (jornadaId && !jornadaExistente)) {
     return (
-      <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
-        <View style={styles.barraSuperior}>
-          <Pressable
-            accessibilityLabel="Volver"
-            accessibilityRole="button"
-            onPress={() => router.back()}
-            style={styles.botonIcono}
-          >
-            <Icono color={colores.tinta} nombre="volver" tamano={22} />
-          </Pressable>
-          <Text style={styles.tituloBarra}>Jornada</Text>
-          <View style={styles.espacioDerecha} />
-        </View>
+      <SafeAreaView edges={['bottom']} style={styles.pantalla}>
+        <Encabezado
+          onVolver={() => router.back()}
+          titulo={esEdicion ? 'Editar jornada' : 'Nueva jornada'}
+        />
         <View style={styles.contenido}>
           <Aviso
             accion={
@@ -156,19 +149,11 @@ export default function CrearOEditarJornadaScreen() {
   };
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
-      <View style={styles.barraSuperior}>
-        <Pressable
-          accessibilityLabel="Volver"
-          accessibilityRole="button"
-          onPress={() => router.back()}
-          style={styles.botonIcono}
-        >
-          <Icono color={colores.tinta} nombre="volver" tamano={22} />
-        </Pressable>
-        <Text style={styles.tituloBarra}>{esEdicion ? 'Editar jornada' : 'Nueva jornada'}</Text>
-        <View style={styles.espacioDerecha} />
-      </View>
+    <SafeAreaView edges={['bottom']} style={styles.pantalla}>
+      <Encabezado
+        onVolver={() => router.back()}
+        titulo={esEdicion ? 'Editar jornada' : 'Nueva jornada'}
+      />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -179,24 +164,6 @@ export default function CrearOEditarJornadaScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {__DEV__ ? (
-            <View style={styles.barraEstados}>
-              {(['normal', 'cargando', 'error'] as const).map((modo) => {
-                const activo = estadoVista === modo;
-                return (
-                  <Pressable
-                    key={modo}
-                    onPress={() => setEstadoVista(modo)}
-                    style={[styles.chipEstado, activo && styles.chipEstadoActivo]}
-                  >
-                    <Text style={[styles.textoChipEstado, activo && styles.textoChipEstadoActivo]}>
-                      {modo}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-          ) : null}
 
           {estadoVista === 'cargando' ? (
             <View style={styles.estadoCentro}>
@@ -241,6 +208,7 @@ export default function CrearOEditarJornadaScreen() {
 
               {errorGeneral ? <Aviso texto={errorGeneral} tipo="error" /> : null}
 
+              <View style={styles.tarjetaFormulario}>
               <CampoTexto
                 etiqueta="Título"
                 onChangeText={setTitulo}
@@ -290,6 +258,7 @@ export default function CrearOEditarJornadaScreen() {
                 onPress={manejarGuardar}
                 titulo={esEdicion ? 'Guardar cambios' : 'Crear jornada'}
               />
+              </View>
             </>
           ) : null}
         </ScrollView>
@@ -305,6 +274,12 @@ const styles = StyleSheet.create({
   },
   flex: {
     flex: 1,
+  },
+  tarjetaFormulario: {
+    backgroundColor: colores.superficie,
+    borderRadius: radios.superficie,
+    gap: espaciados.md,
+    padding: espaciados.lg,
   },
   barraSuperior: {
     alignItems: 'center',
@@ -325,7 +300,8 @@ const styles = StyleSheet.create({
   tituloBarra: {
     color: colores.tinta,
     fontSize: tipografia.tituloSm,
-    fontWeight: pesos.fuerte,
+    letterSpacing: interletrado.tituloSm,
+    fontFamily: fuentes.fuerte,
   },
   espacioDerecha: {
     width: 44,
@@ -335,32 +311,6 @@ const styles = StyleSheet.create({
     padding: espaciados.lg,
     paddingBottom: espaciados.xxxl,
   },
-  barraEstados: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: espaciados.xs,
-  },
-  chipEstado: {
-    backgroundColor: colores.superficie,
-    borderColor: colores.borde,
-    borderRadius: radios.pill,
-    borderWidth: 1,
-    paddingHorizontal: espaciados.md,
-    paddingVertical: espaciados.xs,
-  },
-  chipEstadoActivo: {
-    backgroundColor: colores.acentoSuave,
-    borderColor: colores.acentoBorde,
-  },
-  textoChipEstado: {
-    color: colores.tintaSuave,
-    fontSize: tipografia.micro,
-    fontWeight: pesos.medio,
-  },
-  textoChipEstadoActivo: {
-    color: colores.acento,
-    fontWeight: pesos.fuerte,
-  },
   estadoCentro: {
     alignItems: 'center',
     gap: espaciados.md,
@@ -368,6 +318,7 @@ const styles = StyleSheet.create({
   },
   textoCarga: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
   },
   tarjetaInfo: {
@@ -387,10 +338,11 @@ const styles = StyleSheet.create({
   tituloInfo: {
     color: colores.tinta,
     fontSize: tipografia.cuerpoSm,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
   },
   subtituloInfo: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
   },
   bloqueDeshabilitado: {

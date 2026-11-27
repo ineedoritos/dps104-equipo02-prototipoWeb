@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import type { StyleProp, ViewStyle } from 'react-native';
 
-import { colores, espaciados, pesos, tipografia } from '@/lib/tema';
+import { colores, espaciados, fuentes, interletrado, interlineado, tipografia } from '@/lib/tema';
 
 export interface SeccionProps {
   titulo: string;
@@ -46,11 +46,14 @@ const styles = StyleSheet.create({
   titulo: {
     color: colores.tinta,
     fontSize: tipografia.tituloSm,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
+    letterSpacing: interletrado.tituloSm,
+    lineHeight: interlineado.tituloSm,
   },
   detalle: {
     color: colores.tintaSuave,
-    fontSize: tipografia.micro,
-    lineHeight: 15,
+    fontFamily: fuentes.normal,
+    fontSize: 13,
+    lineHeight: 18,
   },
 });

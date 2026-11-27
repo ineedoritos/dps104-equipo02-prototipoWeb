@@ -23,7 +23,7 @@ import {
   obtenerSesionActual,
   suscribirStore,
 } from '@/lib/gruposStore';
-import { cifrasTabulares, colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
+import { cifrasTabulares, colores, espaciados, fuentes, interletrado, radios, tipografia } from '@/lib/tema';
 import type { RegistroHistorial } from '@/types/dominio';
 
 type EstadoVista = 'normal' | 'cargando' | 'vacio' | 'error';
@@ -118,10 +118,7 @@ export default function MiHistorialScreen() {
 
   if (!sesion) {
     return (
-      <SafeAreaView edges={['top']} style={styles.pantalla}>
-        <View style={styles.cabecera}>
-          <Text style={styles.tituloPantalla}>Mi historial</Text>
-        </View>
+      <SafeAreaView edges={[]} style={styles.pantalla}>
         <View style={styles.contenido}>
           <Aviso
             accion={
@@ -143,9 +140,8 @@ export default function MiHistorialScreen() {
   const meses = agruparPorMes(registrosVisibles);
 
   return (
-    <SafeAreaView edges={['top']} style={styles.pantalla}>
+    <SafeAreaView edges={[]} style={styles.pantalla}>
       <View style={styles.cabecera}>
-        <Text style={styles.tituloPantalla}>Mi historial</Text>
         <Text style={styles.subtituloPantalla}>
           Consulta tus asistencias y horas acumuladas.
         </Text>
@@ -195,24 +191,6 @@ export default function MiHistorialScreen() {
           })}
         </ScrollView>
 
-        {__DEV__ ? (
-          <View style={styles.barraEstados}>
-            {(['normal', 'cargando', 'vacio', 'error'] as const).map((modo) => {
-              const activo = estadoVista === modo;
-              return (
-                <Pressable
-                  key={modo}
-                  onPress={() => setEstadoVista(modo)}
-                  style={[styles.chipEstado, activo && styles.chipEstadoActivo]}
-                >
-                  <Text style={[styles.textoChipEstado, activo && styles.textoChipEstadoActivo]}>
-                    {modo}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        ) : null}
 
         {estadoVista === 'cargando' ? (
           <View style={styles.estadoCentro}>
@@ -378,10 +356,12 @@ const styles = StyleSheet.create({
   tituloPantalla: {
     color: colores.tinta,
     fontSize: tipografia.titulo,
-    fontWeight: pesos.fuerte,
+    letterSpacing: interletrado.titulo,
+    fontFamily: fuentes.fuerte,
   },
   subtituloPantalla: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
   },
   contenido: {
@@ -394,9 +374,7 @@ const styles = StyleSheet.create({
   },
   chipFiltro: {
     backgroundColor: colores.superficie,
-    borderColor: colores.borde,
     borderRadius: radios.pill,
-    borderWidth: 1,
     paddingHorizontal: espaciados.md,
     paddingVertical: espaciados.sm,
   },
@@ -407,37 +385,11 @@ const styles = StyleSheet.create({
   textoChipFiltro: {
     color: colores.tintaSuave,
     fontSize: tipografia.cuerpoSm,
-    fontWeight: pesos.medio,
+    fontFamily: fuentes.medio,
   },
   textoChipFiltroActivo: {
     color: colores.acento,
-    fontWeight: pesos.fuerte,
-  },
-  barraEstados: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: espaciados.xs,
-  },
-  chipEstado: {
-    backgroundColor: colores.superficie,
-    borderColor: colores.borde,
-    borderRadius: radios.pill,
-    borderWidth: 1,
-    paddingHorizontal: espaciados.md,
-    paddingVertical: espaciados.xs,
-  },
-  chipEstadoActivo: {
-    backgroundColor: colores.acentoSuave,
-    borderColor: colores.acentoBorde,
-  },
-  textoChipEstado: {
-    color: colores.tintaSuave,
-    fontSize: tipografia.micro,
-    fontWeight: pesos.medio,
-  },
-  textoChipEstadoActivo: {
-    color: colores.acento,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
   },
   estadoCentro: {
     alignItems: 'center',
@@ -446,6 +398,7 @@ const styles = StyleSheet.create({
   },
   textoCarga: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
   },
   gridResumen: {
@@ -453,25 +406,25 @@ const styles = StyleSheet.create({
   },
   tarjetaResumen: {
     backgroundColor: colores.superficie,
-    borderColor: colores.borde,
     borderRadius: radios.tarjeta,
-    borderWidth: 1,
     gap: espaciados.xs,
     padding: espaciados.lg,
   },
   etiquetaResumen: {
     color: colores.tintaTenue,
     fontSize: tipografia.micro,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
     textTransform: 'uppercase',
   },
   valorResumen: {
     color: colores.tinta,
     fontSize: tipografia.display,
-    fontWeight: pesos.fuerte,
+    letterSpacing: interletrado.display,
+    fontFamily: fuentes.fuerte,
   },
   desgloseResumen: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
   },
   filaHoras: {
@@ -485,12 +438,14 @@ const styles = StyleSheet.create({
   },
   etiquetaDato: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.micro,
   },
   valorHora: {
     color: colores.tinta,
     fontSize: tipografia.tituloSm,
-    fontWeight: pesos.fuerte,
+    letterSpacing: interletrado.tituloSm,
+    fontFamily: fuentes.fuerte,
   },
   listaMeses: {
     gap: espaciados.lg,
@@ -500,9 +455,7 @@ const styles = StyleSheet.create({
   },
   tarjetaRegistro: {
     backgroundColor: colores.superficie,
-    borderColor: colores.borde,
     borderRadius: radios.tarjeta,
-    borderWidth: 1,
     gap: espaciados.xs,
     padding: espaciados.lg,
   },
@@ -519,21 +472,23 @@ const styles = StyleSheet.create({
     color: colores.tinta,
     flex: 1,
     fontSize: tipografia.cuerpo,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
   },
   metaRegistro: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
   },
   notaDetalle: {
     color: colores.tinta,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
     marginTop: espaciados.xs,
   },
   notaAjuste: {
     color: colores.justificada,
     fontSize: tipografia.micro,
-    fontWeight: pesos.medio,
+    fontFamily: fuentes.medio,
     marginTop: espaciados.xs,
   },
 });

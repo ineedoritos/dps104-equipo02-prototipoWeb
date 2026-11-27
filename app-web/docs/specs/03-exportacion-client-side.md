@@ -45,7 +45,7 @@ Relacionado con: `RF14`, `RF15`, `RF-WEB-06`, `RF-WEB-07`, `RNF03`, `RNF05`, `RN
 - **Librería aprobada:** `xlsx-style` / `xlsx-js-style` (`ADR-WEB-003`).
 
 ### Criterios de aceptación
-- `WEB06-CA01`: Desde *Reportes del grupo* (responsable), genera y descarga un libro `.xlsx` con estilos (encabezados en negrita con relleno, bordes suaves, anchos de columna ajustados) compuesto por:
+- `WEB06-CA01`: Desde *Reportes del grupo* (responsable), genera y descarga un libro `.xlsx` compuesto por:
   1. Hoja **`Resumen`**: metadatos (grupo, período, fecha de generación UTC-6), KPIs totales y nota obligatoria sobre horas internas.
   2. Hoja **`Participacion`**: tabla por integrante con valores numéricos reales (no texto) para presentes, ausentes, justificadas, tasa (`0.0%` o `—`) y horas registradas/reconocidas si aplican.
   3. Hoja **`Justificadas_y_Ajustes`**: detalle fila por fila de ausencias justificadas (`motivo_ausencia`) y ajustes de horas (`motivo_ajuste`) del período (o fila informativa si no hay).

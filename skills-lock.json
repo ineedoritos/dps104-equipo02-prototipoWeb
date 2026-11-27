@@ -57,6 +57,20 @@
       "skillPath": ".github/skills/debugging-workflows/SKILL.md",
       "computedHash": "d66f6178f274e144061535710f5e436af7fbcbe9ddfe12d630e07ced07a98df8"
     },
+    "expo-native-ui": {
+      "source": "expo/skills",
+      "commit": "6d0506afe7df9334b60ad4b1ceb35969836f01a0",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/expo-native-ui/SKILL.md",
+      "computedHash": "6f2514b968534810bbabec5003d7ff9caa8553385e19fe6d6a7685ab5882e744"
+    },
+    "expo-router": {
+      "source": "expo/skills",
+      "commit": "6d0506afe7df9334b60ad4b1ceb35969836f01a0",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/expo-router/SKILL.md",
+      "computedHash": "ee023d92fdf52f8ddf50c267b72e453e592249110e9ad262ed186248bc296199"
+    },
     "github-issue-query": {
       "source": "github/gh-aw",
       "commit": "d2c0ce30c96e44b91c45880fe85467240f717561",
@@ -85,6 +99,13 @@
       "skillPath": ".github/skills/github-workflows-query/SKILL.md",
       "computedHash": "10d44308f42cce9c9e2503b3f761ba2cf166ff3fcdfa9354c99f9ef83ad32a79"
     },
+    "impeccable": {
+      "source": "pbakaus/impeccable",
+      "commit": "2fc5e1459efbbf06d92c7306517c286bf12490cf",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/impeccable/SKILL.md",
+      "computedHash": "ba5494cb853df34dc3284176083f954829717c42474107d5d01934b2f43930b4"
+    },
     "motion-authoring": {
       "source": "INSANE0777/awwwards-skills",
       "commit": "d32273727c6d882b639ec46b669d1e04343ffcf1",
@@ -98,6 +119,20 @@
       "sourceType": "github",
       "skillPath": "skills/recreate/SKILL.md",
       "computedHash": "f67572ac2065d709302f0ead8058ac615079a980ca5613cbfd0275c049eaefe7"
+    },
+    "vercel-react-native-skills": {
+      "source": "vercel-labs/agent-skills",
+      "commit": "5a37a6329fbad3666c3207392a6a7c0110e92efb",
+      "sourceType": "github",
+      "skillPath": "skills/react-native-skills/SKILL.md",
+      "computedHash": "4c160f1f4e623b989cadb71f42a0813be574d172acf5e32a6411c87f3e28c05a"
+    },
+    "web-design-guidelines": {
+      "source": "vercel-labs/agent-skills",
+      "commit": "5a37a6329fbad3666c3207392a6a7c0110e92efb",
+      "sourceType": "github",
+      "skillPath": "skills/web-design-guidelines/SKILL.md",
+      "computedHash": "5994e4cfd86144903d2ba750f862b9e36af15e3297aac983679e347b99f6cb71"
     }
   }
 }

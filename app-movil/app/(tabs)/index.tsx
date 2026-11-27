@@ -19,7 +19,7 @@ import { Boton } from '@/components/ui/Boton';
 import { EstadoVacio } from '@/components/ui/EstadoVacio';
 import { Icono } from '@/components/ui/Icono';
 import { obtenerMisGrupos, obtenerSesionActual, suscribirStore } from '@/lib/gruposStore';
-import { cifrasTabulares, colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
+import { cifrasTabulares, colores, espaciados, fuentes, interletrado, radios, tipografia } from '@/lib/tema';
 import type { ResumenGrupoUsuario } from '@/types/dominio';
 
 type EstadoVista = 'normal' | 'cargando' | 'vacio' | 'error';
@@ -77,7 +77,7 @@ export default function MisGruposScreen() {
   const listaVisible = estadoVista === 'vacio' ? [] : grupos;
 
   return (
-    <SafeAreaView edges={['top']} style={styles.pantalla}>
+    <SafeAreaView edges={[]} style={styles.pantalla}>
       <ScrollView
         contentContainerStyle={styles.contenido}
         refreshControl={
@@ -91,30 +91,9 @@ export default function MisGruposScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.encabezado}>
-          <Text accessibilityRole="header" style={styles.titulo}>
-            Mis grupos
-          </Text>
           <Text style={styles.subtitulo}>Tu rol cambia según el grupo.</Text>
         </View>
 
-        {__DEV__ ? (
-          <View style={styles.barraEstados}>
-            {(['normal', 'cargando', 'vacio', 'error'] as const).map((modo) => {
-              const activo = estadoVista === modo;
-              return (
-                <Pressable
-                  key={modo}
-                  onPress={() => setEstadoVista(modo)}
-                  style={[styles.chipEstado, activo && styles.chipEstadoActivo]}
-                >
-                  <Text style={[styles.textoChipEstado, activo && styles.textoChipEstadoActivo]}>
-                    {modo}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        ) : null}
 
         {estadoVista === 'cargando' ? (
           <View style={styles.estadoCentro}>
@@ -246,38 +225,13 @@ const styles = StyleSheet.create({
   titulo: {
     color: colores.tinta,
     fontSize: tipografia.display,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
     letterSpacing: -0.4,
   },
   subtitulo: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpo,
-  },
-  barraEstados: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: espaciados.xs,
-  },
-  chipEstado: {
-    backgroundColor: colores.superficie,
-    borderColor: colores.borde,
-    borderRadius: radios.pill,
-    borderWidth: 1,
-    paddingHorizontal: espaciados.md,
-    paddingVertical: espaciados.xs,
-  },
-  chipEstadoActivo: {
-    backgroundColor: colores.acentoSuave,
-    borderColor: colores.acentoBorde,
-  },
-  textoChipEstado: {
-    color: colores.tintaSuave,
-    fontSize: tipografia.micro,
-    fontWeight: pesos.medio,
-  },
-  textoChipEstadoActivo: {
-    color: colores.acento,
-    fontWeight: pesos.fuerte,
   },
   estadoCentro: {
     alignItems: 'center',
@@ -286,6 +240,7 @@ const styles = StyleSheet.create({
   },
   textoCarga: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
   },
   lista: {
@@ -293,9 +248,7 @@ const styles = StyleSheet.create({
   },
   tarjeta: {
     backgroundColor: colores.superficie,
-    borderColor: colores.borde,
     borderRadius: radios.tarjeta,
-    borderWidth: 1,
     gap: espaciados.sm,
     padding: espaciados.lg,
   },
@@ -312,7 +265,8 @@ const styles = StyleSheet.create({
     color: colores.tinta,
     flex: 1,
     fontSize: tipografia.tituloSm,
-    fontWeight: pesos.fuerte,
+    letterSpacing: interletrado.tituloSm,
+    fontFamily: fuentes.fuerte,
   },
   pildoraRol: {
     borderRadius: radios.pill,
@@ -327,7 +281,7 @@ const styles = StyleSheet.create({
   },
   textoRol: {
     fontSize: tipografia.micro,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
   },
   textoResponsable: {
     color: colores.acento,
@@ -337,6 +291,7 @@ const styles = StyleSheet.create({
   },
   descripcion: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
     lineHeight: 19,
   },
@@ -356,6 +311,7 @@ const styles = StyleSheet.create({
   },
   textoMeta: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
   },
   estadoEnCurso: {
@@ -372,10 +328,11 @@ const styles = StyleSheet.create({
   textoEnCurso: {
     color: colores.acento,
     fontSize: tipografia.micro,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
   },
   notaPie: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.micro,
     textAlign: 'center',
   },

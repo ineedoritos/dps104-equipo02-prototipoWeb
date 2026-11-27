@@ -24,7 +24,7 @@ import {
   obtenerResumenAsistenciaJornada,
   suscribirStore,
 } from '@/lib/gruposStore';
-import { cifrasTabulares, colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
+import { cifrasTabulares, colores, espaciados, fuentes, interletrado, radios, tipografia } from '@/lib/tema';
 import { ErrorDominio, type CodigoQR } from '@/types/dominio';
 
 type EstadoVista = 'normal' | 'cargando' | 'error';
@@ -174,24 +174,6 @@ export default function MostrarQRScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.contenido} showsVerticalScrollIndicator={false}>
-        {__DEV__ ? (
-          <View style={styles.barraEstados}>
-            {(['normal', 'cargando', 'error'] as const).map((modo) => {
-              const activo = estadoVista === modo;
-              return (
-                <Pressable
-                  key={modo}
-                  onPress={() => setEstadoVista(modo)}
-                  style={[styles.chipEstado, activo && styles.chipEstadoActivo]}
-                >
-                  <Text style={[styles.textoChipEstado, activo && styles.textoChipEstadoActivo]}>
-                    {modo}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        ) : null}
 
         {estadoVista === 'cargando' ? (
           <View style={styles.estadoCentro}>
@@ -329,7 +311,8 @@ const styles = StyleSheet.create({
     color: colores.tinta,
     flex: 1,
     fontSize: tipografia.tituloSm,
-    fontWeight: pesos.fuerte,
+    letterSpacing: interletrado.tituloSm,
+    fontFamily: fuentes.fuerte,
     textAlign: 'center',
   },
   espacioDerecha: {
@@ -340,32 +323,6 @@ const styles = StyleSheet.create({
     padding: espaciados.lg,
     paddingBottom: espaciados.xxxl,
   },
-  barraEstados: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: espaciados.xs,
-  },
-  chipEstado: {
-    backgroundColor: colores.superficie,
-    borderColor: colores.borde,
-    borderRadius: radios.pill,
-    borderWidth: 1,
-    paddingHorizontal: espaciados.md,
-    paddingVertical: espaciados.xs,
-  },
-  chipEstadoActivo: {
-    backgroundColor: colores.acentoSuave,
-    borderColor: colores.acentoBorde,
-  },
-  textoChipEstado: {
-    color: colores.tintaSuave,
-    fontSize: tipografia.micro,
-    fontWeight: pesos.medio,
-  },
-  textoChipEstadoActivo: {
-    color: colores.acento,
-    fontWeight: pesos.fuerte,
-  },
   estadoCentro: {
     alignItems: 'center',
     gap: espaciados.md,
@@ -373,6 +330,7 @@ const styles = StyleSheet.create({
   },
   textoCarga: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
   },
   cabecera: {
@@ -381,10 +339,12 @@ const styles = StyleSheet.create({
   tituloJornada: {
     color: colores.tinta,
     fontSize: tipografia.titulo,
-    fontWeight: pesos.fuerte,
+    letterSpacing: interletrado.titulo,
+    fontFamily: fuentes.fuerte,
   },
   guia: {
     color: colores.tintaSuave,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
     lineHeight: 20,
   },
@@ -394,7 +354,7 @@ const styles = StyleSheet.create({
   etiquetaCaducidad: {
     color: colores.tintaSuave,
     fontSize: tipografia.micro,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
   },
   filaChips: {
     flexDirection: 'row',
@@ -403,9 +363,7 @@ const styles = StyleSheet.create({
   chipCaducidad: {
     alignItems: 'center',
     backgroundColor: colores.superficie,
-    borderColor: colores.borde,
     borderRadius: radios.pill,
-    borderWidth: 1,
     flex: 1,
     paddingVertical: espaciados.sm,
   },
@@ -416,11 +374,11 @@ const styles = StyleSheet.create({
   textoChipCaducidad: {
     color: colores.tintaSuave,
     fontSize: tipografia.cuerpoSm,
-    fontWeight: pesos.medio,
+    fontFamily: fuentes.medio,
   },
   textoChipCaducidadActivo: {
     color: colores.acento,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
   },
   panelQR: {
     alignItems: 'center',
@@ -429,19 +387,18 @@ const styles = StyleSheet.create({
   temporizador: {
     color: colores.tintaSuave,
     fontSize: tipografia.cuerpoSm,
-    fontWeight: pesos.medio,
+    fontFamily: fuentes.medio,
     textAlign: 'center',
   },
   codigoTexto: {
     color: colores.tintaTenue,
+    fontFamily: fuentes.normal,
     fontSize: tipografia.micro,
   },
   contadorTarjeta: {
     alignItems: 'center',
     backgroundColor: colores.superficie,
-    borderColor: colores.borde,
     borderRadius: radios.tarjeta,
-    borderWidth: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
     padding: espaciados.lg,
@@ -450,11 +407,11 @@ const styles = StyleSheet.create({
     color: colores.tinta,
     flex: 1,
     fontSize: tipografia.cuerpoSm,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
   },
   textoRefrescar: {
     color: colores.acento,
     fontSize: tipografia.cuerpoSm,
-    fontWeight: pesos.fuerte,
+    fontFamily: fuentes.fuerte,
   },
 });
