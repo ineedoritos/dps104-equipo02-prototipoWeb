@@ -221,6 +221,36 @@ export default function ConfiguracionGrupoScreen() {
         </View>
 
         <View style={styles.tarjeta}>
+          <Pressable
+            accessibilityLabel="Comprobar cercanía por GPS (solo QR)"
+            accessibilityRole="switch"
+            accessibilityState={{
+              checked: modalidad === 'qr' ? gpsHabilitado : false,
+              disabled: guardando || modalidad === 'manual',
+            }}
+            disabled={guardando || modalidad === 'manual'}
+            onPress={() => setGpsHabilitado((prev) => !prev)}
+            style={styles.filaSwitch}
+          >
+            <View style={styles.opcionTexto}>
+              <Text style={styles.tituloBloque}>Comprobar cercanía por GPS (solo QR)</Text>
+              <Text style={styles.descOpcion}>
+                {modalidad === 'manual'
+                  ? 'Disponible solo cuando la asistencia es por QR.'
+                  : 'Verifica al escanear que el participante esté a 100 m o menos del lugar.'}
+              </Text>
+            </View>
+            <Switch
+              disabled={guardando || modalidad === 'manual'}
+              onValueChange={setGpsHabilitado}
+              thumbColor={colores.superficie}
+              trackColor={{ false: colores.bordeFuerte, true: colores.acento }}
+              value={modalidad === 'qr' ? gpsHabilitado : false}
+            />
+          </Pressable>
+        </View>
+
+        <View style={styles.tarjeta}>
           <View style={styles.encabezadoOpcional}>
             <Text style={styles.tituloBloque}>Funciones opcionales</Text>
             <View style={styles.etiquetaProximamente}>
@@ -229,23 +259,6 @@ export default function ConfiguracionGrupoScreen() {
           </View>
 
           <View style={styles.filaSwitch}>
-            <View style={styles.opcionTexto}>
-              <Text style={styles.tituloOpcion}>Comprobar cercanía por GPS (solo QR)</Text>
-              <Text style={styles.descOpcion}>
-                {modalidad === 'manual'
-                  ? 'Disponible solo cuando la asistencia es por QR.'
-                  : 'Verifica que el escaneo ocurra cerca del punto de la jornada.'}
-              </Text>
-            </View>
-            <Switch
-              disabled
-              thumbColor={colores.superficie}
-              trackColor={{ false: colores.borde, true: colores.acento }}
-              value={modalidad === 'qr' ? gpsHabilitado : false}
-            />
-          </View>
-
-          <View style={[styles.filaSwitch, styles.filaSeparada]}>
             <View style={styles.opcionTexto}>
               <Text style={styles.tituloOpcion}>Notificaciones</Text>
               <Text style={styles.descOpcion}>Avisos de cambios en asistencia o revisiones.</Text>

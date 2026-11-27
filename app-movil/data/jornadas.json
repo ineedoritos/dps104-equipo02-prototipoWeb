@@ -13,6 +13,9 @@
     "modo_fotos": "no_permitidas",
     "requiere_validacion": false,
     "notificaciones_habilitadas": false,
+    "ref_latitud": null,
+    "ref_longitud": null,
+    "ref_ubicacion_en": null,
     "creado_por": "usr-01",
     "creado_en": "2026-11-20T09:00:00-06:00"
   },
@@ -26,10 +29,13 @@
     "cancelada": false,
     "modalidad_asistencia": "qr",
     "control_horas": true,
-    "gps_habilitado": false,
+    "gps_habilitado": true,
     "modo_fotos": "no_permitidas",
     "requiere_validacion": false,
     "notificaciones_habilitadas": false,
+    "ref_latitud": 13.7013,
+    "ref_longitud": -89.2244,
+    "ref_ubicacion_en": "2026-11-21T10:00:00-06:00",
     "creado_por": "usr-01",
     "creado_en": "2026-11-21T10:00:00-06:00"
   },
@@ -47,6 +53,9 @@
     "modo_fotos": "no_permitidas",
     "requiere_validacion": false,
     "notificaciones_habilitadas": false,
+    "ref_latitud": null,
+    "ref_longitud": null,
+    "ref_ubicacion_en": null,
     "creado_por": "usr-01",
     "creado_en": "2026-11-15T14:00:00-06:00"
   },
@@ -64,6 +73,9 @@
     "modo_fotos": "no_permitidas",
     "requiere_validacion": false,
     "notificaciones_habilitadas": false,
+    "ref_latitud": null,
+    "ref_longitud": null,
+    "ref_ubicacion_en": null,
     "creado_por": "usr-01",
     "creado_en": "2026-11-19T08:00:00-06:00"
   },
@@ -81,6 +93,9 @@
     "modo_fotos": "no_permitidas",
     "requiere_validacion": false,
     "notificaciones_habilitadas": false,
+    "ref_latitud": null,
+    "ref_longitud": null,
+    "ref_ubicacion_en": null,
     "creado_por": "usr-02",
     "creado_en": "2026-11-20T12:00:00-06:00"
   },
@@ -98,6 +113,9 @@
     "modo_fotos": "no_permitidas",
     "requiere_validacion": false,
     "notificaciones_habilitadas": false,
+    "ref_latitud": null,
+    "ref_longitud": null,
+    "ref_ubicacion_en": null,
     "creado_por": "usr-01",
     "creado_en": "2026-11-22T15:00:00-06:00"
   }

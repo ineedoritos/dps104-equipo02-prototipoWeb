@@ -7,6 +7,7 @@ import jornadasJson from '@/data/jornadas.json';
 import usuariosJson from '@/data/usuarios.json';
 import { aISOConOffset, fechaEnZona, fechaHoraEnZona, horaEnZona } from '@/lib/fecha';
 import { crearNotificacion } from '@/lib/notificacionesStore';
+import { distanciaMetros, type LecturaUbicacion } from '@/lib/ubicacionSimulada';
 import {
   ErrorDominio,
   type Asistencia,
@@ -514,6 +515,9 @@ export function crearJornada(
     fecha: string;
     horaInicio: string;
     horaFin: string;
+    refLatitud?: number | null;
+    refLongitud?: number | null;
+    refUbicacionEn?: string | null;
   },
 ): Jornada {
   const actual = exigirResponsable(grupoId);
@@ -526,6 +530,10 @@ export function crearJornada(
   const descripcionLimpia = datos.descripcion.trim();
   if (!tituloLimpio || !descripcionLimpia) {
     throw new ErrorDominio('ERR_VALIDACION', 'El título y la descripción son obligatorios.');
+  }
+
+  if (grupo.gps_habilitado && (datos.refLatitud == null || datos.refLongitud == null)) {
+    throw new ErrorDominio('ERR_VALIDACION', 'Captura la ubicación de la jornada antes de guardar.');
   }
 
   const { inicioISO, finISO } = validarRangoHorarioJornada(
@@ -548,6 +556,10 @@ export function crearJornada(
     modo_fotos: grupo.modo_fotos,
     requiere_validacion: grupo.requiere_validacion,
     notificaciones_habilitadas: grupo.notificaciones_habilitadas,
+    ref_latitud: grupo.gps_habilitado ? (datos.refLatitud ?? null) : null,
+    ref_longitud: grupo.gps_habilitado ? (datos.refLongitud ?? null) : null,
+    ref_ubicacion_en:
+      grupo.gps_habilitado ? (datos.refUbicacionEn ?? aISOConOffset()) : null,
     creado_por: actual.id,
     creado_en: aISOConOffset(),
   };
@@ -565,6 +577,9 @@ export function editarJornada(
     fecha: string;
     horaInicio: string;
     horaFin: string;
+    refLatitud?: number | null;
+    refLongitud?: number | null;
+    refUbicacionEn?: string | null;
   },
 ): Jornada {
   const existente = obtenerJornadaPorId(jornadaId);
@@ -587,6 +602,15 @@ export function editarJornada(
     throw new ErrorDominio('ERR_VALIDACION', 'El título y la descripción son obligatorios.');
   }
 
+  const refLatFinal = datos.refLatitud !== undefined ? datos.refLatitud : existente.ref_latitud;
+  const refLngFinal = datos.refLongitud !== undefined ? datos.refLongitud : existente.ref_longitud;
+  const refFechaFinal =
+    datos.refUbicacionEn !== undefined ? datos.refUbicacionEn : existente.ref_ubicacion_en;
+
+  if (existente.gps_habilitado && (refLatFinal == null || refLngFinal == null)) {
+    throw new ErrorDominio('ERR_VALIDACION', 'Captura la ubicación de la jornada antes de guardar.');
+  }
+
   const { inicioISO, finISO } = validarRangoHorarioJornada(
     datos.fecha,
     datos.horaInicio,
@@ -607,6 +631,9 @@ export function editarJornada(
     descripcion: descripcionLimpia,
     inicio_en: inicioISO,
     fin_en: finISO,
+    ref_latitud: existente.gps_habilitado ? refLatFinal : null,
+    ref_longitud: existente.gps_habilitado ? refLngFinal : null,
+    ref_ubicacion_en: existente.gps_habilitado ? refFechaFinal : null,
   };
 
   jornadas = jornadas.map((j) => (j.id === jornadaId ? actualizada : j));
@@ -1262,6 +1289,7 @@ export function obtenerMiHistorial(grupoId?: string): ResumenMiHistorial {
 export function registrarAsistenciaQR(
   jornadaId: string,
   codigoSimulado?: 'VALIDO' | 'EXPIRADO' | 'REVOCADO' | 'INVALIDO',
+  ubicacion?: LecturaUbicacion,
 ): ResultadoRegistroQR {
   if (!sesionActual) {
     throw new ErrorDominio('ERR_NO_AUTORIZADO', 'Debes iniciar sesión para registrar asistencia.');
@@ -1323,6 +1351,31 @@ export function registrarAsistenciaQR(
       'ERR_QR_INVALIDO',
       'El código leído no corresponde a esta jornada.',
     );
+  }
+
+  if (jornada.gps_habilitado) {
+    if (jornada.ref_latitud == null || jornada.ref_longitud == null) {
+      throw new ErrorDominio(
+        'ERR_VALIDACION',
+        'Esta jornada requiere ubicación de referencia antes de registrar por QR.',
+      );
+    }
+    if (!ubicacion || ubicacion.precision_metros > 50) {
+      throw new ErrorDominio(
+        'ERR_GPS_SIN_PRECISION',
+        'No pudimos ubicarte con precisión. Sal a un lugar abierto y vuelve a intentar.',
+      );
+    }
+    const distancia = distanciaMetros(
+      { latitud: ubicacion.latitud, longitud: ubicacion.longitud },
+      { latitud: jornada.ref_latitud, longitud: jornada.ref_longitud },
+    );
+    if (distancia > 100) {
+      throw new ErrorDominio(
+        'ERR_GPS_FUERA_DE_RADIO',
+        'Estás lejos del lugar de la jornada. Acércate al punto de encuentro e intenta de nuevo.',
+      );
+    }
   }
 
   const ahora = new Date();

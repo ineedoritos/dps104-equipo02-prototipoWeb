@@ -16,11 +16,12 @@
   - **No se usan (`no_permitidas`):** nadie puede subir fotos en las jornadas.
   - **Opcionales (`opcionales`):** los integrantes pueden agregar fotos como evidencia.
   - **Obligatorias (`obligatorias`):** cada integrante debe subir al menos una foto para que su asistencia cuente.
+- Switch **Comprobar cercanía por GPS (`gps_habilitado`)**:
+  - Activo cuando `modalidad_asistencia === 'qr'`; deshabilitado automáticamente y forzado a `false` si la modalidad es `manual` (`HU11`).
 - Bloque **Funciones opcionales (`MEDIA`)**:
-  - `Comprobar cercanía por GPS (solo QR)` — deshabilitado automáticamente y forzado a `false` si la modalidad es `manual`.
   - `Notificaciones` (`notificaciones_habilitadas`).
   - `Exigir validación` (`requiere_validacion`).
-  - *(En `MVP · Alta`, estos switches pueden mostrarse claramente etiquetados como `Próximamente / Media` o deshabilitados hasta habilitar su issue.)*
+  - *(Los switches aún sin flujo completo muestran claramente `Próximamente` hasta habilitar su historia.)*
 - Nota al pie: *"Los cambios aplican a jornadas nuevas. Los registros anteriores no cambian."*
 - Botón principal: **Guardar cambios** → actualiza `grupos` y vuelve a `SCREEN-04`.
 - Bloque **Salir del grupo** (al final, separado de la configuración):

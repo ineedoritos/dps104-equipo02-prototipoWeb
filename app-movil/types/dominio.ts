@@ -60,6 +60,9 @@ export interface Jornada {
   modo_fotos: ModoFotos;
   requiere_validacion: boolean;
   notificaciones_habilitadas: boolean;
+  ref_latitud: number | null;
+  ref_longitud: number | null;
+  ref_ubicacion_en: string | null;
   creado_por: string;
   creado_en: string;
 }
@@ -132,6 +135,8 @@ export type CodigoErrorDominio =
   | 'ERR_JORNADA_CANCELADA'
   | 'ERR_QR_INVALIDO'
   | 'ERR_SOLICITUD_PENDIENTE'
+  | 'ERR_GPS_SIN_PRECISION'
+  | 'ERR_GPS_FUERA_DE_RADIO'
   | 'ERR_VALIDACION';
 
 export type TipoConfirmacionQR = 'presencia' | 'entrada' | 'salida' | 'ya_completa';

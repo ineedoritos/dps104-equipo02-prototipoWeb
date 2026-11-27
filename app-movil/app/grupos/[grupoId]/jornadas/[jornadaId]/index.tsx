@@ -226,6 +226,22 @@ export default function DetalleJornadaScreen() {
                   {fechaTexto} · {horaInicio} – {horaFin}
                 </Text>
               </View>
+
+              {jornada.gps_habilitado ? (
+                jornada.ref_ubicacion_en ? (
+                  <View style={styles.filaHorario}>
+                    <Icono color={forma.mintInk} nombre="lugar" tamano={16} />
+                    <Text style={styles.textoUbicacionFijada}>
+                      Ubicación de referencia fijada (radio 100 m)
+                    </Text>
+                  </View>
+                ) : (
+                  <Aviso
+                    texto="Falta capturar la ubicación de referencia para validar el escaneo QR."
+                    tipo="info"
+                  />
+                )
+              ) : null}
             </View>
 
             <View style={styles.gridResumen}>
@@ -480,6 +496,12 @@ const styles = StyleSheet.create({
     color: colores.tintaSuave,
     flex: 1,
     fontFamily: fuentes.normal,
+    fontSize: tipografia.cuerpoSm,
+  },
+  textoUbicacionFijada: {
+    color: forma.mintInk,
+    flex: 1,
+    fontFamily: fuentes.medio,
     fontSize: tipografia.cuerpoSm,
   },
   gridResumen: {
