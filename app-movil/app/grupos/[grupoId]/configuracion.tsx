@@ -7,6 +7,7 @@ import { Aviso } from '@/components/ui/Aviso';
 import { Boton } from '@/components/ui/Boton';
 import { Encabezado } from '@/components/ui/Encabezado';
 import { Icono } from '@/components/ui/Icono';
+import { type OpcionSelector, SelectorSegmentado } from '@/components/ui/SelectorSegmentado';
 import {
   actualizarConfiguracionGrupo,
   obtenerGrupoPorId,
@@ -16,7 +17,38 @@ import {
   salirDelGrupo,
 } from '@/lib/gruposStore';
 import { colores, espaciados, fuentes, interletrado, radios, tipografia } from '@/lib/tema';
-import { ErrorDominio, type ModalidadAsistencia } from '@/types/dominio';
+import { ErrorDominio, type ModalidadAsistencia, type ModoFotos } from '@/types/dominio';
+
+const OPCIONES_MODALIDAD: readonly OpcionSelector<ModalidadAsistencia>[] = [
+  {
+    valor: 'manual',
+    etiqueta: 'Manual',
+    descripcion: 'El responsable pasa lista como presente, ausente o justificada.',
+  },
+  {
+    valor: 'qr',
+    etiqueta: 'Por QR',
+    descripcion: 'Cada participante escanea un código temporal y el responsable puede corregir.',
+  },
+];
+
+const OPCIONES_MODO_FOTOS: readonly OpcionSelector<ModoFotos>[] = [
+  {
+    valor: 'no_permitidas',
+    etiqueta: 'No se usan',
+    descripcion: 'Nadie puede subir fotos en las jornadas.',
+  },
+  {
+    valor: 'opcionales',
+    etiqueta: 'Opcionales',
+    descripcion: 'Los integrantes pueden agregar fotos como evidencia.',
+  },
+  {
+    valor: 'obligatorias',
+    etiqueta: 'Obligatorias',
+    descripcion: 'Cada integrante debe subir al menos una foto para que su asistencia cuente.',
+  },
+];
 
 export default function ConfiguracionGrupoScreen() {
   const router = useRouter();
@@ -30,6 +62,7 @@ export default function ConfiguracionGrupoScreen() {
   );
   const [controlHoras, setControlHoras] = useState<boolean>(grupo?.control_horas ?? false);
   const [gpsHabilitado, setGpsHabilitado] = useState<boolean>(grupo?.gps_habilitado ?? false);
+  const [modoFotos, setModoFotos] = useState<ModoFotos>(grupo?.modo_fotos ?? 'no_permitidas');
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState('');
   const [sucesorId, setSucesorId] = useState<string | null>(null);
@@ -55,6 +88,7 @@ export default function ConfiguracionGrupoScreen() {
           modalidad_asistencia: modalidad,
           control_horas: controlHoras,
           gps_habilitado: modalidad === 'qr' ? gpsHabilitado : false,
+          modo_fotos: modoFotos,
         });
         setGuardando(false);
         router.back();
@@ -143,42 +177,13 @@ export default function ConfiguracionGrupoScreen() {
 
         <View style={styles.tarjeta}>
           <Text style={styles.tituloBloque}>¿Cómo se registra la asistencia?</Text>
-
-          <Pressable
-            accessibilityRole="radio"
-            accessibilityState={{ selected: modalidad === 'manual' }}
-            disabled={guardando}
-            onPress={() => cambiarModalidad('manual')}
-            style={[styles.opcion, modalidad === 'manual' && styles.opcionActiva]}
-          >
-            <View style={styles.radio}>
-              {modalidad === 'manual' ? <View style={styles.radioCentro} /> : null}
-            </View>
-            <View style={styles.opcionTexto}>
-              <Text style={styles.tituloOpcion}>Manual</Text>
-              <Text style={styles.descOpcion}>
-                El responsable pasa lista como presente, ausente o justificada.
-              </Text>
-            </View>
-          </Pressable>
-
-          <Pressable
-            accessibilityRole="radio"
-            accessibilityState={{ selected: modalidad === 'qr' }}
-            disabled={guardando}
-            onPress={() => cambiarModalidad('qr')}
-            style={[styles.opcion, modalidad === 'qr' && styles.opcionActiva]}
-          >
-            <View style={styles.radio}>
-              {modalidad === 'qr' ? <View style={styles.radioCentro} /> : null}
-            </View>
-            <View style={styles.opcionTexto}>
-              <Text style={styles.tituloOpcion}>Por QR</Text>
-              <Text style={styles.descOpcion}>
-                Cada participante escanea un código temporal y el responsable puede corregir.
-              </Text>
-            </View>
-          </Pressable>
+          <SelectorSegmentado
+            accessibilityLabel="Cómo se registra la asistencia"
+            deshabilitado={guardando}
+            onChange={cambiarModalidad}
+            opciones={OPCIONES_MODALIDAD}
+            valor={modalidad}
+          />
         </View>
 
         <View style={styles.tarjeta}>
@@ -197,6 +202,22 @@ export default function ConfiguracionGrupoScreen() {
               value={controlHoras}
             />
           </View>
+        </View>
+
+        <View style={styles.tarjeta}>
+          <View style={styles.encabezadoOpcional}>
+            <Text style={styles.tituloBloque}>Modo de fotografías</Text>
+            <View style={styles.etiquetaProximamente}>
+              <Text style={styles.textoProximamente}>Próximamente</Text>
+            </View>
+          </View>
+          <SelectorSegmentado
+            accessibilityLabel="Modo de fotografías"
+            deshabilitado={guardando}
+            onChange={setModoFotos}
+            opciones={OPCIONES_MODO_FOTOS}
+            valor={modoFotos}
+          />
         </View>
 
         <View style={styles.tarjeta}>
@@ -228,14 +249,6 @@ export default function ConfiguracionGrupoScreen() {
             <View style={styles.opcionTexto}>
               <Text style={styles.tituloOpcion}>Notificaciones</Text>
               <Text style={styles.descOpcion}>Avisos de cambios en asistencia o revisiones.</Text>
-            </View>
-            <Switch disabled thumbColor={colores.superficie} trackColor={{ false: colores.borde, true: colores.acento }} value={false} />
-          </View>
-
-          <View style={[styles.filaSwitch, styles.filaSeparada]}>
-            <View style={styles.opcionTexto}>
-              <Text style={styles.tituloOpcion}>Permitir fotos</Text>
-              <Text style={styles.descOpcion}>Evidencia fotográfica opcional por jornada.</Text>
             </View>
             <Switch disabled thumbColor={colores.superficie} trackColor={{ false: colores.borde, true: colores.acento }} value={false} />
           </View>
@@ -348,34 +361,6 @@ const styles = StyleSheet.create({
     fontSize: tipografia.tituloSm,
     letterSpacing: interletrado.tituloSm,
     fontFamily: fuentes.fuerte,
-  },
-  opcion: {
-    alignItems: 'flex-start',
-    backgroundColor: colores.superficieAlt,
-    borderRadius: radios.campo,
-    flexDirection: 'row',
-    gap: espaciados.md,
-    padding: espaciados.md,
-  },
-  opcionActiva: {
-    backgroundColor: colores.acentoSuave,
-    borderColor: colores.acentoBorde,
-  },
-  radio: {
-    alignItems: 'center',
-    borderColor: colores.acento,
-    borderRadius: radios.pill,
-    borderWidth: 2,
-    height: 20,
-    justifyContent: 'center',
-    marginTop: 2,
-    width: 20,
-  },
-  radioCentro: {
-    backgroundColor: colores.acento,
-    borderRadius: radios.pill,
-    height: 10,
-    width: 10,
   },
   opcionTexto: {
     flex: 1,

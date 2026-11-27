@@ -2,6 +2,8 @@ export type RolGrupo = 'responsable' | 'participante';
 
 export type ModalidadAsistencia = 'manual' | 'qr';
 
+export type ModoFotos = 'no_permitidas' | 'opcionales' | 'obligatorias';
+
 export type EstadoJornada = 'en_curso' | 'programada' | 'finalizada' | 'cancelada';
 
 export type EstadoAsistencia = 'presente' | 'ausente' | 'justificada';
@@ -24,7 +26,7 @@ export interface Grupo {
   modalidad_asistencia: ModalidadAsistencia;
   control_horas: boolean;
   gps_habilitado: boolean;
-  fotos_habilitadas: boolean;
+  modo_fotos: ModoFotos;
   requiere_validacion: boolean;
   notificaciones_habilitadas: boolean;
   creado_por: string;
@@ -55,7 +57,7 @@ export interface Jornada {
   modalidad_asistencia: ModalidadAsistencia;
   control_horas: boolean;
   gps_habilitado: boolean;
-  fotos_habilitadas: boolean;
+  modo_fotos: ModoFotos;
   requiere_validacion: boolean;
   notificaciones_habilitadas: boolean;
   creado_por: string;

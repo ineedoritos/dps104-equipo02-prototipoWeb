@@ -17,7 +17,7 @@
     - Botón principal: **Pasar lista** → `SCREEN-09`.
   - Botón **Editar jornada** → `SCREEN-07` *(si no está cancelada)*.
   - Botón destructivo **Cancelar jornada** (con modal de confirmación) → marca `cancelada = true`, conserva registros excluyéndolos de totales y bloquea nuevos registros.
-- **[Media · `HU10`]** Bloque **Fotos de la jornada** (solo si `fotos_habilitadas = true`): galería con autor/fecha, botón `+` (cámara) y opción del responsable de retirar foto.
+- **[Media · `HU10`]** Bloque **Fotos de la jornada** (solo si `modo_fotos !== 'no_permitidas'`): galería con autor/fecha, botón `+` (cámara) y opción del responsable de retirar foto.
 
 ## Estados obligatorios (`RNF04`)
 - **Cargando:** skeleton del detalle + resumen.
