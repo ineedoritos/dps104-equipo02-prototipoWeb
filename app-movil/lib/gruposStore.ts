@@ -322,7 +322,7 @@ export function cambiarRolIntegrante(
   integranteId: string,
   nuevoRol: RolGrupo,
 ): void {
-  const actual = exigirResponsable(grupoId);
+  exigirResponsable(grupoId);
 
   const objetivo = integrantes.find(
     (i) => i.id === integranteId && i.grupo_id === grupoId && i.retirado_en === null,
@@ -330,13 +330,6 @@ export function cambiarRolIntegrante(
 
   if (!objetivo || objetivo.rol === nuevoRol) {
     return;
-  }
-
-  if (objetivo.usuario_id === actual.id) {
-    throw new ErrorDominio(
-      'ERR_NO_AUTORIZADO',
-      'No puedes cambiar tu propio rol en el grupo.',
-    );
   }
 
   if (objetivo.rol === 'responsable' && nuevoRol === 'participante') {
@@ -377,33 +370,6 @@ export function retirarIntegrante(grupoId: string, integranteId: string): void {
 
   // Si se retiró a sí mismo, no rompe la lista: la UI detecta pérdida de rol.
   void actual;
-  notificar();
-}
-
-export function transferirResponsableYSalir(grupoId: string, sucesorIntegranteId: string): void {
-  const actual = exigirResponsable(grupoId);
-
-  const sucesor = integrantes.find(
-    (i) => i.id === sucesorIntegranteId && i.grupo_id === grupoId && i.retirado_en === null,
-  );
-  if (!sucesor || sucesor.usuario_id === actual.id) {
-    throw new ErrorDominio(
-      'ERR_VALIDACION',
-      'Selecciona a otro integrante activo del grupo como nuevo responsable.',
-    );
-  }
-
-  const ahora = dayjs().toISOString();
-  integrantes = integrantes.map((i) => {
-    if (i.id === sucesorIntegranteId) {
-      return { ...i, rol: 'responsable' };
-    }
-    if (i.grupo_id === grupoId && i.usuario_id === actual.id && i.retirado_en === null) {
-      return { ...i, retirado_en: ahora };
-    }
-    return i;
-  });
-
   notificar();
 }
 
@@ -1056,11 +1022,11 @@ export function obtenerMisGruposParaHistorial(): Array<{ grupo: Grupo; retirado:
 
   const porGrupo = new Map<string, { grupo: Grupo; retirado: boolean }>();
   for (const membresia of integrantes) {
-    if (membresia.usuario_id !== sesionActual.id || membresia.rol !== 'participante') {
+    if (membresia.usuario_id !== sesionActual.id) {
       continue;
     }
     const grupo = grupos.find((g) => g.id === membresia.grupo_id);
-    if (!grupo || obtenerMiRolEnGrupo(grupo.id) === 'responsable') {
+    if (!grupo) {
       continue;
     }
     const previo = porGrupo.get(grupo.id);
@@ -1088,18 +1054,23 @@ export function obtenerMiHistorial(grupoId?: string): ResumenMiHistorial {
     };
   }
 
-  const retiradosPorGrupo = new Map(
-    obtenerMisGruposParaHistorial().map(({ grupo, retirado }) => [grupo.id, retirado]),
-  );
+  const misMembresias = integrantes.filter((i) => i.usuario_id === sesionActual?.id);
+  const retiradosPorGrupo = new Map<string, boolean>();
+  for (const m of misMembresias) {
+    const activo = m.retirado_en === null;
+    const previo = retiradosPorGrupo.get(m.grupo_id);
+    if (previo === undefined) {
+      retiradosPorGrupo.set(m.grupo_id, !activo);
+    } else if (activo) {
+      retiradosPorGrupo.set(m.grupo_id, false);
+    }
+  }
 
   const registros: RegistroHistorial[] = asistencias
     .filter((a) => a.participante_id === sesionActual?.id)
     .map((asistencia) => {
       const jornada = jornadas.find((j) => j.id === asistencia.jornada_id);
       if (!jornada) {
-        return null;
-      }
-      if (!retiradosPorGrupo.has(jornada.grupo_id)) {
         return null;
       }
       if (grupoId && jornada.grupo_id !== grupoId) {

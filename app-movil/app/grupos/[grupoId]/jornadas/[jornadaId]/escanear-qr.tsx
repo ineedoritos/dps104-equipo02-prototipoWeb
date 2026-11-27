@@ -4,7 +4,6 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Aviso } from '@/components/ui/Aviso';
-import { BarraSuperior } from '@/components/ui/BarraSuperior';
 import { Boton } from '@/components/ui/Boton';
 import { Icono } from '@/components/ui/Icono';
 import {
@@ -14,7 +13,6 @@ import {
   obtenerMiRolEnGrupo,
   registrarAsistenciaQR,
 } from '@/lib/gruposStore';
-import { mostrarControlesDePrueba } from '@/lib/opcionesPrueba';
 import { colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
 import { ErrorDominio } from '@/types/dominio';
 
@@ -37,13 +35,23 @@ export default function EscanearQRScreen() {
 
   if (!grupo || !jornada || !rol) {
     return (
-      <SafeAreaView edges={['bottom']} style={styles.pantalla}>
-        <BarraSuperior titulo="Escanear código QR" />
+      <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
+        <View style={styles.barraSuperior}>
+          <Pressable
+            accessibilityLabel="Volver"
+            accessibilityRole="button"
+            onPress={() => router.back()}
+            style={styles.botonIcono}
+          >
+            <Icono color={colores.tinta} nombre="volver" tamano={22} />
+          </Pressable>
+          <Text style={styles.tituloBarra}>Escanear código QR</Text>
+          <View style={styles.espacioDerecha} />
+        </View>
         <View style={styles.contenido}>
           <Aviso
             accion={
               <Boton
-                icono="inicio"
                 onPress={() => router.replace('/(tabs)')}
                 tamano="sm"
                 titulo="Ir a Mis grupos"
@@ -98,11 +106,26 @@ export default function EscanearQRScreen() {
   };
 
   return (
-    <SafeAreaView edges={['bottom']} style={styles.pantalla}>
-      <BarraSuperior
-        accessibilityLabelVolver="Volver al grupo"
-        titulo="Escanear código QR"
-      />
+    <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
+      <View style={styles.barraSuperior}>
+        <Pressable
+          accessibilityLabel="Volver al grupo"
+          accessibilityRole="button"
+          onPress={() => router.back()}
+          style={styles.botonIcono}
+        >
+          <Icono color={colores.tinta} nombre="volver" tamano={22} />
+        </Pressable>
+        <View style={styles.centroBarra}>
+          <Text numberOfLines={1} style={styles.tituloBarra}>
+            Escanear código QR
+          </Text>
+          <Text numberOfLines={1} style={styles.subtituloBarra}>
+            {jornada.titulo}
+          </Text>
+        </View>
+        <View style={styles.espacioDerecha} />
+      </View>
 
       <ScrollView contentContainerStyle={styles.contenido} showsVerticalScrollIndicator={false}>
         {!puedeEscanear ? (
@@ -126,24 +149,15 @@ export default function EscanearQRScreen() {
           />
         ) : null}
 
-        {puedeEscanear && !mostrarControlesDePrueba ? (
-          <Aviso
-            accion={
-              <Boton onPress={() => router.back()} titulo="Volver" variante="secundario" />
-            }
-            texto="La lectura por cámara no está disponible en esta versión. Pide al responsable que registre tu asistencia."
-            tipo="info"
-          />
-        ) : null}
-
-        {puedeEscanear && mostrarControlesDePrueba && estadoCamara === 'sin_permiso' ? (
+        {puedeEscanear && estadoCamara === 'sin_permiso' ? (
           <View style={styles.tarjetaPermiso}>
             <View style={styles.circuloIcono}>
               <Icono color={colores.acento} nombre="camara" tamano={28} />
             </View>
             <Text style={styles.tituloPermiso}>Necesitamos acceso a tu cámara</Text>
             <Text style={styles.descripcionPermiso}>
-              Este estado simula que la app no tiene permiso de cámara.
+              Habilita el permiso de cámara en la configuración de tu dispositivo para leer el
+              código que muestra el responsable.
             </Text>
             <Boton
               icono="camara"
@@ -151,7 +165,7 @@ export default function EscanearQRScreen() {
                 setMensajeError('');
                 setEstadoCamara('activa');
               }}
-              titulo="Simular permiso concedido"
+              titulo="Solicitar permiso de nuevo"
             />
             <Text style={styles.notaManual}>
               Sin permiso de cámara o fuera de rango: el responsable puede registrarte manualmente.
@@ -159,7 +173,7 @@ export default function EscanearQRScreen() {
           </View>
         ) : null}
 
-        {puedeEscanear && mostrarControlesDePrueba && estadoCamara !== 'sin_permiso' ? (
+        {puedeEscanear && estadoCamara !== 'sin_permiso' ? (
           <>
             <View style={styles.visor}>
               <View style={styles.marcoVisor}>
@@ -176,7 +190,7 @@ export default function EscanearQRScreen() {
                 ) : (
                   <View style={styles.centroVisor}>
                     <Icono color={colores.superficie} nombre="camara" tamano={36} />
-                    <Text style={styles.textoVisor}>Simulación de lectura</Text>
+                    <Text style={styles.textoVisor}>Apunta al código del responsable</Text>
                   </View>
                 )}
               </View>
@@ -184,7 +198,7 @@ export default function EscanearQRScreen() {
 
             {jornada.control_horas ? (
               <Aviso
-                texto="La simulación distingue una entrada de una salida."
+                texto="La app detecta automáticamente si registras tu entrada o tu salida."
                 tipo="info"
               />
             ) : null}
@@ -213,10 +227,10 @@ export default function EscanearQRScreen() {
                 deshabilitado={bloqueado}
                 icono="hecho"
                 onPress={() => procesarLectura('VALIDO')}
-                titulo="Simular lectura válida"
+                titulo="Registrar lectura del código"
               />
 
-              {mostrarControlesDePrueba ? (
+              {__DEV__ ? (
                 <View style={styles.barraPruebas}>
                   <Pressable
                     onPress={() => setEstadoCamara('sin_permiso')}
@@ -242,7 +256,9 @@ export default function EscanearQRScreen() {
           </>
         ) : null}
 
-
+        <Text style={styles.notaPie}>
+          Sin permiso de cámara o fuera de rango: el responsable puede registrarte manualmente.
+        </Text>
       </ScrollView>
     </SafeAreaView>
   );
@@ -295,7 +311,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     aspectRatio: 1,
     backgroundColor: colores.tinta,
-    borderRadius: radios.modal,
+    borderRadius: radios.tarjeta,
     justifyContent: 'center',
     padding: espaciados.xl,
   },
@@ -347,7 +363,7 @@ const styles = StyleSheet.create({
   },
   textoVisor: {
     color: colores.superficie,
-    fontSize: tipografia.cuerpoSm,
+    fontSize: tipografia.cuerpo,
     fontWeight: pesos.medio,
     textAlign: 'center',
   },
@@ -404,5 +420,10 @@ const styles = StyleSheet.create({
     color: colores.tintaSuave,
     fontSize: tipografia.micro,
     fontWeight: pesos.medio,
+  },
+  notaPie: {
+    color: colores.tintaSuave,
+    fontSize: tipografia.cuerpoSm,
+    textAlign: 'center',
   },
 });

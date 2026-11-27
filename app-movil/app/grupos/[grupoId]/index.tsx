@@ -11,15 +11,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { PestanasGrupo } from '@/components/grupos/PestanasGrupo';
 import { Aviso } from '@/components/ui/Aviso';
-import { BarraSuperior } from '@/components/ui/BarraSuperior';
 import { Boton } from '@/components/ui/Boton';
 import { Estado, type TonoEstado } from '@/components/ui/Estado';
 import { EstadoVacio } from '@/components/ui/EstadoVacio';
 import { Icono } from '@/components/ui/Icono';
 import { Seccion } from '@/components/ui/Seccion';
-import { fechaEnZona, formatearDia, horaEnZona } from '@/lib/fecha';
+import { formatearDia, horaEnZona } from '@/lib/fecha';
 import {
   agruparJornadas,
   derivarEstadoJornada,
@@ -28,7 +26,6 @@ import {
   obtenerMiRolEnGrupo,
   suscribirStore,
 } from '@/lib/gruposStore';
-import { mostrarControlesDePrueba } from '@/lib/opcionesPrueba';
 import { cifrasTabulares, colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
 import type { EstadoJornada, Grupo, Jornada, RolGrupo } from '@/types/dominio';
 
@@ -88,15 +85,25 @@ export default function GrupoDetalleScreen() {
 
   if (!grupo || !rol) {
     return (
-      <SafeAreaView edges={['bottom']} style={styles.pantalla}>
-        <BarraSuperior onVolver={() => router.replace('/(tabs)')} titulo="Grupo" />
+      <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
+        <View style={styles.barraSuperior}>
+          <Pressable
+            accessibilityLabel="Volver"
+            accessibilityRole="button"
+            onPress={() => router.replace('/(tabs)')}
+            style={styles.botonIcono}
+          >
+            <Icono color={colores.tinta} nombre="volver" tamano={22} />
+          </Pressable>
+          <Text style={styles.tituloBarra}>Grupo</Text>
+          <View style={styles.espacioDerecha} />
+        </View>
         <View style={styles.contenido}>
           <Aviso
             accion={
               <View style={styles.accionesErrorGrupo}>
                 {grupoId ? (
                   <Boton
-                    icono="reloj"
                     onPress={() =>
                       router.replace({
                         pathname: '/(tabs)/historial',
@@ -109,7 +116,6 @@ export default function GrupoDetalleScreen() {
                   />
                 ) : null}
                 <Boton
-                  icono="inicio"
                   onPress={() => router.replace('/(tabs)')}
                   tamano="sm"
                   titulo="Ir a Mis grupos"
@@ -133,10 +139,10 @@ export default function GrupoDetalleScreen() {
   const listaJornadas = estadoVista === 'vacio' ? [] : jornadas;
   const agrupadas = agruparJornadas(listaJornadas);
 
-  const renderTarjetaJornada = (jornada: Jornada, indice: number, lista: Jornada[]) => {
+  const renderTarjetaJornada = (jornada: Jornada) => {
     const estado = derivarEstadoJornada(jornada);
     const metaEstado = MAPA_ESTADO_JORNADA[estado];
-    const fechaTexto = formatearDia(fechaEnZona(jornada.inicio_en), {
+    const fechaTexto = formatearDia(jornada.inicio_en.slice(0, 10), {
       weekday: 'short',
       day: 'numeric',
       month: 'short',
@@ -148,93 +154,99 @@ export default function GrupoDetalleScreen() {
       !jornada.cancelada;
 
     return (
-      <View key={jornada.id} style={indice < lista.length - 1 ? styles.divisor : undefined}>
-        <Pressable
-          accessibilityRole="button"
-          onPress={() => {
-            if (esResponsable) {
-              router.push({
-                pathname: '/grupos/[grupoId]/jornadas/[jornadaId]',
-                params: { grupoId: grupo.id, jornadaId: jornada.id },
-              });
-            } else {
-              router.push({
-                pathname: '/grupos/[grupoId]/jornadas/[jornadaId]/mi-registro',
-                params: { grupoId: grupo.id, jornadaId: jornada.id },
-              });
-            }
-          }}
-          style={({ pressed }) => [
-            styles.detalleTocable,
-            pressed && styles.tarjetaPresionada,
-          ]}
-        >
-          <View style={styles.filaSuperior}>
-            <Text style={styles.tituloJornada}>{jornada.titulo}</Text>
-            <Icono color={colores.tintaSuave} nombre="avanzar" tamano={22} />
-          </View>
-
-          <View style={styles.filaMeta}>
-            <Icono color={colores.tintaSuave} nombre="reloj" tamano={15} />
-            <Text style={[styles.textoHorario, cifrasTabulares]}>
-              {fechaTexto} · {formatearHoraCorta(jornada.inicio_en)} – {formatearHoraCorta(jornada.fin_en)}
-            </Text>
-          </View>
-
+      <Pressable
+        key={jornada.id}
+        accessibilityRole="button"
+        onPress={() => {
+          if (esResponsable) {
+            router.push({
+              pathname: '/grupos/[grupoId]/jornadas/[jornadaId]',
+              params: { grupoId: grupo.id, jornadaId: jornada.id },
+            });
+          } else {
+            router.push({
+              pathname: '/grupos/[grupoId]/jornadas/[jornadaId]/mi-registro',
+              params: { grupoId: grupo.id, jornadaId: jornada.id },
+            });
+          }
+        }}
+        style={({ pressed }) => [
+          styles.tarjetaJornada,
+          esAhoraConQR && styles.tarjetaDestacada,
+          pressed && styles.tarjetaPresionada,
+        ]}
+      >
+        <View style={styles.filaSuperior}>
+          <Text style={styles.tituloJornada}>{jornada.titulo}</Text>
           <Estado etiqueta={metaEstado.etiqueta} tono={metaEstado.tono} />
+        </View>
 
-          {jornada.cancelada ? (
-            <Text style={styles.notaCancelada}>Sus registros no cuentan en los totales.</Text>
-          ) : null}
-        </Pressable>
+        <View style={styles.filaMeta}>
+          <Icono color={colores.tintaSuave} nombre="reloj" tamano={15} />
+          <Text style={[styles.textoHorario, cifrasTabulares]}>
+            {fechaTexto} · {formatearHoraCorta(jornada.inicio_en)} – {formatearHoraCorta(jornada.fin_en)}
+          </Text>
+        </View>
+
+        {jornada.cancelada ? (
+          <Text style={styles.notaCancelada}>Sus registros no cuentan en los totales.</Text>
+        ) : null}
 
         {esAhoraConQR ? (
           <View style={styles.pieDestacado}>
-            {mostrarControlesDePrueba ? (
-              <Boton
-                icono="qrScanner"
-                onPress={() =>
-                  router.push({
-                    pathname: '/grupos/[grupoId]/jornadas/[jornadaId]/escanear-qr',
-                    params: { grupoId: grupo.id, jornadaId: jornada.id },
-                  })
-                }
-                tamano="sm"
-                titulo="Escanear QR"
-              />
-            ) : (
-              <Text style={styles.resumenConfig}>Pide al responsable que registre tu asistencia.</Text>
-            )}
+            <Boton
+              icono="camara"
+              onPress={() =>
+                router.push({
+                  pathname: '/grupos/[grupoId]/jornadas/[jornadaId]/escanear-qr',
+                  params: { grupoId: grupo.id, jornadaId: jornada.id },
+                })
+              }
+              tamano="sm"
+              titulo="Escanear QR"
+            />
           </View>
         ) : null}
-      </View>
+      </Pressable>
     );
   };
 
   return (
-    <SafeAreaView edges={['bottom']} style={styles.pantalla}>
-      <BarraSuperior
-        accessibilityLabelVolver="Volver a Mis grupos"
-        derecha={
-          esResponsable ? (
-            <Pressable
-              accessibilityLabel="Configuración del grupo"
-              accessibilityRole="button"
-              onPress={() =>
-                router.push({
-                  pathname: '/grupos/[grupoId]/configuracion',
-                  params: { grupoId: grupo.id },
-                })
-              }
-              style={({ pressed }) => [styles.botonAjustes, pressed && styles.tarjetaPresionada]}
-            >
-              <Icono color={colores.tintaSuave} nombre="ajustes" tamano={24} />
-            </Pressable>
-          ) : undefined
-        }
-        titulo={grupo.nombre}
-      />
-      <PestanasGrupo actual="jornadas" esResponsable={esResponsable} grupoId={grupo.id} />
+    <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
+      <View style={styles.barraSuperior}>
+        <Pressable
+          accessibilityLabel="Volver a Mis grupos"
+          accessibilityRole="button"
+          onPress={() => router.back()}
+          style={styles.botonIcono}
+        >
+          <Icono color={colores.tinta} nombre="volver" tamano={22} />
+        </Pressable>
+
+        <View style={styles.centroBarra}>
+          <Text numberOfLines={1} style={styles.tituloBarra}>
+            {grupo.nombre}
+          </Text>
+        </View>
+
+        {esResponsable ? (
+          <Pressable
+            accessibilityLabel="Configuración del grupo"
+            accessibilityRole="button"
+            onPress={() =>
+              router.push({
+                pathname: '/grupos/[grupoId]/configuracion',
+                params: { grupoId: grupo.id },
+              })
+            }
+            style={styles.botonAjustes}
+          >
+            <Text style={styles.textoAjustes}>Ajustes</Text>
+          </Pressable>
+        ) : (
+          <View style={styles.espacioDerecha} />
+        )}
+      </View>
 
       <ScrollView
         contentContainerStyle={styles.contenido}
@@ -269,8 +281,57 @@ export default function GrupoDetalleScreen() {
           </View>
         </View>
 
+        {esResponsable ? (
+          <View style={styles.tabsInternas}>
+            <View style={[styles.tabInterna, styles.tabInternaActiva]}>
+              <Text style={[styles.textoTab, styles.textoTabActiva]}>Jornadas</Text>
+            </View>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() =>
+                router.push({
+                  pathname: '/grupos/[grupoId]/integrantes',
+                  params: { grupoId: grupo.id },
+                })
+              }
+              style={styles.tabInterna}
+            >
+              <Text style={styles.textoTab}>Integrantes</Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() =>
+                router.push({
+                  pathname: '/grupos/[grupoId]/reportes',
+                  params: { grupoId: grupo.id },
+                })
+              }
+              style={styles.tabInterna}
+            >
+              <Text style={styles.textoTab}>Reportes</Text>
+            </Pressable>
+          </View>
+        ) : (
+          <View style={styles.tabsInternas}>
+            <View style={[styles.tabInterna, styles.tabInternaActiva]}>
+              <Text style={[styles.textoTab, styles.textoTabActiva]}>Jornadas</Text>
+            </View>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() =>
+                router.push({
+                  pathname: '/(tabs)/historial',
+                  params: { grupoId: grupo.id },
+                })
+              }
+              style={styles.tabInterna}
+            >
+              <Text style={styles.textoTab}>Mi historial</Text>
+            </Pressable>
+          </View>
+        )}
 
-        {mostrarControlesDePrueba ? (
+        {__DEV__ ? (
           <View style={styles.barraEstados}>
             {(['normal', 'cargando', 'vacio', 'error'] as const).map((modo) => {
               const activo = estadoVista === modo;
@@ -336,19 +397,6 @@ export default function GrupoDetalleScreen() {
           />
         ) : null}
 
-        {esResponsable && estadoVista === 'normal' && listaJornadas.length > 0 ? (
-          <Boton
-            icono="nueva"
-            onPress={() =>
-              router.push({
-                pathname: '/grupos/[grupoId]/jornadas/crear',
-                params: { grupoId: grupo.id },
-              })
-            }
-            titulo="Nueva jornada"
-          />
-        ) : null}
-
         {estadoVista === 'normal' && listaJornadas.length > 0 ? (
           <View style={styles.gruposJornadas}>
             {agrupadas.hoy.length > 0 ? (
@@ -371,6 +419,18 @@ export default function GrupoDetalleScreen() {
           </View>
         ) : null}
 
+        {esResponsable && estadoVista === 'normal' && listaJornadas.length > 0 ? (
+          <Boton
+            icono="nueva"
+            onPress={() =>
+              router.push({
+                pathname: '/grupos/[grupoId]/jornadas/crear',
+                params: { grupoId: grupo.id },
+              })
+            }
+            titulo="Nueva jornada"
+          />
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   );
@@ -381,12 +441,46 @@ const styles = StyleSheet.create({
     backgroundColor: colores.papel,
     flex: 1,
   },
-  botonAjustes: {
+  barraSuperior: {
+    alignItems: 'center',
+    borderBottomColor: colores.borde,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: espaciados.md,
+    paddingVertical: espaciados.sm,
+  },
+  botonIcono: {
     alignItems: 'center',
     borderRadius: radios.pill,
-    height: 48,
+    height: 40,
     justifyContent: 'center',
-    width: 48,
+    width: 40,
+  },
+  centroBarra: {
+    alignItems: 'center',
+    flex: 1,
+    paddingHorizontal: espaciados.sm,
+  },
+  tituloBarra: {
+    color: colores.tinta,
+    fontSize: tipografia.tituloSm,
+    fontWeight: pesos.fuerte,
+  },
+  botonAjustes: {
+    borderColor: colores.bordeFuerte,
+    borderRadius: radios.pill,
+    borderWidth: 1,
+    paddingHorizontal: espaciados.md,
+    paddingVertical: espaciados.xs,
+  },
+  textoAjustes: {
+    color: colores.tinta,
+    fontSize: tipografia.micro,
+    fontWeight: pesos.fuerte,
+  },
+  espacioDerecha: {
+    width: 40,
   },
   contenido: {
     gap: espaciados.lg,
@@ -427,6 +521,34 @@ const styles = StyleSheet.create({
     color: colores.tintaSuave,
     fontSize: tipografia.cuerpoSm,
   },
+  tabsInternas: {
+    backgroundColor: colores.superficieAlt,
+    borderColor: colores.borde,
+    borderRadius: radios.campo,
+    borderWidth: 1,
+    flexDirection: 'row',
+    padding: 3,
+  },
+  tabInterna: {
+    alignItems: 'center',
+    borderRadius: radios.sm,
+    flex: 1,
+    paddingVertical: espaciados.sm,
+  },
+  tabInternaActiva: {
+    backgroundColor: colores.superficie,
+    borderColor: colores.borde,
+    borderWidth: 1,
+  },
+  textoTab: {
+    color: colores.tintaSuave,
+    fontSize: tipografia.cuerpoSm,
+    fontWeight: pesos.medio,
+  },
+  textoTabActiva: {
+    color: colores.tinta,
+    fontWeight: pesos.fuerte,
+  },
   barraEstados: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -466,21 +588,15 @@ const styles = StyleSheet.create({
     gap: espaciados.lg,
   },
   lista: {
+    gap: espaciados.md,
+  },
+  tarjetaJornada: {
     backgroundColor: colores.superficie,
     borderColor: colores.borde,
     borderRadius: radios.tarjeta,
     borderWidth: 1,
-    overflow: 'hidden',
-  },
-  divisor: {
-    borderBottomColor: colores.borde,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  detalleTocable: {
     gap: espaciados.sm,
-    minHeight: 72,
-    paddingHorizontal: espaciados.lg,
-    paddingVertical: espaciados.md,
+    padding: espaciados.lg,
   },
   tarjetaPresionada: {
     backgroundColor: colores.superficieAlt,
@@ -504,15 +620,18 @@ const styles = StyleSheet.create({
   },
   textoHorario: {
     color: colores.tintaSuave,
-    flex: 1,
     fontSize: tipografia.cuerpoSm,
   },
   notaCancelada: {
     color: colores.ausente,
     fontSize: tipografia.micro,
   },
+  tarjetaDestacada: {
+    borderColor: colores.acentoBorde,
+    borderWidth: 1.5,
+  },
   pieDestacado: {
-    paddingBottom: espaciados.md,
+    marginTop: espaciados.xs,
   },
   accionesErrorGrupo: {
     flexDirection: 'row',

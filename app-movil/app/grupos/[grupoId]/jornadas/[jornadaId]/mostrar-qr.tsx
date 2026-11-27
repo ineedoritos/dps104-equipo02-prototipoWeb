@@ -11,8 +11,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Aviso } from '@/components/ui/Aviso';
-import { BarraSuperior } from '@/components/ui/BarraSuperior';
 import { Boton } from '@/components/ui/Boton';
+import { Icono } from '@/components/ui/Icono';
 import { MatrizQR } from '@/components/ui/MatrizQR';
 import {
   derivarEstadoJornada,
@@ -24,7 +24,6 @@ import {
   obtenerResumenAsistenciaJornada,
   suscribirStore,
 } from '@/lib/gruposStore';
-import { mostrarControlesDePrueba } from '@/lib/opcionesPrueba';
 import { cifrasTabulares, colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
 import { ErrorDominio, type CodigoQR } from '@/types/dominio';
 
@@ -81,7 +80,6 @@ export default function MostrarQRScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      if (!mostrarControlesDePrueba) return;
       if (jornadaId && !obtenerCodigoQRVigente(jornadaId)) {
         try {
           generarCodigoQR(jornadaId, 15);
@@ -95,7 +93,7 @@ export default function MostrarQRScreen() {
   );
 
   useEffect(() => {
-    if (!mostrarControlesDePrueba || !codigoQR) {
+    if (!codigoQR) {
       return;
     }
     const actualizar = () => {
@@ -109,13 +107,23 @@ export default function MostrarQRScreen() {
 
   if (!grupo || !jornada || rol !== 'responsable') {
     return (
-      <SafeAreaView edges={['bottom']} style={styles.pantalla}>
-        <BarraSuperior titulo="Código de asistencia" />
+      <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
+        <View style={styles.barraSuperior}>
+          <Pressable
+            accessibilityLabel="Volver"
+            accessibilityRole="button"
+            onPress={() => router.back()}
+            style={styles.botonIcono}
+          >
+            <Icono color={colores.tinta} nombre="volver" tamano={22} />
+          </Pressable>
+          <Text style={styles.tituloBarra}>Código de asistencia</Text>
+          <View style={styles.espacioDerecha} />
+        </View>
         <View style={styles.contenido}>
           <Aviso
             accion={
               <Boton
-                icono="inicio"
                 onPress={() => router.replace('/(tabs)')}
                 tamano="sm"
                 titulo="Ir a Mis grupos"
@@ -149,14 +157,24 @@ export default function MostrarQRScreen() {
   };
 
   return (
-    <SafeAreaView edges={['bottom']} style={styles.pantalla}>
-      <BarraSuperior
-        accessibilityLabelVolver="Volver al detalle de jornada"
-        titulo="Código de asistencia"
-      />
+    <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
+      <View style={styles.barraSuperior}>
+        <Pressable
+          accessibilityLabel="Volver al detalle de jornada"
+          accessibilityRole="button"
+          onPress={() => router.back()}
+          style={styles.botonIcono}
+        >
+          <Icono color={colores.tinta} nombre="volver" tamano={22} />
+        </Pressable>
+        <Text numberOfLines={1} style={styles.tituloBarra}>
+          Código de asistencia
+        </Text>
+        <View style={styles.espacioDerecha} />
+      </View>
 
       <ScrollView contentContainerStyle={styles.contenido} showsVerticalScrollIndicator={false}>
-        {mostrarControlesDePrueba ? (
+        {__DEV__ ? (
           <View style={styles.barraEstados}>
             {(['normal', 'cargando', 'error'] as const).map((modo) => {
               const activo = estadoVista === modo;
@@ -200,14 +218,7 @@ export default function MostrarQRScreen() {
           />
         ) : null}
 
-        {estadoVista === 'normal' && !mostrarControlesDePrueba ? (
-          <Aviso
-            texto="La lectura por cámara no está disponible en esta versión. Registra la asistencia desde la lista de la jornada."
-            tipo="info"
-          />
-        ) : null}
-
-        {estadoVista === 'normal' && mostrarControlesDePrueba ? (
+        {estadoVista === 'normal' ? (
           <>
             <View style={styles.cabecera}>
               <Text style={styles.tituloJornada}>{jornada.titulo}</Text>
@@ -235,7 +246,6 @@ export default function MostrarQRScreen() {
                     <Pressable
                       key={min}
                       accessibilityRole="button"
-                      accessibilityState={{ selected: activo }}
                       onPress={() => setCaducidad(min)}
                       style={[styles.chipCaducidad, activo && styles.chipCaducidadActivo]}
                     >
@@ -276,7 +286,7 @@ export default function MostrarQRScreen() {
               <Text style={[styles.contadorTexto, cifrasTabulares]}>
                 Han escaneado {resumen.presentes} de {resumen.totalParticipantes} participantes
               </Text>
-              <Pressable accessibilityRole="button" onPress={sincronizar} style={styles.accionRefrescar}>
+              <Pressable accessibilityRole="button" onPress={sincronizar}>
                 <Text style={styles.textoRefrescar}>Actualizar</Text>
               </Pressable>
             </View>
@@ -397,8 +407,6 @@ const styles = StyleSheet.create({
     borderRadius: radios.pill,
     borderWidth: 1,
     flex: 1,
-    justifyContent: 'center',
-    minHeight: 48,
     paddingVertical: espaciados.sm,
   },
   chipCaducidadActivo: {
@@ -416,12 +424,7 @@ const styles = StyleSheet.create({
   },
   panelQR: {
     alignItems: 'center',
-    backgroundColor: colores.superficie,
-    borderColor: colores.borde,
-    borderRadius: radios.tarjeta,
-    borderWidth: 1,
     gap: espaciados.md,
-    padding: espaciados.md,
   },
   temporizador: {
     color: colores.tintaSuave,
@@ -440,7 +443,6 @@ const styles = StyleSheet.create({
     borderRadius: radios.tarjeta,
     borderWidth: 1,
     flexDirection: 'row',
-    gap: espaciados.md,
     justifyContent: 'space-between',
     padding: espaciados.lg,
   },
@@ -449,10 +451,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: tipografia.cuerpoSm,
     fontWeight: pesos.fuerte,
-  },
-  accionRefrescar: {
-    justifyContent: 'center',
-    minHeight: 48,
   },
   textoRefrescar: {
     color: colores.acento,

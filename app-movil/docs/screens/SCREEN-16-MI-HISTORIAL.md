@@ -7,7 +7,7 @@
 - **Tablas:** `asistencias`, `jornadas`, `grupos`
 
 ## Contenido y acciones
-- Filtro superior por grupo (*Todos* o un grupo específico). Incluye grupos de participación activa y aquellos de los que la persona salió o fue retirada como participante. Excluye los grupos donde actualmente es responsable.
+- Filtro superior por grupo (*Todos* o un grupo específico, **incluyendo grupos de los que fue retirado**).
 - Tarjetas de resumen del filtro seleccionado:
   - **Asistencia:** tasa en `%` + desglose (`presentes`, `justificadas`, `ausentes`).
   - **Horas** *(visible únicamente si aplica control de horas)*: separa **Horas registradas**, **Horas reconocidas** y **Horas pendientes** *(cuando exista validación)*.

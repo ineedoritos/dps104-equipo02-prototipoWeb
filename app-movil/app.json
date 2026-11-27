@@ -7,19 +7,13 @@
     "icon": "./assets/images/icon.png",
     "scheme": "registroactividades",
     "userInterfaceStyle": "light",
-    "backgroundColor": "#F7F7F5",
-    "androidStatusBar": {
-      "backgroundColor": "#F7F7F5",
-      "barStyle": "dark-content"
-    },
     "ios": {
       "icon": "./assets/expo.icon"
     },
     "android": {
       "package": "sv.udb.registroactividades",
-      "softwareKeyboardLayoutMode": "resize",
       "adaptiveIcon": {
-        "backgroundColor": "#FFFFFF",
+        "backgroundColor": "#F7F4EE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
@@ -35,7 +29,9 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#F7F7F5"
+          "backgroundColor": "#F7F4EE",
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 76
         }
       ]
     ],

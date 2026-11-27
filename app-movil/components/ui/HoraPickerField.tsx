@@ -1,11 +1,10 @@
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import dayjs from 'dayjs';
 import { useState } from 'react';
 import { Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Boton } from '@/components/ui/Boton';
 import { Icono } from '@/components/ui/Icono';
-import { alturaInteriorCampo, estilosCampo } from '@/components/ui/estilosCampo';
 import { cifrasTabulares, colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
 
 interface HoraPickerFieldProps {
@@ -42,24 +41,25 @@ export function HoraPickerField({
 
   const fechaActual = parsearHoraADate(value);
 
-  const manejarCambio = (fechaSeleccionada: Date) => {
+  const manejarCambio = (evento: DateTimePickerEvent, fechaSeleccionada?: Date) => {
     if (Platform.OS === 'android') {
       setAbierto(false);
     }
 
-    onChange(dayjs(fechaSeleccionada).format('HH:mm'));
+    if (evento.type === 'set' && fechaSeleccionada) {
+      onChange(dayjs(fechaSeleccionada).format('HH:mm'));
+    }
   };
 
   return (
-    <View style={estilosCampo.contenedor}>
-      <Text style={estilosCampo.etiqueta}>{label}</Text>
+    <View style={styles.contenedor}>
+      <Text style={styles.etiqueta}>{label}</Text>
 
       <View
         style={[
-          estilosCampo.marco,
-          abierto && estilosCampo.enfocado,
-          error ? estilosCampo.conError : null,
-          deshabilitado ? estilosCampo.deshabilitado : null,
+          styles.campoContenedor,
+          error ? styles.campoConError : null,
+          deshabilitado ? styles.campoDeshabilitado : null,
         ]}
       >
         <Pressable
@@ -80,15 +80,14 @@ export function HoraPickerField({
         </Pressable>
       </View>
 
-      {error ? <Text accessibilityLiveRegion="polite" style={estilosCampo.textoError}>{error}</Text> : null}
+      {error ? <Text style={styles.textoError}>{error}</Text> : null}
 
       {abierto && Platform.OS === 'android' ? (
         <DateTimePicker
           display="default"
           is24Hour
           mode="time"
-          onDismiss={() => setAbierto(false)}
-          onValueChange={(_, fechaSeleccionada) => manejarCambio(fechaSeleccionada)}
+          onChange={manejarCambio}
           value={fechaActual}
         />
       ) : null}
@@ -107,7 +106,7 @@ export function HoraPickerField({
                 display="spinner"
                 is24Hour
                 mode="time"
-                onValueChange={(_, fechaSeleccionada) => manejarCambio(fechaSeleccionada)}
+                onChange={manejarCambio}
                 value={fechaActual}
               />
               <Boton onPress={() => setAbierto(false)} titulo="Listo" />
@@ -120,19 +119,40 @@ export function HoraPickerField({
 }
 
 const styles = StyleSheet.create({
+  contenedor: {
+    gap: espaciados.xs,
+  },
+  etiqueta: {
+    color: colores.tintaSuave,
+    fontSize: tipografia.micro,
+    fontWeight: pesos.fuerte,
+    letterSpacing: 0.2,
+  },
+  campoContenedor: {
+    alignItems: 'center',
+    backgroundColor: colores.superficie,
+    borderColor: colores.borde,
+    borderRadius: radios.campo,
+    borderWidth: 1,
+    flexDirection: 'row',
+    minHeight: 48,
+  },
+  campoConError: {
+    borderColor: colores.ausente,
+  },
+  campoDeshabilitado: {
+    opacity: 0.6,
+  },
   campo: {
     alignItems: 'center',
     flex: 1,
-    minWidth: 0,
-    borderRadius: radios.campo,
     flexDirection: 'row',
     gap: espaciados.sm,
-    minHeight: alturaInteriorCampo,
-    paddingVertical: espaciados.sm,
+    minHeight: 46,
     paddingHorizontal: espaciados.md,
   },
   campoPresionado: {
-    backgroundColor: colores.acentoSuave,
+    opacity: 0.75,
   },
   campoTexto: {
     ...cifrasTabulares,
@@ -141,7 +161,12 @@ const styles = StyleSheet.create({
     fontSize: tipografia.cuerpo,
   },
   placeholder: {
-    color: colores.tintaSuave,
+    color: colores.tintaTenue,
+  },
+  textoError: {
+    color: colores.ausente,
+    fontSize: tipografia.micro,
+    lineHeight: 15,
   },
   overlay: {
     alignItems: 'center',
@@ -153,11 +178,10 @@ const styles = StyleSheet.create({
   modalTarjeta: {
     backgroundColor: colores.superficie,
     borderColor: colores.borde,
-    borderRadius: radios.modal,
+    borderRadius: radios.tarjeta,
     borderWidth: 1,
     gap: espaciados.md,
     padding: espaciados.lg,
-    maxWidth: 400,
     width: '100%',
   },
   tituloModal: {
