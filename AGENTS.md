@@ -8,6 +8,8 @@ Antes de trabajar en un modulo, lee su `AGENTS.md`:
 - `app-web/` (portal de reporteria): [`app-web/AGENTS.md`](app-web/AGENTS.md)
 - `prototipo-web/`: prototipo web.
 
+Sistema de diseno (movil y web): [`DESIGN.md`](DESIGN.md) con **Forma**, exportado del design system de claude.ai. Los tokens exactos estan en `design/forma.tokens.json`. Si Forma cambia en claude.ai, se vuelven a exportar los dos archivos en el mismo PR.
+
 ## 2. Merge y Human in the loop
 - **Ningun agente de IA hace merge a `main`**, activa auto-merge, hace push directo a `main` ni aprueba PRs.
 - Todo PR requiere **prueba Human in the loop**: una persona lo prueba o revisa, completa esa seccion de la plantilla del PR, lo aprueba y hace el merge. Los agentes no completan esa seccion.

@@ -1,0 +1,441 @@
+{
+  "name": "Forma",
+  "version": 1,
+  "color": {
+    "themes": [
+      {
+        "id": "light",
+        "name": "Claro"
+      },
+      {
+        "id": "dark",
+        "name": "Oscuro"
+      }
+    ],
+    "tokens": [
+      {
+        "name": "paper",
+        "value": {
+          "light": "#ffffff",
+          "dark": "#1b1d1f"
+        },
+        "usage": "Superficie principal: tarjetas, modales, hojas y fondo de pantalla. Texto `ink` y `muted` sobre ella."
+      },
+      {
+        "name": "canvas",
+        "value": {
+          "light": "#f4f5f5",
+          "dark": "#121415"
+        },
+        "usage": "Fondo detrás de las superficies `paper` y reposo de filas seleccionables. Texto `ink` y `muted` sobre él."
+      },
+      {
+        "name": "line",
+        "value": {
+          "light": "#e7e9e9",
+          "dark": "#2b2f32"
+        },
+        "usage": "Divisores decorativos entre filas. No comunica estado: para bordes de controles usá `line-strong`."
+      },
+      {
+        "name": "line-strong",
+        "value": {
+          "light": "#858d93",
+          "dark": "#7c868c"
+        },
+        "usage": "Borde de controles que comunican estado (casilla sin marcar, pista de interruptor apagado). 3:1 sobre `paper` y `canvas` en ambos temas."
+      },
+      {
+        "name": "fill",
+        "value": {
+          "light": "#eff1f1",
+          "dark": "#2a2e31"
+        },
+        "usage": "Relleno de botones secundarios, campos y segmentos sobre `paper`."
+      },
+      {
+        "name": "fill-hover",
+        "value": {
+          "light": "#e5e8e8",
+          "dark": "#353a3e"
+        },
+        "usage": "Estado hover de `fill`."
+      },
+      {
+        "name": "ink",
+        "value": {
+          "light": "#17191b",
+          "dark": "#f1f3f3"
+        },
+        "usage": "Texto principal y títulos sobre `paper`, `canvas` y los tintes de acento."
+      },
+      {
+        "name": "muted",
+        "value": {
+          "light": "#60686e",
+          "dark": "#b0b9be"
+        },
+        "usage": "Texto secundario, subtítulos y leyendas sobre `paper`, `canvas`, `fill` y los cinco tintes (4.5:1 o más en ambos temas)."
+      },
+      {
+        "name": "action",
+        "value": {
+          "light": "#17191b",
+          "dark": "#f1f3f3"
+        },
+        "usage": "Relleno del botón primario, interruptor encendido y casilla marcada. Texto encima: `on-action`."
+      },
+      {
+        "name": "action-hover",
+        "value": {
+          "light": "#33383c",
+          "dark": "#d6dadb"
+        },
+        "usage": "Estado hover de `action`."
+      },
+      {
+        "name": "on-action",
+        "value": {
+          "light": "#ffffff",
+          "dark": "#17191b"
+        },
+        "usage": "Texto e iconos sobre `action`."
+      },
+      {
+        "name": "focus",
+        "value": {
+          "light": "#377ab8",
+          "dark": "#8cc0ee"
+        },
+        "usage": "Anillo de foco de 2 px, siempre sólido. 3:1 o más sobre `paper`, `canvas` y los tintes."
+      },
+      {
+        "name": "scrim",
+        "value": {
+          "light": "#202a3250",
+          "dark": "#00000099"
+        },
+        "usage": "Velo detrás de modales y hojas."
+      },
+      {
+        "name": "blue",
+        "value": {
+          "light": "#e1edf9",
+          "dark": "#26394b"
+        },
+        "usage": "Tinte hielo: información, progreso de horas y casilla seleccionada. Texto `ink`/`muted` encima."
+      },
+      {
+        "name": "mint",
+        "value": {
+          "light": "#e0eee6",
+          "dark": "#24372d"
+        },
+        "usage": "Tinte menta: éxito, actividades completadas y estado activo."
+      },
+      {
+        "name": "peach",
+        "value": {
+          "light": "#f9eedc",
+          "dark": "#3d3322"
+        },
+        "usage": "Tinte arena: pendiente de revisión y evidencias."
+      },
+      {
+        "name": "lilac",
+        "value": {
+          "light": "#ebe6f6",
+          "dark": "#342e47"
+        },
+        "usage": "Tinte lila: logros, fechas de eventos y actividades cerradas."
+      },
+      {
+        "name": "rose",
+        "value": {
+          "light": "#f7e5e9",
+          "dark": "#432c34"
+        },
+        "usage": "Tinte rosa: atención requerida y errores de selección."
+      },
+      {
+        "name": "blue-ink",
+        "value": {
+          "light": "#1f6aa3",
+          "dark": "#86bdea"
+        },
+        "usage": "Icono y texto de acento sobre `blue` (4.5:1) y sobre `paper`."
+      },
+      {
+        "name": "mint-ink",
+        "value": {
+          "light": "#28704b",
+          "dark": "#7fd0a4"
+        },
+        "usage": "Texto de acento sobre `mint`; deltas positivos sobre `paper`."
+      },
+      {
+        "name": "peach-ink",
+        "value": {
+          "light": "#86601b",
+          "dark": "#e2b565"
+        },
+        "usage": "Icono y texto de acento sobre `peach`."
+      },
+      {
+        "name": "lilac-ink",
+        "value": {
+          "light": "#7657a8",
+          "dark": "#b9a1e6"
+        },
+        "usage": "Icono y texto de acento sobre `lilac`."
+      },
+      {
+        "name": "rose-ink",
+        "value": {
+          "light": "#9a4658",
+          "dark": "#e69aab"
+        },
+        "usage": "Icono, borde y texto de acento sobre `rose`; mensajes de error."
+      }
+    ]
+  },
+  "type": {
+    "fonts": [],
+    "families": {
+      "sans": "\"Instrument Sans\", -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "mono": "ui-monospace, SFMono-Regular, Consolas, monospace"
+    },
+    "groups": [
+      {
+        "name": "Títulos",
+        "family": "sans",
+        "styles": [
+          {
+            "name": "display",
+            "fontSize": "56px",
+            "lineHeight": "58px",
+            "fontWeight": 500,
+            "letterSpacing": "-0.065em",
+            "sample": "Cada día cuenta.",
+            "usage": "Solo portadas y estados de bienvenida."
+          },
+          {
+            "name": "title",
+            "fontSize": "32px",
+            "lineHeight": "36px",
+            "fontWeight": 500,
+            "letterSpacing": "-0.05em",
+            "sample": "Tu actividad",
+            "usage": "Título de pantalla."
+          },
+          {
+            "name": "heading",
+            "fontSize": "26px",
+            "lineHeight": "30px",
+            "fontWeight": 600,
+            "letterSpacing": "-0.045em",
+            "sample": "Registrar asistencia",
+            "usage": "Título de modal y de sección."
+          },
+          {
+            "name": "subheading",
+            "fontSize": "17px",
+            "lineHeight": "22px",
+            "fontWeight": 600,
+            "letterSpacing": "-0.025em",
+            "sample": "Lo que viene",
+            "usage": "Encabezado de grupo dentro de una pantalla."
+          }
+        ]
+      },
+      {
+        "name": "Datos",
+        "family": "sans",
+        "styles": [
+          {
+            "name": "metric",
+            "fontSize": "40px",
+            "lineHeight": "40px",
+            "fontWeight": 600,
+            "letterSpacing": "-0.055em",
+            "sample": "92%",
+            "usage": "Cifra principal de un indicador."
+          },
+          {
+            "name": "metric-sm",
+            "fontSize": "19px",
+            "lineHeight": "22px",
+            "fontWeight": 600,
+            "letterSpacing": "-0.05em",
+            "sample": "48 h",
+            "usage": "Valor dentro de un indicador integrado."
+          }
+        ]
+      },
+      {
+        "name": "Texto",
+        "family": "sans",
+        "styles": [
+          {
+            "name": "body",
+            "fontSize": "16px",
+            "lineHeight": "24px",
+            "fontWeight": 400,
+            "sample": "El progreso se construye con pequeños pasos.",
+            "usage": "Texto corrido."
+          },
+          {
+            "name": "body-sm",
+            "fontSize": "14px",
+            "lineHeight": "20px",
+            "fontWeight": 400,
+            "sample": "Confirmá tu participación en la jornada.",
+            "usage": "Descripciones de modal y notice."
+          },
+          {
+            "name": "label",
+            "fontSize": "14px",
+            "lineHeight": "18px",
+            "fontWeight": 600,
+            "sample": "Registrar asistencia",
+            "usage": "Botones y títulos de fila."
+          },
+          {
+            "name": "caption",
+            "fontSize": "13px",
+            "lineHeight": "18px",
+            "fontWeight": 400,
+            "sample": "Actualizado hace 5 minutos",
+            "usage": "Leyendas, notas y subtítulos de fila."
+          },
+          {
+            "name": "eyebrow",
+            "fontSize": "11px",
+            "lineHeight": "14px",
+            "fontWeight": 600,
+            "letterSpacing": "0.12em",
+            "sample": "DESIGN SYSTEM",
+            "usage": "Sobretítulo en mayúsculas; usarlo con moderación."
+          }
+        ]
+      }
+    ]
+  },
+  "spacing": {
+    "tokens": [
+      {
+        "name": "space-4",
+        "value": "4px",
+        "usage": "Separación mínima entre icono y texto pequeño."
+      },
+      {
+        "name": "space-8",
+        "value": "8px",
+        "usage": "Separación entre filas apiladas y entre botones."
+      },
+      {
+        "name": "space-12",
+        "value": "12px",
+        "usage": "Padding interno de filas y separación icono-texto."
+      },
+      {
+        "name": "space-16",
+        "value": "16px",
+        "usage": "Separación entre bloques relacionados."
+      },
+      {
+        "name": "space-20",
+        "value": "20px",
+        "usage": "Padding de superficies tonales (notice)."
+      },
+      {
+        "name": "space-24",
+        "value": "24px",
+        "usage": "Padding de modales y separación entre grupos."
+      },
+      {
+        "name": "space-32",
+        "value": "32px",
+        "usage": "Separación entre secciones de pantalla."
+      },
+      {
+        "name": "space-40",
+        "value": "40px",
+        "usage": "Aire en estados vacíos y portadas."
+      }
+    ]
+  },
+  "radius": {
+    "tokens": [
+      {
+        "name": "radius-sm",
+        "value": "10px",
+        "usage": "Controles pequeños e indicadores de casilla."
+      },
+      {
+        "name": "radius-field",
+        "value": "17px",
+        "usage": "Campos de texto."
+      },
+      {
+        "name": "radius-md",
+        "value": "16px",
+        "usage": "Contenedores internos con inset de 12 px dentro de superficies de 28 px (28 = 16 + 12) y opciones dentro de un panel de 24 px con inset de 8 (24 = 16 + 8)."
+      },
+      {
+        "name": "radius-lg",
+        "value": "24px",
+        "usage": "Filas, contenedores internos y tarjetas de lista."
+      },
+      {
+        "name": "radius-surface",
+        "value": "28px",
+        "usage": "Superficies tonales (notice) y tarjetas de pantalla."
+      },
+      {
+        "name": "radius-modal",
+        "value": "32px",
+        "usage": "Modales y hojas. Concéntrico: 32 = 24 (contenido) + 8 (inset)."
+      },
+      {
+        "name": "radius-pill",
+        "value": "999px",
+        "usage": "Botones, segmentos, indicadores, pills y círculos."
+      }
+    ]
+  },
+  "size": {
+    "tokens": [
+      {
+        "name": "size-control",
+        "value": "48px",
+        "usage": "Altura de botones y campos."
+      },
+      {
+        "name": "size-target",
+        "value": "44px",
+        "usage": "Área táctil mínima de botones redondos e iconos interactivos."
+      },
+      {
+        "name": "size-row",
+        "value": "64px",
+        "usage": "Altura mínima de una fila seleccionable (Choice)."
+      },
+      {
+        "name": "size-indicator",
+        "value": "26px",
+        "usage": "Lado del indicador de casilla o radio dentro de una fila."
+      }
+    ]
+  },
+  "shadow": {
+    "note": "Forma no usa sombras: la profundidad vive en el contraste tonal entre superficies.",
+    "tokens": [
+      {
+        "name": "shadow-none",
+        "value": "none",
+        "usage": "Valor por defecto de todas las superficies. No agregar sombras a tarjetas, modales ni botones."
+      }
+    ]
+  }
+}
