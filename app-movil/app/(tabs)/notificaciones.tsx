@@ -17,7 +17,12 @@ import { EstadoVacio } from '@/components/ui/EstadoVacio';
 import { HojaAcciones } from '@/components/ui/HojaAcciones';
 import { Icono, type NombreIcono } from '@/components/ui/Icono';
 import { formatearFechaRelativa } from '@/lib/fecha';
-import { obtenerJornadaPorId, obtenerSesionActual, suscribirStore } from '@/lib/gruposStore';
+import {
+  obtenerJornadaPorId,
+  obtenerMiRolEnGrupo,
+  obtenerSesionActual,
+  suscribirStore,
+} from '@/lib/gruposStore';
 import {
   contarNoLeidas,
   establecerPermisoPushSimulado,
@@ -158,8 +163,11 @@ export default function NotificacionesScreen() {
     }
 
     if (item.tipo_evento === 'solicitud_revision') {
+      const esResponsable = obtenerMiRolEnGrupo(jornada.grupo_id) === 'responsable';
       router.push({
-        pathname: '/grupos/[grupoId]/jornadas/[jornadaId]',
+        pathname: esResponsable
+          ? '/grupos/[grupoId]/jornadas/[jornadaId]/revisiones'
+          : '/grupos/[grupoId]/jornadas/[jornadaId]',
         params: { grupoId: jornada.grupo_id, jornadaId: jornada.id },
       });
       return;

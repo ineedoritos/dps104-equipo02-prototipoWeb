@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { colores, espaciados, fuentes, radios, tipografia } from '@/lib/tema';
+import { colores, espaciados, forma, fuentes, radios, tipografia } from '@/lib/tema';
 import type { EstadoActividad, EstadoAsistencia } from '@/types/actividad';
 
 export type TonoEstado =
@@ -11,7 +11,10 @@ export type TonoEstado =
   | 'enCurso'
   | 'programada'
   | 'completada'
-  | 'cancelada';
+  | 'cancelada'
+  | 'pendiente'
+  | 'resuelta'
+  | 'rechazada';
 
 type ConfiguracionEstado = {
   fondo: string;
@@ -36,6 +39,9 @@ const CONFIGURACION: Record<TonoEstado, ConfiguracionEstado> = {
   programada: { fondo: colores.programadaSuave, texto: colores.programada, etiqueta: 'Programada' },
   completada: { fondo: colores.completadaSuave, texto: colores.completada, etiqueta: 'Finalizada' },
   cancelada: { fondo: colores.canceladaSuave, texto: colores.cancelada, etiqueta: 'Cancelada' },
+  pendiente: { fondo: forma.peach, texto: forma.peachInk, etiqueta: 'Pendiente' },
+  resuelta: { fondo: forma.mint, texto: forma.mintInk, etiqueta: 'Resuelta' },
+  rechazada: { fondo: forma.rose, texto: forma.roseInk, etiqueta: 'Rechazada' },
 };
 
 /** Semántica única del estado de una jornada. */

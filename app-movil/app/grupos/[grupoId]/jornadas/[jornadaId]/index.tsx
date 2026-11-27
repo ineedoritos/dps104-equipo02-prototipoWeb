@@ -27,7 +27,22 @@ import {
   obtenerResumenAsistenciaJornada,
   suscribirStore,
 } from '@/lib/gruposStore';
-import { cifrasTabulares, colores, espaciados, fuentes, interletrado, radios, tipografia } from '@/lib/tema';
+import {
+  contarPendientes,
+  obtenerSolicitudesDeJornada,
+  suscribirRevisiones,
+} from '@/lib/revisionesStore';
+import {
+  cifrasTabulares,
+  colores,
+  espaciados,
+  forma,
+  fuentes,
+  interletrado,
+  radios,
+  tamanos,
+  tipografia,
+} from '@/lib/tema';
 import type { EstadoJornada, Jornada } from '@/types/dominio';
 
 type EstadoVista = 'normal' | 'cargando' | 'error';
@@ -57,6 +72,12 @@ export default function DetalleJornadaScreen() {
   const [estadoVista, setEstadoVista] = useState<EstadoVista>('normal');
   const [modalCancelar, setModalCancelar] = useState(false);
   const [hojaAbierta, setHojaAbierta] = useState(false);
+  const [totalSolicitudes, setTotalSolicitudes] = useState(() =>
+    jornadaId ? obtenerSolicitudesDeJornada(jornadaId).length : 0,
+  );
+  const [pendientesRevision, setPendientesRevision] = useState(() =>
+    jornadaId ? contarPendientes(jornadaId) : 0,
+  );
 
   const grupo = grupoId ? obtenerGrupoPorId(grupoId) : undefined;
   const rol = grupoId ? obtenerMiRolEnGrupo(grupoId) : null;
@@ -67,12 +88,19 @@ export default function DetalleJornadaScreen() {
     }
     setJornada(obtenerJornadaPorId(jornadaId));
     setResumen(obtenerResumenAsistenciaJornada(jornadaId));
+    setTotalSolicitudes(obtenerSolicitudesDeJornada(jornadaId).length);
+    setPendientesRevision(contarPendientes(jornadaId));
   }, [jornadaId]);
 
   useFocusEffect(
     useCallback(() => {
       recargar();
-      return suscribirStore(recargar);
+      const desuscribirStore = suscribirStore(recargar);
+      const desuscribirRev = suscribirRevisiones(recargar);
+      return () => {
+        desuscribirStore();
+        desuscribirRev();
+      };
     }, [recargar]),
   );
 
@@ -220,6 +248,55 @@ export default function DetalleJornadaScreen() {
                 <Text style={styles.etiquetaStat}>Sin registrar</Text>
               </View>
             </View>
+
+            {totalSolicitudes > 0 ? (
+              <Pressable
+                accessibilityLabel={`Solicitudes de revisión, ${pendientesRevision} ${pendientesRevision === 1 ? 'pendiente' : 'pendientes'}`}
+                accessibilityRole="button"
+                onPress={() =>
+                  router.push({
+                    pathname: '/grupos/[grupoId]/jornadas/[jornadaId]/revisiones',
+                    params: { grupoId: grupo.id, jornadaId: jornada.id },
+                  })
+                }
+                style={({ pressed }) => [
+                  styles.filaRevisiones,
+                  pressed && styles.filaPresionada,
+                ]}
+              >
+                <View
+                  style={[
+                    styles.iconoRevisiones,
+                    {
+                      backgroundColor: pendientesRevision > 0 ? forma.peach : forma.mint,
+                    },
+                  ]}
+                >
+                  <Icono
+                    color={pendientesRevision > 0 ? forma.peachInk : forma.mintInk}
+                    nombre={pendientesRevision > 0 ? 'alerta' : 'hecho'}
+                    tamano={20}
+                  />
+                </View>
+                <View style={styles.textoRevisiones}>
+                  <Text style={styles.tituloRevisiones}>Solicitudes de revisión</Text>
+                  <Text style={styles.subtituloRevisiones}>
+                    {pendientesRevision > 0
+                      ? 'Reclamos de participantes por revisar'
+                      : 'Todas las solicitudes fueron atendidas'}
+                  </Text>
+                </View>
+                <Estado
+                  etiqueta={
+                    pendientesRevision > 0
+                      ? `${pendientesRevision} ${pendientesRevision === 1 ? 'pendiente' : 'pendientes'}`
+                      : 'Al día'
+                  }
+                  tono={pendientesRevision > 0 ? 'pendiente' : 'resuelta'}
+                />
+                <Icono color={forma.muted} nombre="avanzar" tamano={18} />
+              </Pressable>
+            ) : null}
 
             <View style={styles.acciones}>
               {puedeMostrarQR ? (
@@ -438,6 +515,40 @@ const styles = StyleSheet.create({
   },
   acciones: {
     gap: espaciados.md,
+  },
+  filaRevisiones: {
+    alignItems: 'center',
+    backgroundColor: forma.paper,
+    borderRadius: radios.tarjeta,
+    flexDirection: 'row',
+    gap: espaciados.md,
+    minHeight: tamanos.fila,
+    paddingHorizontal: espaciados.lg,
+    paddingVertical: espaciados.md,
+  },
+  filaPresionada: {
+    transform: [{ scale: 0.98 }],
+  },
+  iconoRevisiones: {
+    alignItems: 'center',
+    borderRadius: radios.pill,
+    height: tamanos.objetivo,
+    justifyContent: 'center',
+    width: tamanos.objetivo,
+  },
+  textoRevisiones: {
+    flex: 1,
+    gap: 2,
+  },
+  tituloRevisiones: {
+    color: forma.ink,
+    fontFamily: fuentes.fuerte,
+    fontSize: tipografia.cuerpoSm,
+  },
+  subtituloRevisiones: {
+    color: forma.muted,
+    fontFamily: fuentes.normal,
+    fontSize: tipografia.micro,
   },
   veloModal: {
     alignItems: 'center',

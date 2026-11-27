@@ -2,6 +2,9 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -12,19 +15,27 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Aviso } from '@/components/ui/Aviso';
 import { Boton } from '@/components/ui/Boton';
+import { CampoTexto } from '@/components/ui/CampoTexto';
 import { ESTADO_ASISTENCIA, Estado } from '@/components/ui/Estado';
 import { Icono } from '@/components/ui/Icono';
 import { Seccion } from '@/components/ui/Seccion';
-import { formatearDia, formatearDuracion, horaEnZona } from '@/lib/fecha';
+import { formatearDia, formatearDuracion, formatearFecha, horaEnZona } from '@/lib/fecha';
 import {
   obtenerGrupoPorId,
   obtenerJornadaPorId,
   obtenerMiAsistenciaEnJornada,
+  obtenerMiRolEnGrupo,
   obtenerResponsableDeGrupo,
   obtenerSesionActual,
   suscribirStore,
 } from '@/lib/gruposStore';
-import { cifrasTabulares, colores, espaciados, fuentes, interletrado, radios, tipografia } from '@/lib/tema';
+import {
+  crearSolicitudRevision,
+  obtenerMiSolicitud,
+  suscribirRevisiones,
+} from '@/lib/revisionesStore';
+import { cifrasTabulares, colores, espaciados, forma, fuentes, interletrado, radios, tipografia } from '@/lib/tema';
+import { ErrorDominio } from '@/types/dominio';
 
 type EstadoVista = 'normal' | 'cargando' | 'error';
 
@@ -44,6 +55,10 @@ export default function DetalleRegistroScreen() {
 
   const [estadoVista, setEstadoVista] = useState<EstadoVista>('normal');
   const [tick, setTick] = useState(0);
+  const [modalRevision, setModalRevision] = useState(false);
+  const [motivoSolicitud, setMotivoSolicitud] = useState('');
+  const [errorMotivo, setErrorMotivo] = useState('');
+  const [enviandoSolicitud, setEnviandoSolicitud] = useState(false);
 
   const recargar = useCallback(() => {
     setTick((prev) => prev + 1);
@@ -52,15 +67,22 @@ export default function DetalleRegistroScreen() {
   useFocusEffect(
     useCallback(() => {
       recargar();
-      return suscribirStore(recargar);
+      const desuscribirStore = suscribirStore(recargar);
+      const desuscribirRev = suscribirRevisiones(recargar);
+      return () => {
+        desuscribirStore();
+        desuscribirRev();
+      };
     }, [recargar]),
   );
 
   void tick;
   const sesion = obtenerSesionActual();
   const grupo = grupoId ? obtenerGrupoPorId(grupoId) : undefined;
+  const rol = grupoId ? obtenerMiRolEnGrupo(grupoId) : null;
   const jornada = jornadaId ? obtenerJornadaPorId(jornadaId) : undefined;
   const asistencia = jornadaId ? obtenerMiAsistenciaEnJornada(jornadaId) : undefined;
+  const miSolicitud = jornadaId ? obtenerMiSolicitud(jornadaId) : undefined;
   const responsable = grupoId ? obtenerResponsableDeGrupo(grupoId) : undefined;
 
   if (!sesion || !grupo || !jornada) {
@@ -111,6 +133,46 @@ export default function DetalleRegistroScreen() {
     asistencia.duracion_minutos !== null &&
     asistencia.minutos_reconocidos !== null &&
     asistencia.minutos_reconocidos < asistencia.duracion_minutos;
+
+  const puedeSolicitarRevision =
+    !jornada.cancelada &&
+    rol === 'participante' &&
+    (!miSolicitud || miSolicitud.estado !== 'pendiente');
+
+  const abrirModalRevision = () => {
+    setMotivoSolicitud('');
+    setErrorMotivo('');
+    setModalRevision(true);
+  };
+
+  const manejarEnviarSolicitud = () => {
+    const limpio = motivoSolicitud.trim();
+    if (!limpio) {
+      setErrorMotivo('Escribe qué hay que revisar.');
+      return;
+    }
+    if (limpio.length < 10) {
+      setErrorMotivo('Describe qué hay que revisar con al menos 10 caracteres.');
+      return;
+    }
+
+    setErrorMotivo('');
+    setEnviandoSolicitud(true);
+    try {
+      crearSolicitudRevision(jornada.id, limpio);
+      setModalRevision(false);
+      setMotivoSolicitud('');
+      recargar();
+    } catch (error) {
+      if (error instanceof ErrorDominio) {
+        setErrorMotivo(error.message);
+      } else {
+        setErrorMotivo('No pudimos enviar tu solicitud. Intenta de nuevo.');
+      }
+    } finally {
+      setEnviandoSolicitud(false);
+    }
+  };
 
   return (
     <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
@@ -235,16 +297,104 @@ export default function DetalleRegistroScreen() {
               </View>
             ) : null}
 
-            <View style={styles.bloqueDuda}>
-              <Text style={styles.tituloDuda}>¿Algo no cuadra?</Text>
-              <Text style={styles.textoDuda}>
-                Avísale hoy al responsable mientras todos lo recuerdan
-                {responsable ? ` (${responsable.nombre})` : ''}.
-              </Text>
-            </View>
+            {!jornada.cancelada || miSolicitud ? (
+              <Seccion titulo="Revisión">
+                {miSolicitud ? (
+                  <View style={styles.tarjetaRevision}>
+                    <View style={styles.filaEstadoRevision}>
+                      <Estado tono={miSolicitud.estado} />
+                      <Text style={[styles.fechaRevision, cifrasTabulares]}>
+                        {formatearFecha(miSolicitud.creado_en, {
+                          day: 'numeric',
+                          month: 'short',
+                        })}{' '}
+                        · {horaEnZona(miSolicitud.creado_en).slice(0, 5)}
+                      </Text>
+                    </View>
+                    <Text style={styles.textoMotivo}>{miSolicitud.motivo_solicitud}</Text>
+                    {miSolicitud.motivo_resolucion ? (
+                      <View style={styles.cajaResolucion}>
+                        <Text style={styles.etiquetaResolucion}>Respuesta del responsable</Text>
+                        <Text style={styles.textoResolucion}>
+                          {miSolicitud.motivo_resolucion}
+                        </Text>
+                      </View>
+                    ) : null}
+                  </View>
+                ) : (
+                  <View style={styles.bloqueDuda}>
+                    <Text style={styles.tituloDuda}>¿Algo no está bien en tu registro?</Text>
+                    <Text style={styles.textoDuda}>
+                      Si falta una marca o tus horas no coinciden, envía una solicitud de revisión
+                      {responsable ? ` a ${responsable.nombre}` : ''}.
+                    </Text>
+                  </View>
+                )}
+
+                {puedeSolicitarRevision ? (
+                  <Boton
+                    onPress={abrirModalRevision}
+                    titulo="Solicitar revisión"
+                    variante="secundario"
+                  />
+                ) : null}
+              </Seccion>
+            ) : null}
           </>
         ) : null}
       </ScrollView>
+
+      <Modal
+        animationType="fade"
+        onRequestClose={() => setModalRevision(false)}
+        transparent
+        visible={modalRevision}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.veloModal}
+        >
+          <View style={styles.tarjetaModal}>
+            <Text style={styles.tituloModal}>Solicitar revisión</Text>
+            <Text style={styles.cuerpoModal}>
+              Explica qué hay que revisar en tu asistencia u horas. Tu registro no cambia hasta que
+              el responsable lo revise.
+            </Text>
+            <CampoTexto
+              error={errorMotivo || undefined}
+              etiqueta="Motivo"
+              maxLength={500}
+              multilinea
+              numberOfLines={4}
+              onChangeText={(texto) => {
+                setMotivoSolicitud(texto);
+                if (errorMotivo) {
+                  setErrorMotivo('');
+                }
+              }}
+              placeholder="Ej. Llegué a tiempo pero no aparece mi entrada."
+              value={motivoSolicitud}
+            />
+            <View style={styles.botonesModal}>
+              <View style={styles.colBotonModal}>
+                <Boton
+                  deshabilitado={enviandoSolicitud}
+                  onPress={() => setModalRevision(false)}
+                  titulo="Cancelar"
+                  variante="secundario"
+                />
+              </View>
+              <View style={styles.colBotonModal}>
+                <Boton
+                  cargando={enviandoSolicitud}
+                  onPress={manejarEnviarSolicitud}
+                  titulo="Enviar solicitud"
+                />
+              </View>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -379,5 +529,73 @@ const styles = StyleSheet.create({
     color: colores.tintaSuave,
     fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
+  },
+  tarjetaRevision: {
+    backgroundColor: forma.paper,
+    borderRadius: radios.superficie,
+    gap: espaciados.sm,
+    padding: espaciados.lg,
+  },
+  filaEstadoRevision: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  fechaRevision: {
+    color: forma.muted,
+    fontFamily: fuentes.normal,
+    fontSize: tipografia.micro,
+  },
+  cajaResolucion: {
+    backgroundColor: forma.canvas,
+    borderRadius: radios.md,
+    gap: espaciados.xs,
+    marginTop: espaciados.xs,
+    padding: espaciados.md,
+  },
+  etiquetaResolucion: {
+    color: forma.muted,
+    fontFamily: fuentes.fuerte,
+    fontSize: tipografia.micro,
+  },
+  textoResolucion: {
+    color: forma.ink,
+    fontFamily: fuentes.normal,
+    fontSize: tipografia.cuerpoSm,
+    lineHeight: 20,
+  },
+  veloModal: {
+    alignItems: 'center',
+    backgroundColor: forma.scrim,
+    flex: 1,
+    justifyContent: 'center',
+    padding: espaciados.lg,
+  },
+  tarjetaModal: {
+    backgroundColor: forma.paper,
+    borderRadius: radios.modal,
+    gap: espaciados.md,
+    padding: espaciados.xl,
+    width: '100%',
+  },
+  tituloModal: {
+    color: forma.ink,
+    fontFamily: fuentes.fuerte,
+    fontSize: tipografia.titulo,
+    letterSpacing: interletrado.titulo,
+  },
+  cuerpoModal: {
+    color: forma.muted,
+    fontFamily: fuentes.normal,
+    fontSize: tipografia.cuerpoSm,
+    lineHeight: 20,
+  },
+  botonesModal: {
+    flexDirection: 'row',
+    gap: espaciados.sm,
+    marginTop: espaciados.xs,
+  },
+  colBotonModal: {
+    flex: 1,
   },
 });

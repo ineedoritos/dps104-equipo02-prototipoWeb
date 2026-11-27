@@ -131,6 +131,7 @@ export type CodigoErrorDominio =
   | 'ERR_MOTIVO_OBLIGATORIO'
   | 'ERR_JORNADA_CANCELADA'
   | 'ERR_QR_INVALIDO'
+  | 'ERR_SOLICITUD_PENDIENTE'
   | 'ERR_VALIDACION';
 
 export type TipoConfirmacionQR = 'presencia' | 'entrada' | 'salida' | 'ya_completa';
@@ -186,4 +187,19 @@ export interface Notificacion {
   mensaje: string;
   leida: boolean;
   creado_en: string;
+}
+
+// Media · HU13
+export type EstadoSolicitud = 'pendiente' | 'resuelta' | 'rechazada';
+
+export interface SolicitudRevision {
+  id: string;
+  jornada_id: string;
+  participante_id: string;
+  motivo_solicitud: string;
+  estado: EstadoSolicitud;
+  motivo_resolucion: string | null;
+  resuelta_por: string | null;
+  creado_en: string;
+  resuelta_en: string | null;
 }
