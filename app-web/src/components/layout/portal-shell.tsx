@@ -2,22 +2,20 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
-  BarChart3,
-  CalendarDays,
   ChevronLeft,
   ChevronRight,
-  ChevronsUpDown,
-  ClipboardList,
   LogOut,
   Menu,
   User,
   UserCheck,
   Users,
+  X,
 } from "lucide-react";
 
 import { useContextoPortal } from "@/components/layout/contexto-portal";
+import { ListaNavegacion } from "@/components/layout/lista-navegacion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,111 +30,15 @@ import {
 import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
+  SheetClose,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
-interface ItemNavegacion {
-  href: string;
-  etiqueta: string;
-  icono: React.ComponentType<{ className?: string }>;
-  soloResponsable?: boolean;
-}
-
-const ITEMS_NAVEGACION: ItemNavegacion[] = [
-  {
-    href: "/grupos",
-    etiqueta: "Grupos",
-    icono: Users,
-  },
-  {
-    href: "/dashboard",
-    etiqueta: "Resumen",
-    icono: BarChart3,
-    soloResponsable: true,
-  },
-  {
-    href: "/reportes",
-    etiqueta: "Reportes",
-    icono: ClipboardList,
-    soloResponsable: true,
-  },
-  {
-    href: "/jornadas",
-    etiqueta: "Jornadas",
-    icono: CalendarDays,
-    soloResponsable: true,
-  },
-  {
-    href: "/mi-reporte",
-    etiqueta: "Mi reporte",
-    icono: UserCheck,
-  },
-];
-
-interface ListaNavegacionProps {
-  items: ItemNavegacion[];
-  pathname: string;
-  colapsado?: boolean;
-  alNavegar?: () => void;
-}
-
-function ListaNavegacion({
-  items,
-  pathname,
-  colapsado = false,
-  alNavegar,
-}: ListaNavegacionProps) {
-  return (
-    <nav className="flex flex-col gap-1 px-2 py-3" aria-label="Navegación principal">
-      {items.map((item) => {
-        const Icono = item.icono;
-        const activo =
-          pathname === item.href || pathname.startsWith(`${item.href}/`);
-
-        const enlace = (
-          <Link
-            key={item.href}
-            href={item.href}
-            onClick={alNavegar}
-            className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-              activo
-                ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground",
-              colapsado && "justify-center px-2",
-            )}
-          >
-            <Icono className="h-4 w-4 shrink-0" />
-            {!colapsado && <span className="truncate">{item.etiqueta}</span>}
-          </Link>
-        );
-
-        if (colapsado) {
-          return (
-            <Tooltip key={item.href}>
-              <TooltipTrigger render={enlace} />
-              <TooltipContent side="right">{item.etiqueta}</TooltipContent>
-            </Tooltip>
-          );
-        }
-
-        return enlace;
-      })}
-    </nav>
-  );
-}
-
 export function PortalShell({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
   const router = useRouter();
   const { contextoActivo, seleccionarPersonal } = useContextoPortal();
   const [colapsado, setColapsado] = useState(false);
@@ -145,29 +47,30 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
   const esResponsable =
     contextoActivo?.tipo === "grupo" && contextoActivo.rol === "responsable";
 
-  const itemsVisibles = ITEMS_NAVEGACION.filter(
-    (item) => !item.soloResponsable || esResponsable,
-  );
-
   return (
-    <div className="min-h-screen flex bg-background text-foreground">
-      {/* Sidebar desktop */}
+    <div className="flex min-h-dvh bg-background text-foreground">
+      <a
+        className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-50 focus:rounded-lg focus:bg-card focus:px-4 focus:py-3 focus:outline-2 focus:outline-ring"
+        href="#contenido-principal"
+      >
+        Saltar al contenido
+      </a>
       <aside
         className={cn(
-          "hidden md:flex flex-col border-r border-sidebar-border bg-sidebar transition-[width] duration-200",
+          "hidden shrink-0 flex-col border-r border-sidebar-border bg-sidebar md:flex",
           colapsado ? "w-16" : "w-60",
         )}
       >
         <div
           className={cn(
-            "h-14 flex items-center border-b border-sidebar-border px-3",
+            "flex min-h-16 items-center gap-2 border-b border-sidebar-border px-3",
             colapsado ? "justify-center" : "justify-between",
           )}
         >
           {!colapsado && (
             <Link
               href="/grupos"
-              className="text-sm font-semibold tracking-tight text-foreground truncate"
+              className="min-w-0 truncate rounded-sm text-sm font-semibold tracking-tight text-foreground focus-visible:outline-2 focus-visible:outline-ring"
             >
               Registro de actividades
             </Link>
@@ -175,96 +78,99 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
           <Button
             type="button"
             variant="ghost"
-            size="icon-sm"
+            size="icon"
+            className="min-h-11 min-w-11"
             onClick={() => setColapsado((prev) => !prev)}
             aria-label={colapsado ? "Expandir barra lateral" : "Colapsar barra lateral"}
           >
             {colapsado ? (
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight aria-hidden="true" className="h-4 w-4" />
             ) : (
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft aria-hidden="true" className="h-4 w-4" />
             )}
           </Button>
         </div>
 
         <div className="flex-1 overflow-y-auto">
           <ListaNavegacion
-            items={itemsVisibles}
-            pathname={pathname}
+            esResponsable={esResponsable}
             colapsado={colapsado}
           />
         </div>
-
-        {!colapsado && (
-          <div className="border-t border-sidebar-border p-3 text-xs text-muted-foreground">
-            Portal de consulta y reportería
-          </div>
-        )}
       </aside>
 
-      {/* Contenedor principal */}
-      <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-14 border-b border-border bg-card px-4 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2 min-w-0">
-            {/* Drawer móvil */}
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="flex min-h-16 items-center justify-between gap-2 border-b border-border bg-card px-3 sm:gap-3 sm:px-6">
+          <div className="flex min-w-0 flex-1 items-center gap-2">
             <Sheet open={menuMovilAbierto} onOpenChange={setMenuMovilAbierto}>
               <SheetTrigger
                 render={
                   <Button
                     type="button"
                     variant="ghost"
-                    size="icon-sm"
-                    className="md:hidden"
+                    size="icon"
+                    className="min-h-11 min-w-11 md:hidden"
                     aria-label="Abrir menú de navegación"
                   />
                 }
               >
-                <Menu className="h-5 w-5" />
+                <Menu aria-hidden="true" className="h-5 w-5" />
               </SheetTrigger>
-              <SheetContent side="left" className="w-64 p-0">
-                <SheetHeader className="h-14 px-4 flex justify-center border-b border-border">
-                  <SheetTitle className="text-sm font-semibold text-left">
+              <SheetContent
+                side="left"
+                showCloseButton={false}
+                className="gap-0 overflow-y-auto overscroll-contain p-0 motion-reduce:transition-none"
+              >
+                <SheetHeader className="min-h-16 flex-row items-center justify-between gap-2 border-b border-border px-4 py-2">
+                  <SheetTitle className="text-left text-sm font-semibold">
                     Registro de actividades
                   </SheetTitle>
+                  <SheetClose
+                    render={
+                      <Button variant="ghost" size="icon" className="min-h-11 min-w-11" />
+                    }
+                    aria-label="Cerrar menú"
+                  >
+                    <X aria-hidden="true" className="size-4" />
+                  </SheetClose>
                 </SheetHeader>
                 <ListaNavegacion
-                  items={itemsVisibles}
-                  pathname={pathname}
+                  esResponsable={esResponsable}
                   alNavegar={() => setMenuMovilAbierto(false)}
                 />
               </SheetContent>
             </Sheet>
 
-            {/* Acceso a la página de selección de grupo */}
             <Button
               variant="outline"
               size="sm"
-              className="gap-2 max-w-[240px] sm:max-w-[340px] bg-secondary"
+              className="h-auto min-h-11 min-w-0 max-w-96 shrink justify-between gap-2 bg-secondary px-3 py-1.5"
               nativeButton={false}
               render={<Link href="/grupos" />}
             >
-              <span className="truncate">
-                {contextoActivo?.nombre ?? "Seleccionar grupo"}
+              <span className="flex min-w-0 flex-col items-start gap-0.5 sm:flex-row sm:items-center sm:gap-2">
+                <span className="max-w-full truncate">
+                  {contextoActivo?.nombre ?? "Seleccionar grupo"}
+                </span>
+                {contextoActivo?.rol && (
+                  <Badge
+                    variant={
+                      contextoActivo.rol === "responsable"
+                        ? "default"
+                        : "secondary"
+                    }
+                    className="shrink-0 text-xs font-medium"
+                  >
+                    {contextoActivo.rol === "responsable"
+                      ? "Responsable"
+                      : "Participante"}
+                  </Badge>
+                )}
               </span>
-              {contextoActivo?.rol && (
-                <Badge
-                  variant={
-                    contextoActivo.rol === "responsable"
-                      ? "default"
-                      : "secondary"
-                  }
-                  className="text-[11px] font-medium shrink-0"
-                >
-                  {contextoActivo.rol === "responsable"
-                    ? "Responsable"
-                    : "Participante"}
-                </Badge>
-              )}
-              <ChevronsUpDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              <ChevronRight aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
             </Button>
           </div>
 
-          {/* Menú de usuario */}
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
@@ -272,11 +178,12 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="gap-2"
+                  className="min-h-11 min-w-11 gap-2"
+                  aria-label="Cuenta"
                 />
               }
             >
-              <User className="h-4 w-4" />
+              <User aria-hidden="true" className="h-4 w-4" />
               <span className="hidden sm:inline">Cuenta</span>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
@@ -294,7 +201,7 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => router.push("/grupos")}>
-                <Users className="mr-2 h-4 w-4" />
+                <Users aria-hidden="true" className="mr-2 h-4 w-4" />
                 <span>Cambiar grupo</span>
               </DropdownMenuItem>
               <DropdownMenuItem
@@ -303,7 +210,7 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
                   router.push("/mi-reporte");
                 }}
               >
-                <UserCheck className="mr-2 h-4 w-4" />
+                <UserCheck aria-hidden="true" className="mr-2 h-4 w-4" />
                 <span>Mi reporte personal</span>
               </DropdownMenuItem>
               <Separator className="my-1" />
@@ -311,14 +218,18 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
                 variant="destructive"
                 onClick={() => router.push("/login")}
               >
-                <LogOut className="mr-2 h-4 w-4" />
+                <LogOut aria-hidden="true" className="mr-2 h-4 w-4" />
                 <span>Cerrar sesión</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
 
-        <main className="flex-1 p-4 sm:p-6 max-w-7xl w-full mx-auto">
+        <main
+          id="contenido-principal"
+          tabIndex={-1}
+          className="mx-auto w-full max-w-7xl flex-1 p-4 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring sm:p-6"
+        >
           {children}
         </main>
       </div>
