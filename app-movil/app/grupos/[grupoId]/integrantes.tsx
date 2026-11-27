@@ -1,9 +1,11 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { type ComponentRef, useCallback, useRef, useState } from 'react';
+import { Alert, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { PestanasGrupo } from '@/components/grupos/PestanasGrupo';
 import { Aviso } from '@/components/ui/Aviso';
+import { BarraSuperior } from '@/components/ui/BarraSuperior';
 import { Boton } from '@/components/ui/Boton';
 import { CampoTexto } from '@/components/ui/CampoTexto';
 import { Icono } from '@/components/ui/Icono';
@@ -16,6 +18,7 @@ import {
   obtenerSesionActual,
   retirarIntegrante,
   suscribirStore,
+  transferirResponsableYSalir,
 } from '@/lib/gruposStore';
 import { cifrasTabulares, colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
 import { ErrorDominio, type IntegranteConUsuario, type RolGrupo } from '@/types/dominio';
@@ -37,6 +40,10 @@ export default function IntegrantesScreen() {
   const [cargando, setCargando] = useState(false);
   const [errorCorreo, setErrorCorreo] = useState('');
   const [errorAccion, setErrorAccion] = useState('');
+  const formularioScroll = useRef<ComponentRef<typeof ScrollView>>(null);
+  const [errorSucesor, setErrorSucesor] = useState('');
+  const [modalSucesor, setModalSucesor] = useState(false);
+  const [sucesorId, setSucesorId] = useState<string | null>(null);
 
   const sesion = obtenerSesionActual();
   const grupo = grupoId ? obtenerGrupoPorId(grupoId) : undefined;
@@ -108,6 +115,16 @@ export default function IntegrantesScreen() {
       return;
     }
     const esPropio = integrante.usuario_id === sesion?.id;
+    const totalResponsables = integrantes.filter((i) => i.rol === 'responsable').length;
+    const esUltimoResponsable = esPropio && integrante.rol === 'responsable' && totalResponsables <= 1;
+
+    if (esUltimoResponsable) {
+      setSucesorId(null);
+      setErrorSucesor('');
+      setModalSucesor(true);
+      return;
+    }
+
     Alert.alert(
       esPropio ? 'Salir del grupo' : 'Retirar integrante',
       esPropio
@@ -123,7 +140,7 @@ export default function IntegrantesScreen() {
             try {
               retirarIntegrante(grupoId, integrante.id);
               if (esPropio) {
-                router.replace('/(tabs)');
+                router.dismissTo('/(tabs)');
                 return;
               }
               recargar();
@@ -138,25 +155,33 @@ export default function IntegrantesScreen() {
     );
   };
 
+  const manejarDesignarYSalir = () => {
+    if (!grupoId || !sucesorId) {
+      return;
+    }
+    setErrorSucesor('');
+    try {
+      transferirResponsableYSalir(grupoId, sucesorId);
+      setModalSucesor(false);
+      router.dismissTo('/(tabs)');
+    } catch (err) {
+      setErrorSucesor(
+        err instanceof ErrorDominio
+          ? err.message
+          : 'No pudimos transferir el rol. Intenta de nuevo.',
+      );
+    }
+  };
+
   if (!grupo || rolActual !== 'responsable') {
     return (
-      <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
-        <View style={styles.barraSuperior}>
-          <Pressable
-            accessibilityLabel="Volver"
-            accessibilityRole="button"
-            onPress={() => router.back()}
-            style={styles.botonVolver}
-          >
-            <Icono color={colores.tinta} nombre="volver" tamano={22} />
-          </Pressable>
-          <Text style={styles.tituloBarra}>Integrantes</Text>
-          <View style={styles.espacioDerecha} />
-        </View>
+      <SafeAreaView edges={['bottom']} style={styles.pantalla}>
+        <BarraSuperior titulo="Integrantes" />
         <View style={styles.contenido}>
           <Aviso
             accion={
               <Boton
+                icono="inicio"
                 onPress={() => router.replace('/(tabs)')}
                 tamano="sm"
                 titulo="Ir a Mis grupos"
@@ -171,24 +196,20 @@ export default function IntegrantesScreen() {
     );
   }
 
-  return (
-    <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
-      <View style={styles.barraSuperior}>
-        <Pressable
-          accessibilityLabel="Volver"
-          accessibilityRole="button"
-          onPress={() => router.back()}
-          style={styles.botonVolver}
-        >
-          <Icono color={colores.tinta} nombre="volver" tamano={22} />
-        </Pressable>
-        <Text accessibilityRole="header" style={styles.tituloBarra}>
-          Integrantes
-        </Text>
-        <View style={styles.espacioDerecha} />
-      </View>
+  const candidatosSucesor = integrantes.filter((i) => i.usuario_id !== sesion?.id);
+  const sucesorVigente = candidatosSucesor.some(({ id }) => id === sucesorId);
 
-      <ScrollView contentContainerStyle={styles.contenido} keyboardShouldPersistTaps="handled">
+  return (
+    <SafeAreaView edges={['bottom']} style={styles.pantalla}>
+      <BarraSuperior titulo={grupo.nombre} />
+      <PestanasGrupo actual="integrantes" esResponsable grupoId={grupo.id} />
+
+      <ScrollView
+        automaticallyAdjustKeyboardInsets
+        contentContainerStyle={styles.contenido}
+        keyboardShouldPersistTaps="handled"
+        ref={formularioScroll}
+      >
         {errorAccion ? <Aviso texto={errorAccion} tipo="error" /> : null}
 
         <View style={styles.tarjeta}>
@@ -208,7 +229,7 @@ export default function IntegrantesScreen() {
             value={correoNuevo}
           />
 
-          <View style={styles.selectorRol}>
+          <View accessibilityRole="radiogroup" style={styles.selectorRol}>
             {(['participante', 'responsable'] as const).map((rolOpcion) => {
               const activo = rolInicial === rolOpcion;
               return (
@@ -226,7 +247,7 @@ export default function IntegrantesScreen() {
             })}
           </View>
 
-          <Boton cargando={cargando} onPress={manejarAgregar} titulo="Agregar" />
+          <Boton cargando={cargando} icono="agregarPersona" onPress={manejarAgregar} titulo="Agregar integrante" />
         </View>
 
         <View style={styles.encabezadoLista}>
@@ -260,35 +281,121 @@ export default function IntegrantesScreen() {
                   </Pressable>
                 </View>
 
-                <View style={styles.selectorRol}>
-                  {(['participante', 'responsable'] as const).map((rolOpcion) => {
-                    const activo = item.rol === rolOpcion;
-                    return (
-                      <Pressable
-                        key={rolOpcion}
-                        accessibilityRole="button"
-                        onPress={() => manejarCambiarRol(item, rolOpcion)}
-                        style={[styles.opcionRol, activo && styles.opcionRolActiva]}
-                      >
-                        <Text
-                          style={[styles.textoOpcionRol, activo && styles.textoOpcionRolActiva]}
+                {esPropio ? (
+                  <View style={styles.rolPropioFijo}>
+                    <Text style={styles.textoRolPropio}>
+                      Tu rol: {item.rol === 'responsable' ? 'Responsable' : 'Participante'}
+                    </Text>
+                  </View>
+                ) : (
+                  <View accessibilityRole="radiogroup" style={styles.selectorRol}>
+                    {(['participante', 'responsable'] as const).map((rolOpcion) => {
+                      const activo = item.rol === rolOpcion;
+                      return (
+                        <Pressable
+                          key={rolOpcion}
+                          accessibilityRole="button"
+                          onPress={() => manejarCambiarRol(item, rolOpcion)}
+                          style={[styles.opcionRol, activo && styles.opcionRolActiva]}
                         >
-                          {rolOpcion === 'participante' ? 'Participante' : 'Responsable'}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
+                          <Text
+                            style={[styles.textoOpcionRol, activo && styles.textoOpcionRolActiva]}
+                          >
+                            {rolOpcion === 'participante' ? 'Participante' : 'Responsable'}
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                )}
               </View>
             );
           })}
         </View>
 
         <Text style={styles.notaPie}>
-          Un rol por grupo. El último responsable no puede salir ni ser retirado. Al retirar a
-          alguien, su historial se conserva.
+          El grupo debe conservar al menos una persona responsable.
         </Text>
       </ScrollView>
+
+      <Modal
+        animationType="fade"
+        onRequestClose={() => setModalSucesor(false)}
+        transparent
+        visible={modalSucesor}
+      >
+        <SafeAreaView edges={['top', 'bottom']} style={styles.veloModal}>
+          <View accessibilityViewIsModal style={styles.tarjetaModal}>
+            <Text accessibilityRole="header" style={styles.tituloModal}>Salir del grupo</Text>
+            {candidatosSucesor.length > 0 ? (
+              <>
+                <Text style={styles.cuerpoModal}>
+                  Elige quién quedará a cargo del grupo antes de salir.
+                </Text>
+                <ScrollView contentContainerStyle={styles.listaSucesores}>
+                  {candidatosSucesor.map((cand) => {
+                    const elegido = sucesorId === cand.id;
+                    return (
+                      <Pressable
+                        key={cand.id}
+                        accessibilityRole="radio"
+                        accessibilityState={{ checked: elegido }}
+                        onPress={() => {
+                          setSucesorId(cand.id);
+                          setErrorSucesor('');
+                        }}
+                        style={[styles.opcionSucesor, elegido && styles.opcionSucesorActiva]}
+                      >
+                        <Icono
+                          color={elegido ? colores.acento : colores.tintaSuave}
+                          nombre={elegido ? 'hecho' : 'cuenta'}
+                          tamano={20}
+                        />
+                        <View style={styles.datosPersona}>
+                          <Text style={styles.nombrePersona}>{cand.usuario.nombre}</Text>
+                          <Text style={styles.correoPersona}>{cand.usuario.correo}</Text>
+                        </View>
+                      </Pressable>
+                    );
+                  })}
+                </ScrollView>
+                {errorSucesor ? <Aviso texto={errorSucesor} tipo="error" /> : null}
+                <View style={styles.botonesModal}>
+                  <Boton
+                    estilo={styles.botonModal}
+                    onPress={() => setModalSucesor(false)}
+                    titulo="Cancelar"
+                    variante="secundario"
+                  />
+                  <Boton
+                    deshabilitado={!sucesorVigente}
+                    estilo={styles.botonModal}
+                    icono="salir"
+                    onPress={manejarDesignarYSalir}
+                    titulo="Designar y salir"
+                    variante="peligro"
+                  />
+                </View>
+              </>
+            ) : (
+              <>
+                <Text style={styles.cuerpoModal}>
+                  Primero agrega a otra persona para que el grupo pueda quedar a su cargo.
+                </Text>
+                <Boton
+                  icono="agregarPersona"
+                  onPress={() => {
+                    setModalSucesor(false);
+                    formularioScroll.current?.scrollTo({ y: 0, animated: false });
+                  }}
+                  titulo="Ir a agregar integrante"
+                />
+                <Boton onPress={() => setModalSucesor(false)} titulo="Cancelar" variante="fantasma" />
+              </>
+            )}
+          </View>
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -297,30 +404,6 @@ const styles = StyleSheet.create({
   pantalla: {
     backgroundColor: colores.papel,
     flex: 1,
-  },
-  barraSuperior: {
-    alignItems: 'center',
-    borderBottomColor: colores.borde,
-    borderBottomWidth: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: espaciados.md,
-    paddingVertical: espaciados.sm,
-  },
-  botonVolver: {
-    alignItems: 'center',
-    borderRadius: radios.pill,
-    height: 40,
-    justifyContent: 'center',
-    width: 40,
-  },
-  tituloBarra: {
-    color: colores.tinta,
-    fontSize: tipografia.tituloSm,
-    fontWeight: pesos.fuerte,
-  },
-  espacioDerecha: {
-    width: 40,
   },
   contenido: {
     gap: espaciados.lg,
@@ -346,13 +429,15 @@ const styles = StyleSheet.create({
     borderRadius: radios.campo,
     borderWidth: 1,
     flexDirection: 'row',
-    padding: 3,
+    padding: espaciados.xs,
   },
   opcionRol: {
     alignItems: 'center',
     borderRadius: radios.sm,
     flex: 1,
-    paddingVertical: espaciados.sm,
+    justifyContent: 'center',
+    minHeight: 48,
+    padding: espaciados.xs,
   },
   opcionRolActiva: {
     backgroundColor: colores.superficie,
@@ -360,6 +445,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   textoOpcionRol: {
+    textAlign: 'center',
     color: colores.tintaSuave,
     fontSize: tipografia.cuerpoSm,
     fontWeight: pesos.medio,
@@ -367,6 +453,19 @@ const styles = StyleSheet.create({
   textoOpcionRolActiva: {
     color: colores.acento,
     fontWeight: pesos.fuerte,
+  },
+  rolPropioFijo: {
+    backgroundColor: colores.acentoSuave,
+    borderColor: colores.acentoBorde,
+    borderRadius: radios.campo,
+    borderWidth: 1,
+    paddingHorizontal: espaciados.md,
+    paddingVertical: espaciados.sm,
+  },
+  textoRolPropio: {
+    color: colores.acento,
+    fontSize: tipografia.cuerpoSm,
+    fontWeight: pesos.medio,
   },
   encabezadoLista: {
     flexDirection: 'row',
@@ -409,13 +508,16 @@ const styles = StyleSheet.create({
   },
   botonRetirar: {
     backgroundColor: colores.ausenteSuave,
-    borderRadius: radios.pill,
-    paddingHorizontal: espaciados.md,
-    paddingVertical: espaciados.xs,
+    borderRadius: radios.campo,
+    justifyContent: 'center',
+    minHeight: 48,
+    paddingHorizontal: espaciados.sm,
+    maxWidth: '42%',
   },
   textoRetirar: {
     color: colores.ausente,
-    fontSize: tipografia.micro,
+    fontSize: tipografia.cuerpoSm,
+    textAlign: 'center',
     fontWeight: pesos.fuerte,
   },
   notaPie: {
@@ -423,5 +525,57 @@ const styles = StyleSheet.create({
     fontSize: tipografia.cuerpoSm,
     lineHeight: 19,
     textAlign: 'center',
+  },
+  veloModal: {
+    alignItems: 'center',
+    backgroundColor: colores.velo,
+    flex: 1,
+    justifyContent: 'center',
+    padding: espaciados.lg,
+  },
+  tarjetaModal: {
+    maxHeight: '100%',
+    backgroundColor: colores.superficie,
+    borderColor: colores.borde,
+    borderRadius: radios.modal,
+    borderWidth: 1,
+    gap: espaciados.md,
+    padding: espaciados.lg,
+    width: '100%',
+  },
+  tituloModal: {
+    color: colores.tinta,
+    fontSize: tipografia.tituloSm,
+    fontWeight: pesos.fuerte,
+  },
+  cuerpoModal: {
+    color: colores.tintaSuave,
+    fontSize: tipografia.cuerpoSm,
+    lineHeight: 20,
+  },
+  listaSucesores: {
+    gap: espaciados.sm,
+  },
+  opcionSucesor: {
+    alignItems: 'center',
+    backgroundColor: colores.superficieAlt,
+    borderColor: colores.borde,
+    borderRadius: radios.campo,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: espaciados.md,
+    minHeight: 48,
+    padding: espaciados.md,
+  },
+  opcionSucesorActiva: {
+    backgroundColor: colores.acentoSuave,
+    borderColor: colores.acentoBorde,
+  },
+  botonesModal: {
+    flexDirection: 'row',
+    gap: espaciados.md,
+  },
+  botonModal: {
+    flex: 1,
   },
 });

@@ -1,24 +1,23 @@
 import { type Href, useFocusEffect, useRouter } from 'expo-router';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
-  BackHandler,
-  Platform,
   Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
-  ToastAndroid,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Aviso } from '@/components/ui/Aviso';
+import { BarraSuperior } from '@/components/ui/BarraSuperior';
 import { Boton } from '@/components/ui/Boton';
+import { Estado } from '@/components/ui/Estado';
 import { EstadoVacio } from '@/components/ui/EstadoVacio';
 import { Icono } from '@/components/ui/Icono';
 import { obtenerMisGrupos, obtenerSesionActual, suscribirStore } from '@/lib/gruposStore';
+import { mostrarControlesDePrueba } from '@/lib/opcionesPrueba';
 import { cifrasTabulares, colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
 import type { ResumenGrupoUsuario } from '@/types/dominio';
 
@@ -29,7 +28,6 @@ export default function MisGruposScreen() {
   const [grupos, setGrupos] = useState<ResumenGrupoUsuario[]>(() => obtenerMisGrupos());
   const [estadoVista, setEstadoVista] = useState<EstadoVista>('normal');
   const [refrescando, setRefrescando] = useState(false);
-  const ultimaAtras = useRef(0);
 
   const recargar = useCallback(() => {
     if (!obtenerSesionActual()) {
@@ -42,26 +40,7 @@ export default function MisGruposScreen() {
   useFocusEffect(
     useCallback(() => {
       recargar();
-      const desuscribir = suscribirStore(recargar);
-
-      if (Platform.OS !== 'android') {
-        return () => desuscribir();
-      }
-
-      const suscripcion = BackHandler.addEventListener('hardwareBackPress', () => {
-        const ahora = Date.now();
-        if (ahora - ultimaAtras.current < 2000) {
-          return false;
-        }
-        ultimaAtras.current = ahora;
-        ToastAndroid.show('Presiona atrás de nuevo para salir', ToastAndroid.SHORT);
-        return true;
-      });
-
-      return () => {
-        desuscribir();
-        suscripcion.remove();
-      };
+      return suscribirStore(recargar);
     }, [recargar]),
   );
 
@@ -77,7 +56,9 @@ export default function MisGruposScreen() {
   const listaVisible = estadoVista === 'vacio' ? [] : grupos;
 
   return (
-    <SafeAreaView edges={['top']} style={styles.pantalla}>
+    <View style={styles.pantalla}>
+      <BarraSuperior mostrarVolver={false} titulo="Mis grupos" />
+
       <ScrollView
         contentContainerStyle={styles.contenido}
         refreshControl={
@@ -90,14 +71,8 @@ export default function MisGruposScreen() {
         }
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.encabezado}>
-          <Text accessibilityRole="header" style={styles.titulo}>
-            Mis grupos
-          </Text>
-          <Text style={styles.subtitulo}>Tu rol cambia según el grupo.</Text>
-        </View>
 
-        {__DEV__ ? (
+        {mostrarControlesDePrueba ? (
           <View style={styles.barraEstados}>
             {(['normal', 'cargando', 'vacio', 'error'] as const).map((modo) => {
               const activo = estadoVista === modo;
@@ -157,76 +132,50 @@ export default function MisGruposScreen() {
         ) : null}
 
         {estadoVista === 'normal' && listaVisible.length > 0 ? (
+          <Boton icono="nueva" onPress={() => router.push('/grupos/crear')} titulo="Crear grupo" />
+        ) : null}
+
+        {estadoVista === 'normal' && listaVisible.length > 0 ? (
           <View style={styles.lista}>
-            {listaVisible.map((item) => {
+            {listaVisible.map((item, indice) => {
               const esResponsable = item.rol === 'responsable';
               return (
                 <Pressable
                   key={item.grupo.id}
                   accessibilityRole="button"
                   onPress={() => router.push(`/grupos/${item.grupo.id}` as Href)}
-                  style={({ pressed }) => [styles.tarjeta, pressed && styles.tarjetaPresionada]}
+                  style={({ pressed }) => [
+                    styles.tarjeta,
+                    indice < listaVisible.length - 1 && styles.divisor,
+                    pressed && styles.tarjetaPresionada,
+                  ]}
                 >
-                  <View style={styles.filaSuperior}>
+                  <View style={styles.detalleGrupo}>
                     <Text style={styles.nombreGrupo}>{item.grupo.nombre}</Text>
-                    <View
-                      style={[
-                        styles.pildoraRol,
-                        esResponsable ? styles.pildoraResponsable : styles.pildoraParticipante,
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.textoRol,
-                          esResponsable ? styles.textoResponsable : styles.textoParticipante,
-                        ]}
-                      >
-                        {esResponsable ? 'Responsable' : 'Participante'}
+
+                    {item.grupo.descripcion ? (
+                      <Text numberOfLines={2} style={styles.descripcion}>
+                        {item.grupo.descripcion}
                       </Text>
-                    </View>
-                  </View>
+                    ) : null}
 
-                  {item.grupo.descripcion ? (
-                    <Text numberOfLines={2} style={styles.descripcion}>
-                      {item.grupo.descripcion}
-                    </Text>
-                  ) : null}
-
-                  <View style={styles.filaInferior}>
                     <View style={styles.metaGrupo}>
-                      <Icono color={colores.tintaSuave} nombre="gente" tamano={16} />
                       <Text style={[styles.textoMeta, cifrasTabulares]}>
+                        {esResponsable ? 'Responsable' : 'Participante'} ·{' '}
                         {item.totalIntegrantes}{' '}
                         {item.totalIntegrantes === 1 ? 'integrante' : 'integrantes'}
                       </Text>
+                      {item.tieneJornadaEnCurso ? <Estado tono="enCurso" /> : null}
                     </View>
-
-                    {item.tieneJornadaEnCurso ? (
-                      <View style={styles.estadoEnCurso}>
-                        <View style={styles.puntoEnCurso} />
-                        <Text style={styles.textoEnCurso}>Jornada en curso ahora</Text>
-                      </View>
-                    ) : (
-                      <Icono color={colores.tintaTenue} nombre="avanzar" tamano={18} />
-                    )}
                   </View>
+                  <Icono color={colores.tintaSuave} nombre="avanzar" tamano={22} />
                 </Pressable>
               );
             })}
           </View>
         ) : null}
-
-        {listaVisible.length > 0 && estadoVista === 'normal' ? (
-          <Boton
-            icono="nueva"
-            onPress={() => router.push('/grupos/crear')}
-            titulo="Crear grupo"
-          />
-        ) : null}
-
-        <Text style={styles.notaPie}>Solo ves los grupos a los que perteneces.</Text>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -236,22 +185,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   contenido: {
+    backgroundColor: colores.papel,
+    flexGrow: 1,
     gap: espaciados.lg,
     padding: espaciados.lg,
     paddingBottom: espaciados.xxl,
-  },
-  encabezado: {
-    gap: espaciados.xs,
-  },
-  titulo: {
-    color: colores.tinta,
-    fontSize: tipografia.display,
-    fontWeight: pesos.fuerte,
-    letterSpacing: -0.4,
-  },
-  subtitulo: {
-    color: colores.tintaSuave,
-    fontSize: tipografia.cuerpo,
   },
   barraEstados: {
     flexDirection: 'row',
@@ -289,24 +227,27 @@ const styles = StyleSheet.create({
     fontSize: tipografia.cuerpoSm,
   },
   lista: {
-    gap: espaciados.md,
-  },
-  tarjeta: {
     backgroundColor: colores.superficie,
     borderColor: colores.borde,
     borderRadius: radios.tarjeta,
     borderWidth: 1,
-    gap: espaciados.sm,
-    padding: espaciados.lg,
+    overflow: 'hidden',
   },
+  tarjeta: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: espaciados.md,
+    minHeight: 64,
+    paddingHorizontal: espaciados.lg,
+    paddingVertical: espaciados.lg,
+  },
+  divisor: { borderBottomColor: colores.borde, borderBottomWidth: StyleSheet.hairlineWidth },
   tarjetaPresionada: {
     backgroundColor: colores.superficieAlt,
   },
-  filaSuperior: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: espaciados.sm,
-    justifyContent: 'space-between',
+  detalleGrupo: {
+    flex: 1,
+    gap: espaciados.xs,
   },
   nombreGrupo: {
     color: colores.tinta,
@@ -314,69 +255,19 @@ const styles = StyleSheet.create({
     fontSize: tipografia.tituloSm,
     fontWeight: pesos.fuerte,
   },
-  pildoraRol: {
-    borderRadius: radios.pill,
-    paddingHorizontal: espaciados.md,
-    paddingVertical: espaciados.xs,
-  },
-  pildoraResponsable: {
-    backgroundColor: colores.acentoSuave,
-  },
-  pildoraParticipante: {
-    backgroundColor: colores.completadaSuave,
-  },
-  textoRol: {
-    fontSize: tipografia.micro,
-    fontWeight: pesos.fuerte,
-  },
-  textoResponsable: {
-    color: colores.acento,
-  },
-  textoParticipante: {
-    color: colores.completada,
-  },
   descripcion: {
     color: colores.tintaSuave,
     fontSize: tipografia.cuerpoSm,
     lineHeight: 19,
   },
-  filaInferior: {
-    alignItems: 'center',
-    borderTopColor: colores.borde,
-    borderTopWidth: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: espaciados.xs,
-    paddingTop: espaciados.sm,
-  },
   metaGrupo: {
     alignItems: 'center',
     flexDirection: 'row',
-    gap: espaciados.xs,
+    flexWrap: 'wrap',
+    gap: espaciados.sm,
   },
   textoMeta: {
     color: colores.tintaSuave,
     fontSize: tipografia.cuerpoSm,
-  },
-  estadoEnCurso: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: espaciados.xs,
-  },
-  puntoEnCurso: {
-    backgroundColor: colores.acento,
-    borderRadius: radios.pill,
-    height: 8,
-    width: 8,
-  },
-  textoEnCurso: {
-    color: colores.acento,
-    fontSize: tipografia.micro,
-    fontWeight: pesos.fuerte,
-  },
-  notaPie: {
-    color: colores.tintaSuave,
-    fontSize: tipografia.micro,
-    textAlign: 'center',
   },
 });

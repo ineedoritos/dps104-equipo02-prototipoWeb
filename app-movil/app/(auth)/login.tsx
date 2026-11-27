@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import type { ComponentRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Aviso } from '@/components/ui/Aviso';
@@ -8,6 +9,7 @@ import { Boton } from '@/components/ui/Boton';
 import { CampoTexto } from '@/components/ui/CampoTexto';
 import { Icono } from '@/components/ui/Icono';
 import { crearCuenta, iniciarSesion, obtenerSesionActual } from '@/lib/gruposStore';
+import { mostrarControlesDePrueba } from '@/lib/opcionesPrueba';
 import { colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
 import { ErrorDominio } from '@/types/dominio';
 
@@ -15,6 +17,10 @@ const REGEX_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { width } = useWindowDimensions();
+  const anchoAmplio = width >= 600;
+  const correoRef = useRef<ComponentRef<typeof TextInput>>(null);
+  const contrasenaRef = useRef<ComponentRef<typeof TextInput>>(null);
 
   const [modoRegistro, setModoRegistro] = useState(false);
   const [nombre, setNombre] = useState('');
@@ -46,6 +52,7 @@ export default function LoginScreen() {
   };
 
   const manejarEnvio = () => {
+    if (cargando) return;
     limpiarErrores();
     const correoLimpio = correo.trim();
     const nombreLimpio = nombre.trim();
@@ -98,26 +105,23 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
+    <SafeAreaView edges={['top', 'bottom']} style={styles.marco}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'android' ? 'height' : undefined}
         style={styles.pantalla}
       >
-        <ScrollView contentContainerStyle={styles.contenido} keyboardShouldPersistTaps="handled">
-          <View style={styles.encabezado}>
-            <View style={styles.marca}>
-              <Icono color={colores.acento} nombre="gente" tamano={26} />
+        <ScrollView
+          automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'}
+          contentContainerStyle={[styles.contenido, anchoAmplio && styles.contenidoAmplio]}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={[styles.panel, anchoAmplio && styles.panelAmplio]}>
+            <View style={styles.encabezado}>
+              <Text accessibilityRole="header" style={styles.titulo}>
+                {modoRegistro ? 'Crear cuenta' : 'Iniciar sesión'}
+              </Text>
+              <Text style={styles.nombreApp}>Registro de actividades</Text>
             </View>
-            <Text accessibilityRole="header" style={styles.titulo}>
-              Registro de actividades
-            </Text>
-            <Text style={styles.subtitulo}>Tu asistencia y tus horas, el mismo día.</Text>
-          </View>
-
-          <View style={styles.tarjeta}>
-            <Text style={styles.tituloFormulario}>
-              {modoRegistro ? 'Crear cuenta' : 'Iniciar sesión'}
-            </Text>
 
             {errorGeneral ? <Aviso texto={errorGeneral} tipo="error" /> : null}
 
@@ -131,7 +135,10 @@ export default function LoginScreen() {
                     setNombre(valor);
                     if (errorNombre) setErrorNombre('');
                   }}
+                  onSubmitEditing={() => correoRef.current?.focus()}
                   placeholder="Ej. Carlos González"
+                  returnKeyType="next"
+                  submitBehavior="submit"
                   value={nombre}
                 />
               ) : null}
@@ -146,7 +153,11 @@ export default function LoginScreen() {
                   setCorreo(valor);
                   if (errorCorreo) setErrorCorreo('');
                 }}
+                onSubmitEditing={() => contrasenaRef.current?.focus()}
                 placeholder="correo@ejemplo.com"
+                ref={correoRef}
+                returnKeyType="next"
+                submitBehavior="submit"
                 value={correo}
               />
 
@@ -158,20 +169,27 @@ export default function LoginScreen() {
                     }
                     accessibilityRole="button"
                     onPress={() => setMostrarContrasena((visible) => !visible)}
-                    style={styles.botonVer}
+                    style={({ pressed }) => [styles.botonVer, pressed && { opacity: 0.65 }]}
                   >
-                    <Text style={styles.textoVer}>{mostrarContrasena ? 'Ocultar' : 'Ver'}</Text>
+                    <Icono
+                      color={colores.tintaSuave}
+                      nombre={mostrarContrasena ? 'ocultar' : 'ver'}
+                      tamano={22}
+                    />
                   </Pressable>
                 }
                 autoCapitalize="none"
-                autoComplete="password"
+                autoComplete={modoRegistro ? 'new-password' : 'current-password'}
                 error={errorContrasena}
                 etiqueta="Contraseña"
                 onChangeText={(valor) => {
                   setContrasena(valor);
                   if (errorContrasena) setErrorContrasena('');
                 }}
-                placeholder="Mínimo 6 caracteres"
+                onSubmitEditing={manejarEnvio}
+                placeholder={modoRegistro ? 'Mínimo 6 caracteres' : undefined}
+                ref={contrasenaRef}
+                returnKeyType="go"
                 secureTextEntry={!mostrarContrasena}
                 value={contrasena}
               />
@@ -196,7 +214,7 @@ export default function LoginScreen() {
                 </Text>
               </Pressable>
 
-              {__DEV__ && !modoRegistro ? (
+              {mostrarControlesDePrueba && !modoRegistro ? (
                 <Pressable
                   accessibilityRole="button"
                   onPress={entrarComoDemo}
@@ -207,10 +225,6 @@ export default function LoginScreen() {
               ) : null}
             </View>
           </View>
-
-          <Text style={styles.notaPie}>
-            Hay un solo tipo de cuenta. Tu rol depende de cada grupo.
-          </Text>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -218,71 +232,64 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
+  marco: { backgroundColor: colores.papel, flex: 1 },
   pantalla: {
     backgroundColor: colores.papel,
     flex: 1,
   },
   contenido: {
     flexGrow: 1,
-    gap: espaciados.xl,
+    alignItems: 'center',
+    gap: espaciados.lg,
     justifyContent: 'center',
-    padding: espaciados.lg,
+    paddingHorizontal: espaciados.lg,
+    paddingVertical: espaciados.xl,
+  },
+  contenidoAmplio: {
+    padding: espaciados.xxl,
   },
   encabezado: {
-    gap: espaciados.sm,
-  },
-  marca: {
-    alignItems: 'center',
-    backgroundColor: colores.acentoSuave,
-    borderColor: colores.acentoBorde,
-    borderRadius: radios.tarjeta,
-    borderWidth: 1,
-    height: 52,
-    justifyContent: 'center',
-    marginBottom: espaciados.xs,
-    width: 52,
+    gap: espaciados.xs,
   },
   titulo: {
     color: colores.tinta,
     fontSize: tipografia.display,
-    fontWeight: pesos.fuerte,
-    letterSpacing: -0.4,
+    fontWeight: pesos.encabezado,
+    letterSpacing: -0.6,
   },
-  subtitulo: {
+  nombreApp: {
     color: colores.tintaSuave,
     fontSize: tipografia.cuerpo,
-    lineHeight: 22,
   },
-  tarjeta: {
+  panel: {
     backgroundColor: colores.superficie,
     borderColor: colores.borde,
-    borderRadius: radios.tarjeta,
+    borderRadius: radios.modal,
     borderWidth: 1,
-    gap: espaciados.md,
-    padding: espaciados.lg,
+    gap: espaciados.xl,
+    maxWidth: 480,
+    padding: espaciados.xl,
+    width: '100%',
   },
-  tituloFormulario: {
-    color: colores.tinta,
-    fontSize: tipografia.titulo,
-    fontWeight: pesos.fuerte,
+  panelAmplio: {
+    padding: espaciados.xxl,
   },
   formulario: {
-    gap: espaciados.md,
+    gap: espaciados.lg,
   },
   botonVer: {
-    paddingHorizontal: espaciados.sm,
-    paddingVertical: espaciados.xs,
-  },
-  textoVer: {
-    color: colores.acento,
-    fontSize: tipografia.cuerpoSm,
-    fontWeight: pesos.fuerte,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 48,
+    minWidth: 48,
   },
   boton: {
     marginTop: espaciados.xs,
   },
   enlaceSecundario: {
     alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 48,
     paddingVertical: espaciados.sm,
   },
   textoEnlace: {
@@ -299,10 +306,5 @@ const styles = StyleSheet.create({
   textoAtajo: {
     color: colores.tintaSuave,
     fontSize: tipografia.micro,
-  },
-  notaPie: {
-    color: colores.tintaSuave,
-    fontSize: tipografia.cuerpoSm,
-    textAlign: 'center',
   },
 });
