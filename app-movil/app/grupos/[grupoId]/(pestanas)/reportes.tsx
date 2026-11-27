@@ -225,7 +225,10 @@ export default function ReportesGrupoScreen() {
                         {grupo.control_horas ? (
                           <Text style={[styles.textoDetalle, cifrasTabulares]}>
                             Registrado: {formatearHorasDesdeMinutos(fila.minutosRegistrados)} ·
-                            Reconocido: {formatearHorasDesdeMinutos(fila.minutosReconocidos)}
+                            Aprobado: {formatearHorasDesdeMinutos(fila.minutosReconocidos)}
+                            {fila.minutosPendientes > 0
+                              ? ` · Pendiente: ${formatearHorasDesdeMinutos(fila.minutosPendientes)}`
+                              : ''}
                           </Text>
                         ) : null}
                       </View>

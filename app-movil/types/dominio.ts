@@ -60,6 +60,9 @@ export interface Jornada {
   modo_fotos: ModoFotos;
   requiere_validacion: boolean;
   notificaciones_habilitadas: boolean;
+  ref_latitud: number | null;
+  ref_longitud: number | null;
+  ref_ubicacion_en: string | null;
   creado_por: string;
   creado_en: string;
 }
@@ -101,6 +104,7 @@ export interface FilaReporteGrupo {
   tasaAsistencia: number | null;
   minutosRegistrados: number;
   minutosReconocidos: number;
+  minutosPendientes: number;
 }
 
 export interface ResumenReporteGrupo {
@@ -131,6 +135,9 @@ export type CodigoErrorDominio =
   | 'ERR_MOTIVO_OBLIGATORIO'
   | 'ERR_JORNADA_CANCELADA'
   | 'ERR_QR_INVALIDO'
+  | 'ERR_SOLICITUD_PENDIENTE'
+  | 'ERR_GPS_SIN_PRECISION'
+  | 'ERR_GPS_FUERA_DE_RADIO'
   | 'ERR_VALIDACION';
 
 export type TipoConfirmacionQR = 'presencia' | 'entrada' | 'salida' | 'ya_completa';
@@ -168,4 +175,48 @@ export class ErrorDominio extends Error {
     super(mensaje);
     this.codigo = codigo;
   }
+}
+
+// Media · HU16
+export type TipoEventoNotificacion =
+  | 'asistencia_modificada'
+  | 'horas_actualizadas'
+  | 'solicitud_revision';
+
+export interface Notificacion {
+  id: string;
+  usuario_id: string;
+  jornada_id: string | null;
+  tipo_evento: TipoEventoNotificacion;
+  clave_unica: string;
+  titulo: string;
+  mensaje: string;
+  leida: boolean;
+  creado_en: string;
+}
+
+// Media · HU13
+export type EstadoSolicitud = 'pendiente' | 'resuelta' | 'rechazada';
+
+export interface SolicitudRevision {
+  id: string;
+  jornada_id: string;
+  participante_id: string;
+  motivo_solicitud: string;
+  estado: EstadoSolicitud;
+  motivo_resolucion: string | null;
+  resuelta_por: string | null;
+  creado_en: string;
+  resuelta_en: string | null;
+}
+
+// Media · HU10
+export interface FotoJornada {
+  id: string;
+  jornada_id: string;
+  autor_id: string;
+  ruta_storage: string;
+  retirada_en: string | null;
+  retirada_por: string | null;
+  creado_en: string;
 }

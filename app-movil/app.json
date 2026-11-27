@@ -11,6 +11,7 @@
       "icon": "./assets/expo.icon"
     },
     "android": {
+      "softwareKeyboardLayoutMode": "resize",
       "package": "sv.udb.registroactividades",
       "adaptiveIcon": {
         "backgroundColor": "#F4F5F5",

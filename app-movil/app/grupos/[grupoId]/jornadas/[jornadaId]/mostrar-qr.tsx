@@ -1,3 +1,4 @@
+import { Encabezado } from '@/components/ui/Encabezado';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import {
@@ -12,7 +13,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Aviso } from '@/components/ui/Aviso';
 import { Boton } from '@/components/ui/Boton';
-import { Icono } from '@/components/ui/Icono';
 import { MatrizQR } from '@/components/ui/MatrizQR';
 import {
   derivarEstadoJornada,
@@ -107,19 +107,8 @@ export default function MostrarQRScreen() {
 
   if (!grupo || !jornada || rol !== 'responsable') {
     return (
-      <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
-        <View style={styles.barraSuperior}>
-          <Pressable
-            accessibilityLabel="Volver"
-            accessibilityRole="button"
-            onPress={() => router.back()}
-            style={styles.botonIcono}
-          >
-            <Icono color={colores.tinta} nombre="volver" tamano={22} />
-          </Pressable>
-          <Text style={styles.tituloBarra}>Código de asistencia</Text>
-          <View style={styles.espacioDerecha} />
-        </View>
+      <SafeAreaView edges={['bottom']} style={styles.pantalla}>
+        <Encabezado onVolver={() => router.back()} titulo="Código de asistencia" />
         <View style={styles.contenido}>
           <Aviso
             accion={
@@ -157,21 +146,8 @@ export default function MostrarQRScreen() {
   };
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
-      <View style={styles.barraSuperior}>
-        <Pressable
-          accessibilityLabel="Volver al detalle de jornada"
-          accessibilityRole="button"
-          onPress={() => router.back()}
-          style={styles.botonIcono}
-        >
-          <Icono color={colores.tinta} nombre="volver" tamano={22} />
-        </Pressable>
-        <Text numberOfLines={1} style={styles.tituloBarra}>
-          Código de asistencia
-        </Text>
-        <View style={styles.espacioDerecha} />
-      </View>
+    <SafeAreaView edges={['bottom']} style={styles.pantalla}>
+      <Encabezado onVolver={() => router.back()} titulo="Código de asistencia" />
 
       <ScrollView contentContainerStyle={styles.contenido} showsVerticalScrollIndicator={false}>
 

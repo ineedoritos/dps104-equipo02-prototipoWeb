@@ -1,0 +1,38 @@
+[
+  {
+    "id": "fot-01",
+    "jornada_id": "jor-01",
+    "autor_id": "usr-02",
+    "ruta_storage": "evidencias/foto-1.jpg",
+    "retirada_en": null,
+    "retirada_por": null,
+    "creado_en": "2026-11-25T19:45:00-06:00"
+  },
+  {
+    "id": "fot-02",
+    "jornada_id": "jor-01",
+    "autor_id": "usr-01",
+    "ruta_storage": "evidencias/foto-2.jpg",
+    "retirada_en": null,
+    "retirada_por": null,
+    "creado_en": "2026-11-25T20:10:00-06:00"
+  },
+  {
+    "id": "fot-03",
+    "jornada_id": "jor-03",
+    "autor_id": "usr-02",
+    "ruta_storage": "evidencias/foto-3.jpg",
+    "retirada_en": null,
+    "retirada_por": null,
+    "creado_en": "2026-11-18T10:25:00-06:00"
+  },
+  {
+    "id": "fot-04",
+    "jornada_id": "jor-03",
+    "autor_id": "usr-03",
+    "ruta_storage": "evidencias/foto-4.jpg",
+    "retirada_en": "2026-11-18T11:30:00-06:00",
+    "retirada_por": "usr-01",
+    "creado_en": "2026-11-18T10:40:00-06:00"
+  }
+]

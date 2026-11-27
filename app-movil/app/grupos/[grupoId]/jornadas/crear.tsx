@@ -17,9 +17,10 @@ import { Boton } from '@/components/ui/Boton';
 import { Encabezado } from '@/components/ui/Encabezado';
 import { CampoTexto } from '@/components/ui/CampoTexto';
 import { DatePickerField } from '@/components/ui/DatePickerField';
+import { HojaAcciones } from '@/components/ui/HojaAcciones';
 import { HoraPickerField } from '@/components/ui/HoraPickerField';
 import { Icono } from '@/components/ui/Icono';
-import { fechaEnZona, horaEnZona } from '@/lib/fecha';
+import { aISOConOffset, fechaEnZona, horaEnZona } from '@/lib/fecha';
 import {
   crearJornada,
   editarJornada,
@@ -28,7 +29,8 @@ import {
   obtenerJornadaPorId,
   obtenerMiRolEnGrupo,
 } from '@/lib/gruposStore';
-import { colores, espaciados, fuentes, interletrado, radios, tipografia } from '@/lib/tema';
+import { colores, espaciados, forma, fuentes, interletrado, radios, tipografia } from '@/lib/tema';
+import { type CasoUbicacionSimulada, obtenerUbicacionActual } from '@/lib/ubicacionSimulada';
 import { ErrorDominio } from '@/types/dominio';
 
 type EstadoVista = 'normal' | 'cargando' | 'error';
@@ -60,6 +62,19 @@ export default function CrearOEditarJornadaScreen() {
   const [enviando, setEnviando] = useState(false);
   const [errorGeneral, setErrorGeneral] = useState('');
   const [estadoVista, setEstadoVista] = useState<EstadoVista>('normal');
+  const [refLatitud, setRefLatitud] = useState<number | null>(
+    jornadaExistente?.ref_latitud ?? null,
+  );
+  const [refLongitud, setRefLongitud] = useState<number | null>(
+    jornadaExistente?.ref_longitud ?? null,
+  );
+  const [refUbicacionEn, setRefUbicacionEn] = useState<string | null>(
+    jornadaExistente?.ref_ubicacion_en ?? null,
+  );
+  const [precisionMetros, setPrecisionMetros] = useState<number>(12);
+  const [capturandoGps, setCapturandoGps] = useState(false);
+  const [errorGps, setErrorGps] = useState('');
+  const [hojaGpsAbierta, setHojaGpsAbierta] = useState(false);
 
   if (!grupo || rol !== 'responsable' || (jornadaId && !jornadaExistente)) {
     return (
@@ -86,6 +101,7 @@ export default function CrearOEditarJornadaScreen() {
     );
   }
 
+  const gpsActivo = esEdicion && jornadaExistente ? jornadaExistente.gps_habilitado : grupo.gps_habilitado;
   const modalidadTexto =
     grupo.modalidad_asistencia === 'qr' ? 'Asistencia por QR' : 'Asistencia manual';
   const horasTexto = grupo.control_horas ? 'con control de horas' : 'sin control de horas';
@@ -95,11 +111,41 @@ export default function CrearOEditarJornadaScreen() {
       : grupo.modo_fotos === 'opcionales'
         ? 'fotos opcionales'
         : 'sin fotos';
+  const gpsTexto = gpsActivo ? ' · con GPS puntual' : '';
 
   const errorHoraFin =
     !horarioBloqueado && horaFin <= horaInicio
       ? 'La hora de fin debe ser posterior a la de inicio.'
       : undefined;
+
+  const ejecutarCapturaGps = async (caso: CasoUbicacionSimulada) => {
+    setErrorGps('');
+    setErrorGeneral('');
+    setCapturandoGps(true);
+    try {
+      const lectura = await obtenerUbicacionActual(caso);
+      if (lectura === 'sin_permiso') {
+        setErrorGps(
+          'Necesitamos tu ubicación para fijar la referencia de esta jornada. Actívala en los ajustes del teléfono.',
+        );
+        return;
+      }
+      setRefLatitud(lectura.latitud);
+      setRefLongitud(lectura.longitud);
+      setRefUbicacionEn(aISOConOffset());
+      setPrecisionMetros(lectura.precision_metros);
+    } finally {
+      setCapturandoGps(false);
+    }
+  };
+
+  const solicitarCapturaGps = () => {
+    if (__DEV__) {
+      setHojaGpsAbierta(true);
+    } else {
+      void ejecutarCapturaGps('dentro_radio');
+    }
+  };
 
   const manejarGuardar = () => {
     setErrorGeneral('');
@@ -120,6 +166,10 @@ export default function CrearOEditarJornadaScreen() {
       setErrorGeneral(errorHoraFin);
       return;
     }
+    if (gpsActivo && (refLatitud == null || refLongitud == null)) {
+      setErrorGeneral('Captura la ubicación de la jornada antes de guardar.');
+      return;
+    }
 
     setEnviando(true);
     try {
@@ -130,6 +180,9 @@ export default function CrearOEditarJornadaScreen() {
             fecha,
             horaInicio,
             horaFin,
+            refLatitud,
+            refLongitud,
+            refUbicacionEn,
           })
         : crearJornada(grupo.id, {
             titulo,
@@ -137,6 +190,9 @@ export default function CrearOEditarJornadaScreen() {
             fecha,
             horaInicio,
             horaFin,
+            refLatitud,
+            refLongitud,
+            refUbicacionEn,
           });
 
       router.replace({
@@ -200,7 +256,7 @@ export default function CrearOEditarJornadaScreen() {
                 <View style={styles.tarjetaInfoTexto}>
                   <Text style={styles.tituloInfo}>Usa la configuración actual del grupo</Text>
                   <Text style={styles.subtituloInfo}>
-                    {modalidadTexto} · {horasTexto} · {fotosTexto}
+                    {modalidadTexto} · {horasTexto} · {fotosTexto}{gpsTexto}
                   </Text>
                 </View>
               </View>
@@ -259,6 +315,48 @@ export default function CrearOEditarJornadaScreen() {
                 </View>
               </View>
 
+              {gpsActivo ? (
+                <View style={styles.bloqueGps}>
+                  <Text style={styles.etiquetaGps}>Ubicación de la jornada</Text>
+                  <Text style={styles.ayudaGps}>
+                    Los participantes deben estar a 100 m o menos de este punto al escanear el QR.
+                  </Text>
+
+                  {refUbicacionEn ? (
+                    <View style={styles.estadoGpsFijado}>
+                      <Icono color={forma.mintInk} nombre="lugar" tamano={18} />
+                      <Text style={styles.textoGpsFijado}>
+                        Ubicación fijada · precisión {precisionMetros} m ·{' '}
+                        {horaEnZona(refUbicacionEn).slice(0, 5)}
+                      </Text>
+                    </View>
+                  ) : null}
+
+                  {errorGps ? (
+                    <Aviso
+                      accion={
+                        <Boton
+                          onPress={solicitarCapturaGps}
+                          tamano="sm"
+                          titulo="Reintentar"
+                          variante="secundario"
+                        />
+                      }
+                      texto={errorGps}
+                      tipo="error"
+                    />
+                  ) : null}
+
+                  <Boton
+                    cargando={capturandoGps}
+                    icono="lugar"
+                    onPress={solicitarCapturaGps}
+                    titulo={refUbicacionEn ? 'Volver a capturar' : 'Capturar ubicación actual'}
+                    variante="secundario"
+                  />
+                </View>
+              ) : null}
+
               <Boton
                 cargando={enviando}
                 onPress={manejarGuardar}
@@ -269,6 +367,24 @@ export default function CrearOEditarJornadaScreen() {
           ) : null}
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <HojaAcciones
+        acciones={[
+          {
+            etiqueta: 'Usar ubicación actual (12 m)',
+            icono: 'lugar',
+            onPress: () => void ejecutarCapturaGps('dentro_radio'),
+          },
+          {
+            etiqueta: 'Simular permiso denegado',
+            icono: 'alerta',
+            peligro: true,
+            onPress: () => void ejecutarCapturaGps('sin_permiso'),
+          },
+        ]}
+        onCerrar={() => setHojaGpsAbierta(false)}
+        visible={hojaGpsAbierta}
+      />
     </SafeAreaView>
   );
 }
@@ -362,5 +478,37 @@ const styles = StyleSheet.create({
   },
   colHora: {
     flex: 1,
+  },
+  bloqueGps: {
+    backgroundColor: forma.canvas,
+    borderRadius: radios.md,
+    gap: espaciados.sm,
+    padding: espaciados.md,
+  },
+  etiquetaGps: {
+    color: forma.ink,
+    fontFamily: fuentes.fuerte,
+    fontSize: tipografia.cuerpoSm,
+  },
+  ayudaGps: {
+    color: forma.muted,
+    fontFamily: fuentes.normal,
+    fontSize: tipografia.micro,
+    lineHeight: 16,
+  },
+  estadoGpsFijado: {
+    alignItems: 'center',
+    backgroundColor: forma.mint,
+    borderRadius: radios.sm,
+    flexDirection: 'row',
+    gap: espaciados.sm,
+    paddingHorizontal: espaciados.md,
+    paddingVertical: espaciados.sm,
+  },
+  textoGpsFijado: {
+    color: forma.mintInk,
+    flex: 1,
+    fontFamily: fuentes.fuerte,
+    fontSize: tipografia.cuerpoSm,
   },
 });

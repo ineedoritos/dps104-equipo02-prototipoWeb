@@ -1,3 +1,4 @@
+import { Encabezado } from '@/components/ui/Encabezado';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -5,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Aviso } from '@/components/ui/Aviso';
 import { Boton } from '@/components/ui/Boton';
+import { HojaAcciones } from '@/components/ui/HojaAcciones';
 import { Icono } from '@/components/ui/Icono';
 import {
   derivarEstadoJornada,
@@ -13,10 +15,23 @@ import {
   obtenerMiRolEnGrupo,
   registrarAsistenciaQR,
 } from '@/lib/gruposStore';
-import { colores, espaciados, fuentes, interletrado, radios, tipografia } from '@/lib/tema';
+import { colores, espaciados, forma, fuentes, interletrado, radios, tipografia } from '@/lib/tema';
+import { type CasoUbicacionSimulada, obtenerUbicacionActual } from '@/lib/ubicacionSimulada';
 import { ErrorDominio } from '@/types/dominio';
 
-type EstadoCamara = 'activa' | 'sin_permiso' | 'procesando' | 'error_qr';
+type EstadoCamara =
+  | 'activa'
+  | 'sin_permiso'
+  | 'procesando'
+  | 'comprobando_gps'
+  | 'sin_permiso_gps'
+  | 'error_gps'
+  | 'error_qr';
+
+interface ErrorUbicacion {
+  titulo: string;
+  texto: string;
+}
 
 export default function EscanearQRScreen() {
   const router = useRouter();
@@ -27,6 +42,8 @@ export default function EscanearQRScreen() {
 
   const [estadoCamara, setEstadoCamara] = useState<EstadoCamara>('activa');
   const [mensajeError, setMensajeError] = useState('');
+  const [errorGps, setErrorGps] = useState<ErrorUbicacion | null>(null);
+  const [hojaGpsAbierta, setHojaGpsAbierta] = useState(false);
   const [bloqueado, setBloqueado] = useState(false);
 
   const grupo = grupoId ? obtenerGrupoPorId(grupoId) : undefined;
@@ -35,19 +52,8 @@ export default function EscanearQRScreen() {
 
   if (!grupo || !jornada || !rol) {
     return (
-      <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
-        <View style={styles.barraSuperior}>
-          <Pressable
-            accessibilityLabel="Volver"
-            accessibilityRole="button"
-            onPress={() => router.back()}
-            style={styles.botonIcono}
-          >
-            <Icono color={colores.tinta} nombre="volver" tamano={22} />
-          </Pressable>
-          <Text style={styles.tituloBarra}>Escanear código QR</Text>
-          <View style={styles.espacioDerecha} />
-        </View>
+      <SafeAreaView edges={['bottom']} style={styles.pantalla}>
+        <Encabezado onVolver={() => router.back()} titulo="Escanear código QR" />
         <View style={styles.contenido}>
           <Aviso
             accion={
@@ -70,18 +76,45 @@ export default function EscanearQRScreen() {
   const puedeEscanear =
     jornada.modalidad_asistencia === 'qr' && !jornada.cancelada && estadoJornada === 'en_curso';
 
-  const procesarLectura = (codigo: 'VALIDO' | 'EXPIRADO' | 'REVOCADO' | 'INVALIDO') => {
+  const procesarLectura = (
+    codigo: 'VALIDO' | 'EXPIRADO' | 'REVOCADO' | 'INVALIDO',
+    casoGps?: CasoUbicacionSimulada,
+  ) => {
     if (bloqueado) {
       return;
     }
 
     setBloqueado(true);
-    setEstadoCamara('procesando');
     setMensajeError('');
+    setErrorGps(null);
 
-    setTimeout(() => {
+    const ejecutarRegistro = async () => {
       try {
-        const resultado = registrarAsistenciaQR(jornada.id, codigo);
+        let ubicacionLectura;
+        if (jornada.gps_habilitado && codigo === 'VALIDO') {
+          setEstadoCamara('comprobando_gps');
+          const referencia =
+            jornada.ref_latitud != null && jornada.ref_longitud != null
+              ? { latitud: jornada.ref_latitud, longitud: jornada.ref_longitud }
+              : null;
+          const resultadoUbicacion = await obtenerUbicacionActual(
+            casoGps ?? 'dentro_radio',
+            referencia,
+          );
+          if (resultadoUbicacion === 'sin_permiso') {
+            setEstadoCamara('sin_permiso_gps');
+            setErrorGps({
+              titulo: 'Necesitamos tu ubicación para registrar tu asistencia.',
+              texto: 'Actívala en los ajustes del teléfono.',
+            });
+            setBloqueado(false);
+            return;
+          }
+          ubicacionLectura = resultadoUbicacion;
+        }
+
+        setEstadoCamara('procesando');
+        const resultado = registrarAsistenciaQR(jornada.id, codigo, ubicacionLectura);
         router.replace({
           pathname: '/grupos/[grupoId]/jornadas/[jornadaId]/confirmacion-qr',
           params: {
@@ -94,38 +127,50 @@ export default function EscanearQRScreen() {
           },
         });
       } catch (err) {
-        setEstadoCamara('error_qr');
-        if (err instanceof ErrorDominio) {
-          setMensajeError(err.message);
+        if (err instanceof ErrorDominio && err.codigo === 'ERR_GPS_FUERA_DE_RADIO') {
+          setEstadoCamara('error_gps');
+          setErrorGps({
+            titulo: 'Estás lejos del lugar de la jornada.',
+            texto: 'Acércate al punto de encuentro e intenta de nuevo.',
+          });
+        } else if (err instanceof ErrorDominio && err.codigo === 'ERR_GPS_SIN_PRECISION') {
+          setEstadoCamara('error_gps');
+          setErrorGps({
+            titulo: 'No pudimos ubicarte con precisión.',
+            texto: 'Sal a un lugar abierto y vuelve a intentar.',
+          });
         } else {
-          setMensajeError('No pudimos validar el código leído. Intenta de nuevo.');
+          setEstadoCamara('error_qr');
+          setMensajeError(
+            err instanceof ErrorDominio
+              ? err.message
+              : 'No pudimos validar el código leído. Intenta de nuevo.',
+          );
         }
         setBloqueado(false);
       }
+    };
+
+    setTimeout(() => {
+      void ejecutarRegistro();
     }, 250);
   };
 
+  const iniciarLecturaPrincipal = () => {
+    if (jornada.gps_habilitado) {
+      if (__DEV__) {
+        setHojaGpsAbierta(true);
+      } else {
+        procesarLectura('VALIDO', 'dentro_radio');
+      }
+      return;
+    }
+    procesarLectura('VALIDO');
+  };
+
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
-      <View style={styles.barraSuperior}>
-        <Pressable
-          accessibilityLabel="Volver al grupo"
-          accessibilityRole="button"
-          onPress={() => router.back()}
-          style={styles.botonIcono}
-        >
-          <Icono color={colores.tinta} nombre="volver" tamano={22} />
-        </Pressable>
-        <View style={styles.centroBarra}>
-          <Text numberOfLines={1} style={styles.tituloBarra}>
-            Escanear código QR
-          </Text>
-          <Text numberOfLines={1} style={styles.subtituloBarra}>
-            {jornada.titulo}
-          </Text>
-        </View>
-        <View style={styles.espacioDerecha} />
-      </View>
+    <SafeAreaView edges={['bottom']} style={styles.pantalla}>
+      <Encabezado onVolver={() => router.back()} titulo="Escanear código QR" />
 
       <ScrollView contentContainerStyle={styles.contenido} showsVerticalScrollIndicator={false}>
         {!puedeEscanear ? (
@@ -182,7 +227,12 @@ export default function EscanearQRScreen() {
                 <View style={[styles.esquina, styles.esquinaInfIzq]} />
                 <View style={[styles.esquina, styles.esquinaInfDer]} />
 
-                {estadoCamara === 'procesando' ? (
+                {estadoCamara === 'comprobando_gps' ? (
+                  <View style={styles.centroVisor}>
+                    <ActivityIndicator color={colores.superficie} size="large" />
+                    <Text style={styles.textoVisor}>Comprobando tu ubicación…</Text>
+                  </View>
+                ) : estadoCamara === 'procesando' ? (
                   <View style={styles.centroVisor}>
                     <ActivityIndicator color={colores.superficie} size="large" />
                     <Text style={styles.textoVisor}>Verificando código…</Text>
@@ -201,6 +251,25 @@ export default function EscanearQRScreen() {
                 texto="La app detecta automáticamente si registras tu entrada o tu salida."
                 tipo="info"
               />
+            ) : null}
+
+            {(estadoCamara === 'error_gps' || estadoCamara === 'sin_permiso_gps') && errorGps ? (
+              <View style={styles.tarjetaGpsError}>
+                <View style={styles.encabezadoGpsError}>
+                  <Icono color={forma.roseInk} nombre="lugar" tamano={20} />
+                  <Text style={styles.tituloGpsError}>{errorGps.titulo}</Text>
+                </View>
+                <Text style={styles.textoGpsError}>{errorGps.texto}</Text>
+                <Text style={styles.notaGpsManual}>
+                  Si no puedes, pide al responsable que registre tu asistencia.
+                </Text>
+                <Boton
+                  onPress={iniciarLecturaPrincipal}
+                  tamano="sm"
+                  titulo="Reintentar"
+                  variante="secundario"
+                />
+              </View>
             ) : null}
 
             {estadoCamara === 'error_qr' && mensajeError ? (
@@ -223,10 +292,10 @@ export default function EscanearQRScreen() {
 
             <View style={styles.bloqueAcciones}>
               <Boton
-                cargando={estadoCamara === 'procesando'}
+                cargando={estadoCamara === 'procesando' || estadoCamara === 'comprobando_gps'}
                 deshabilitado={bloqueado}
                 icono="hecho"
-                onPress={() => procesarLectura('VALIDO')}
+                onPress={iniciarLecturaPrincipal}
                 titulo="Registrar lectura del código"
               />
 
@@ -260,6 +329,36 @@ export default function EscanearQRScreen() {
           Sin permiso de cámara o fuera de rango: el responsable puede registrarte manualmente.
         </Text>
       </ScrollView>
+
+      <HojaAcciones
+        acciones={[
+          {
+            etiqueta: 'Dentro del radio',
+            icono: 'hecho',
+            onPress: () => procesarLectura('VALIDO', 'dentro_radio'),
+          },
+          {
+            etiqueta: 'Fuera del radio (350 m)',
+            icono: 'lugar',
+            peligro: true,
+            onPress: () => procesarLectura('VALIDO', 'fuera_radio'),
+          },
+          {
+            etiqueta: 'Poca precisión (120 m)',
+            icono: 'alerta',
+            peligro: true,
+            onPress: () => procesarLectura('VALIDO', 'poca_precision'),
+          },
+          {
+            etiqueta: 'Sin permiso',
+            icono: 'cerrar',
+            peligro: true,
+            onPress: () => procesarLectura('VALIDO', 'sin_permiso'),
+          },
+        ]}
+        onCerrar={() => setHojaGpsAbierta(false)}
+        visible={hojaGpsAbierta}
+      />
     </SafeAreaView>
   );
 }
@@ -427,5 +526,34 @@ const styles = StyleSheet.create({
     fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
     textAlign: 'center',
+  },
+  tarjetaGpsError: {
+    backgroundColor: forma.rose,
+    borderRadius: radios.superficie,
+    gap: espaciados.sm,
+    padding: espaciados.tonal,
+  },
+  encabezadoGpsError: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: espaciados.sm,
+  },
+  tituloGpsError: {
+    color: forma.roseInk,
+    flex: 1,
+    fontFamily: fuentes.fuerte,
+    fontSize: tipografia.cuerpoSm,
+  },
+  textoGpsError: {
+    color: forma.roseInk,
+    fontFamily: fuentes.normal,
+    fontSize: tipografia.cuerpoSm,
+    lineHeight: 20,
+  },
+  notaGpsManual: {
+    color: forma.muted,
+    fontFamily: fuentes.normal,
+    fontSize: tipografia.micro,
+    lineHeight: 16,
   },
 });

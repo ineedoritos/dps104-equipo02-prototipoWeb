@@ -56,13 +56,17 @@ export function BarraTabs({ state, descriptors, emitter, navigateToTab, insets }
                 pressed && styles.presionado,
               ]}
             >
-              <Icono
-                color={color}
-                nombre={ICONO_RUTA[ruta.name] ?? 'inicio'}
-                tamano={20}
-                trazo={activo ? TRAZO_ICONO.activo : TRAZO_ICONO.normal}
-              />
+              <View style={styles.iconoContenedor}>
+                <Icono
+                  color={color}
+                  nombre={ICONO_RUTA[ruta.name] ?? 'inicio'}
+                  tamano={20}
+                  trazo={activo ? TRAZO_ICONO.activo : TRAZO_ICONO.normal}
+                />
+              </View>
               <Text
+                adjustsFontSizeToFit
+                minimumFontScale={0.82}
                 numberOfLines={1}
                 style={[styles.etiqueta, { color }, activo && styles.etiquetaActiva]}
               >
@@ -87,7 +91,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: INSET,
     marginBottom: espaciados.sm,
-    marginHorizontal: espaciados.xl,
+    marginHorizontal: espaciados.lg,
     padding: INSET,
   },
   destino: {
@@ -98,7 +102,30 @@ const styles = StyleSheet.create({
     height: 56,
     justifyContent: 'center',
     minWidth: 64,
-    paddingHorizontal: espaciados.sm,
+    paddingHorizontal: espaciados.xs,
+  },
+  iconoContenedor: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  insignia: {
+    alignItems: 'center',
+    backgroundColor: forma.roseInk,
+    borderRadius: radios.pill,
+    height: 16,
+    justifyContent: 'center',
+    minWidth: 16,
+    paddingHorizontal: espaciados.xs,
+    position: 'absolute',
+    right: -10,
+    top: -4,
+  },
+  textoInsignia: {
+    color: forma.onAction,
+    fontFamily: fuentes.fuerte,
+    fontSize: 10,
+    lineHeight: 12,
   },
   destinoActivo: {
     backgroundColor: forma.canvas,

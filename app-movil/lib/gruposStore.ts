@@ -6,6 +6,8 @@ import integrantesJson from '@/data/integrantes.json';
 import jornadasJson from '@/data/jornadas.json';
 import usuariosJson from '@/data/usuarios.json';
 import { aISOConOffset, fechaEnZona, fechaHoraEnZona, horaEnZona } from '@/lib/fecha';
+import { crearNotificacion } from '@/lib/notificacionesStore';
+import { distanciaMetros, type LecturaUbicacion } from '@/lib/ubicacionSimulada';
 import {
   ErrorDominio,
   type Asistencia,
@@ -227,6 +229,7 @@ export function actualizarConfiguracionGrupo(
     control_horas: boolean;
     gps_habilitado: boolean;
     modo_fotos?: ModoFotos;
+    requiere_validacion?: boolean;
   },
 ): Grupo {
   exigirResponsable(grupoId);
@@ -244,6 +247,7 @@ export function actualizarConfiguracionGrupo(
       control_horas: config.control_horas,
       gps_habilitado: gpsFinal,
       modo_fotos: config.modo_fotos ?? g.modo_fotos,
+      requiere_validacion: config.requiere_validacion ?? g.requiere_validacion,
     };
     return actualizado;
   });
@@ -513,6 +517,9 @@ export function crearJornada(
     fecha: string;
     horaInicio: string;
     horaFin: string;
+    refLatitud?: number | null;
+    refLongitud?: number | null;
+    refUbicacionEn?: string | null;
   },
 ): Jornada {
   const actual = exigirResponsable(grupoId);
@@ -525,6 +532,10 @@ export function crearJornada(
   const descripcionLimpia = datos.descripcion.trim();
   if (!tituloLimpio || !descripcionLimpia) {
     throw new ErrorDominio('ERR_VALIDACION', 'El título y la descripción son obligatorios.');
+  }
+
+  if (grupo.gps_habilitado && (datos.refLatitud == null || datos.refLongitud == null)) {
+    throw new ErrorDominio('ERR_VALIDACION', 'Captura la ubicación de la jornada antes de guardar.');
   }
 
   const { inicioISO, finISO } = validarRangoHorarioJornada(
@@ -547,6 +558,10 @@ export function crearJornada(
     modo_fotos: grupo.modo_fotos,
     requiere_validacion: grupo.requiere_validacion,
     notificaciones_habilitadas: grupo.notificaciones_habilitadas,
+    ref_latitud: grupo.gps_habilitado ? (datos.refLatitud ?? null) : null,
+    ref_longitud: grupo.gps_habilitado ? (datos.refLongitud ?? null) : null,
+    ref_ubicacion_en:
+      grupo.gps_habilitado ? (datos.refUbicacionEn ?? aISOConOffset()) : null,
     creado_por: actual.id,
     creado_en: aISOConOffset(),
   };
@@ -564,6 +579,9 @@ export function editarJornada(
     fecha: string;
     horaInicio: string;
     horaFin: string;
+    refLatitud?: number | null;
+    refLongitud?: number | null;
+    refUbicacionEn?: string | null;
   },
 ): Jornada {
   const existente = obtenerJornadaPorId(jornadaId);
@@ -586,6 +604,15 @@ export function editarJornada(
     throw new ErrorDominio('ERR_VALIDACION', 'El título y la descripción son obligatorios.');
   }
 
+  const refLatFinal = datos.refLatitud !== undefined ? datos.refLatitud : existente.ref_latitud;
+  const refLngFinal = datos.refLongitud !== undefined ? datos.refLongitud : existente.ref_longitud;
+  const refFechaFinal =
+    datos.refUbicacionEn !== undefined ? datos.refUbicacionEn : existente.ref_ubicacion_en;
+
+  if (existente.gps_habilitado && (refLatFinal == null || refLngFinal == null)) {
+    throw new ErrorDominio('ERR_VALIDACION', 'Captura la ubicación de la jornada antes de guardar.');
+  }
+
   const { inicioISO, finISO } = validarRangoHorarioJornada(
     datos.fecha,
     datos.horaInicio,
@@ -606,6 +633,9 @@ export function editarJornada(
     descripcion: descripcionLimpia,
     inicio_en: inicioISO,
     fin_en: finISO,
+    ref_latitud: existente.gps_habilitado ? refLatFinal : null,
+    ref_longitud: existente.gps_habilitado ? refLngFinal : null,
+    ref_ubicacion_en: existente.gps_habilitado ? refFechaFinal : null,
   };
 
   jornadas = jornadas.map((j) => (j.id === jornadaId ? actualizada : j));
@@ -707,6 +737,13 @@ export function guardarAsistenciasManual(
       .map((a) => [a.participante_id, a]),
   );
 
+  const eventosNotificacion: Array<{
+    participanteId: string;
+    asistenciaId: string;
+    estado: EstadoAsistencia;
+    actualizadoEn: string;
+  }> = [];
+
   for (const cambio of cambios) {
     if (cambio.estado === null) {
       siguientes.delete(cambio.participanteId);
@@ -714,15 +751,34 @@ export function guardarAsistenciasManual(
     }
 
     const previa = siguientes.get(cambio.participanteId);
+    const motivoLimpio =
+      cambio.estado === 'justificada' ? (cambio.motivoAusencia?.trim() ?? null) : null;
+    const huboCambio =
+      !previa ||
+      previa.estado !== cambio.estado ||
+      (previa.motivo_ausencia ?? null) !== motivoLimpio;
     const esPresente = cambio.estado === 'presente';
 
-    siguientes.set(cambio.participanteId, {
+    const estadoValidacion = huboCambio
+      ? jornada.requiere_validacion
+        ? 'pendiente'
+        : 'aprobado'
+      : (previa?.estado_validacion ?? (jornada.requiere_validacion ? 'pendiente' : 'aprobado'));
+
+    const validadoPor = huboCambio
+      ? jornada.requiere_validacion
+        ? null
+        : cambio.participanteId !== actual.id
+          ? actual.id
+          : null
+      : (previa?.validado_por ?? null);
+
+    const registroActualizado: Asistencia = {
       id: previa?.id ?? `asi-${Date.now()}-${cambio.participanteId}`,
       jornada_id: jornadaId,
       participante_id: cambio.participanteId,
       estado: cambio.estado,
-      motivo_ausencia:
-        cambio.estado === 'justificada' ? (cambio.motivoAusencia?.trim() ?? null) : null,
+      motivo_ausencia: motivoLimpio,
       origen: previa?.origen ?? 'manual',
       hora_entrada: esPresente && jornada.control_horas ? (previa?.hora_entrada ?? null) : null,
       hora_salida: esPresente && jornada.control_horas ? (previa?.hora_salida ?? null) : null,
@@ -732,17 +788,45 @@ export function guardarAsistenciasManual(
         esPresente && jornada.control_horas ? (previa?.minutos_reconocidos ?? null) : null,
       motivo_ajuste:
         esPresente && jornada.control_horas ? (previa?.motivo_ajuste ?? null) : null,
-      estado_validacion: previa?.estado_validacion ?? 'aprobado',
-      validado_por: actual.id,
-      actualizado_por: actual.id,
-      actualizado_en: ahoraISO,
-    });
+      estado_validacion: estadoValidacion,
+      validado_por: validadoPor,
+      actualizado_por: huboCambio ? actual.id : (previa?.actualizado_por ?? actual.id),
+      actualizado_en: huboCambio ? ahoraISO : (previa?.actualizado_en ?? ahoraISO),
+    };
+
+    siguientes.set(cambio.participanteId, registroActualizado);
+
+    if (huboCambio) {
+      eventosNotificacion.push({
+        participanteId: cambio.participanteId,
+        asistenciaId: registroActualizado.id,
+        estado: cambio.estado,
+        actualizadoEn: registroActualizado.actualizado_en,
+      });
+    }
   }
 
   asistencias = [
     ...asistencias.filter((a) => a.jornada_id !== jornadaId),
     ...Array.from(siguientes.values()),
   ];
+
+  const etiquetasEstado: Record<EstadoAsistencia, string> = {
+    presente: 'presente',
+    ausente: 'ausente',
+    justificada: 'justificada',
+  };
+  for (const evento of eventosNotificacion) {
+    crearNotificacion({
+      usuario_id: evento.participanteId,
+      jornada_id: jornadaId,
+      tipo_evento: 'asistencia_modificada',
+      clave_unica: `asistencia_modificada:${evento.asistenciaId}:${evento.actualizadoEn}`,
+      titulo: 'Asistencia actualizada',
+      mensaje: `Tu registro en ${jornada.titulo} quedó marcado como ${etiquetasEstado[evento.estado]}.`,
+    });
+  }
+
   notificar();
 }
 
@@ -872,8 +956,9 @@ export function ajustarHorasAsistencia(
     duracion_minutos: duracionMinutos,
     minutos_reconocidos: datos.minutosReconocidos,
     motivo_ajuste: datos.minutosReconocidos < duracionMinutos ? motivoLimpio : null,
-    estado_validacion: previa?.estado_validacion ?? 'aprobado',
-    validado_por: actual.id,
+    estado_validacion: jornada.requiere_validacion ? 'pendiente' : 'aprobado',
+    validado_por:
+      jornada.requiere_validacion || participanteId === actual.id ? null : actual.id,
     actualizado_por: actual.id,
     actualizado_en: ahoraISO,
   };
@@ -884,8 +969,147 @@ export function ajustarHorasAsistencia(
     asistencias = [...asistencias, actualizada];
   }
 
+  crearNotificacion({
+    usuario_id: participanteId,
+    jornada_id: jornadaId,
+    tipo_evento: 'horas_actualizadas',
+    clave_unica: `horas_actualizadas:${actualizada.id}:${actualizada.actualizado_en}`,
+    titulo: 'Horas actualizadas',
+    mensaje: `Se registraron ${datos.minutosReconocidos} min reconocidos en ${jornada.titulo}.`,
+  });
+
   notificar();
   return actualizada;
+}
+
+export function tieneHorasIncompletas(jornada: Jornada, asistencia: Asistencia): boolean {
+  return (
+    jornada.control_horas &&
+    asistencia.estado === 'presente' &&
+    (!asistencia.hora_entrada || !asistencia.hora_salida)
+  );
+}
+
+export function contarPendientesValidacion(jornadaId: string): number {
+  const jornada = obtenerJornadaPorId(jornadaId);
+  if (!jornada || !jornada.requiere_validacion) {
+    return 0;
+  }
+  return asistencias.filter(
+    (a) => a.jornada_id === jornadaId && a.estado_validacion === 'pendiente',
+  ).length;
+}
+
+export function aprobarAsistencia(asistenciaId: string): Asistencia {
+  const existente = asistencias.find((a) => a.id === asistenciaId);
+  if (!existente) {
+    throw new ErrorDominio('ERR_VALIDACION', 'No se encontró el registro de asistencia.');
+  }
+
+  const jornada = obtenerJornadaPorId(existente.jornada_id);
+  if (!jornada) {
+    throw new ErrorDominio('ERR_NO_AUTORIZADO', 'No se encontró la jornada solicitada.');
+  }
+
+  const actual = exigirResponsable(jornada.grupo_id);
+
+  if (jornada.cancelada) {
+    throw new ErrorDominio(
+      'ERR_JORNADA_CANCELADA',
+      'No se pueden aprobar registros de una jornada cancelada.',
+    );
+  }
+
+  if (existente.participante_id === actual.id) {
+    throw new ErrorDominio('ERR_NO_AUTORIZADO', 'No puedes aprobar tu propio registro.');
+  }
+
+  if (tieneHorasIncompletas(jornada, existente)) {
+    throw new ErrorDominio(
+      'ERR_VALIDACION',
+      'Completa la hora de salida antes de aprobar.',
+    );
+  }
+
+  const ahoraISO = aISOConOffset();
+  const actualizada: Asistencia = {
+    ...existente,
+    estado_validacion: 'aprobado',
+    validado_por: actual.id,
+    actualizado_por: actual.id,
+    actualizado_en: ahoraISO,
+  };
+
+  asistencias = asistencias.map((a) => (a.id === asistenciaId ? actualizada : a));
+
+  crearNotificacion({
+    usuario_id: existente.participante_id,
+    jornada_id: jornada.id,
+    tipo_evento: 'horas_actualizadas',
+    clave_unica: `horas_actualizadas:${actualizada.id}:${actualizada.actualizado_en}`,
+    titulo: 'Registro aprobado',
+    mensaje: `Tu registro en ${jornada.titulo} fue aprobado.`,
+  });
+
+  notificar();
+  return actualizada;
+}
+
+export function aprobarCompletos(jornadaId: string): {
+  aprobados: number;
+  omitidos: number;
+} {
+  const jornada = obtenerJornadaPorId(jornadaId);
+  if (!jornada) {
+    throw new ErrorDominio('ERR_NO_AUTORIZADO', 'No se encontró la jornada solicitada.');
+  }
+
+  const actual = exigirResponsable(jornada.grupo_id);
+
+  if (jornada.cancelada) {
+    throw new ErrorDominio(
+      'ERR_JORNADA_CANCELADA',
+      'No se pueden aprobar registros de una jornada cancelada.',
+    );
+  }
+
+  const ahoraISO = aISOConOffset();
+  let aprobados = 0;
+  let omitidos = 0;
+
+  asistencias = asistencias.map((item) => {
+    if (item.jornada_id !== jornadaId || item.estado_validacion !== 'pendiente') {
+      return item;
+    }
+
+    if (item.participante_id === actual.id || tieneHorasIncompletas(jornada, item)) {
+      omitidos += 1;
+      return item;
+    }
+
+    aprobados += 1;
+    crearNotificacion({
+      usuario_id: item.participante_id,
+      jornada_id: jornada.id,
+      tipo_evento: 'horas_actualizadas',
+      clave_unica: `horas_actualizadas:${item.id}:${ahoraISO}`,
+      titulo: 'Registro aprobado',
+      mensaje: `Tu registro en ${jornada.titulo} fue aprobado.`,
+    });
+    return {
+      ...item,
+      estado_validacion: 'aprobado',
+      validado_por: actual.id,
+      actualizado_por: actual.id,
+      actualizado_en: ahoraISO,
+    };
+  });
+
+  if (aprobados > 0) {
+    notificar();
+  }
+
+  return { aprobados, omitidos };
 }
 
 export function obtenerCodigoQRVigente(jornadaId: string): CodigoQR | undefined {
@@ -1002,12 +1226,19 @@ export function obtenerReporteGrupo(
     const motivosJustificadas: string[] = [];
     let minutosRegistrados = 0;
     let minutosReconocidos = 0;
+    let minutosPendientes = 0;
 
     for (const reg of registros) {
       if (reg.estado === 'presente') {
         presentes += 1;
-        minutosRegistrados += reg.duracion_minutos ?? 0;
-        minutosReconocidos += reg.minutos_reconocidos ?? reg.duracion_minutos ?? 0;
+        const duracion = reg.duracion_minutos ?? 0;
+        const reconocidos = reg.minutos_reconocidos ?? duracion;
+        minutosRegistrados += duracion;
+        if (reg.estado_validacion === 'pendiente') {
+          minutosPendientes += reconocidos;
+        } else {
+          minutosReconocidos += reconocidos;
+        }
       } else if (reg.estado === 'justificada') {
         justificadas += 1;
         if (reg.motivo_ausencia?.trim()) {
@@ -1035,6 +1266,7 @@ export function obtenerReporteGrupo(
       tasaAsistencia,
       minutosRegistrados,
       minutosReconocidos,
+      minutosPendientes,
     };
   });
 
@@ -1212,6 +1444,7 @@ export function obtenerMiHistorial(grupoId?: string): ResumenMiHistorial {
 export function registrarAsistenciaQR(
   jornadaId: string,
   codigoSimulado?: 'VALIDO' | 'EXPIRADO' | 'REVOCADO' | 'INVALIDO',
+  ubicacion?: LecturaUbicacion,
 ): ResultadoRegistroQR {
   if (!sesionActual) {
     throw new ErrorDominio('ERR_NO_AUTORIZADO', 'Debes iniciar sesión para registrar asistencia.');
@@ -1273,6 +1506,31 @@ export function registrarAsistenciaQR(
       'ERR_QR_INVALIDO',
       'El código leído no corresponde a esta jornada.',
     );
+  }
+
+  if (jornada.gps_habilitado) {
+    if (jornada.ref_latitud == null || jornada.ref_longitud == null) {
+      throw new ErrorDominio(
+        'ERR_VALIDACION',
+        'Esta jornada requiere ubicación de referencia antes de registrar por QR.',
+      );
+    }
+    if (!ubicacion || ubicacion.precision_metros > 50) {
+      throw new ErrorDominio(
+        'ERR_GPS_SIN_PRECISION',
+        'No pudimos ubicarte con precisión. Sal a un lugar abierto y vuelve a intentar.',
+      );
+    }
+    const distancia = distanciaMetros(
+      { latitud: ubicacion.latitud, longitud: ubicacion.longitud },
+      { latitud: jornada.ref_latitud, longitud: jornada.ref_longitud },
+    );
+    if (distancia > 100) {
+      throw new ErrorDominio(
+        'ERR_GPS_FUERA_DE_RADIO',
+        'Estás lejos del lugar de la jornada. Acércate al punto de encuentro e intenta de nuevo.',
+      );
+    }
   }
 
   const ahora = new Date();
@@ -1341,6 +1599,8 @@ export function registrarAsistenciaQR(
       hora_salida: ahoraISO,
       duracion_minutos: diffMin,
       minutos_reconocidos: diffMin,
+      estado_validacion: jornada.requiere_validacion ? 'pendiente' : 'aprobado',
+      validado_por: null,
       actualizado_por: sesionActual.id,
       actualizado_en: ahoraISO,
     };

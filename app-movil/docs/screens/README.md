@@ -30,7 +30,8 @@ app/
                 ├── mostrar-qr.tsx                 # SCREEN-11 (Mostrar QR)
                 ├── escanear-qr.tsx                # SCREEN-14 (Escanear QR)
                 ├── confirmacion-qr.tsx            # SCREEN-15 (Entrada/Salida registrada)
-                └── mi-registro.tsx                # SCREEN-17 (Detalle del registro)
+                ├── mi-registro.tsx                # SCREEN-17 (Detalle del registro)
+                └── revisiones.tsx                 # SCREEN-08 / HU13 (Solicitudes de revisión · Media)
 ```
 
 > **Estado de la demo de `[SETUP-01]`:** la app abre directo en el tablero de **Inicio** (basado en `prototipo-web`, con datos mock en `data/`) y el navbar muestra solo **Inicio** y **Cuenta**. Las rutas de `SCREEN-02` en adelante se incorporan en sus historias de usuario.
@@ -56,4 +57,4 @@ app/
 | 15 | `SCREEN-15-ENTRADA-REGISTRADA.md` | 15 Entrada registrada | Participante | Alta | `HU08`, `HU09` |
 | 16 | `SCREEN-16-MI-HISTORIAL.md` | 16 Mi historial | Integrante | Alta | `HU14` |
 | 17 | `SCREEN-17-DETALLE-REGISTRO.md` | 17 Detalle del registro | Participante | Alta (+Rev. Media) | `HU14`, `HU13` |
-| 18 | `SCREEN-18-NOTIFICACIONES.md` | Notificaciones *(extra Media)* | Todos | Media | `HU16` |
+| 18 | `SCREEN-18-NOTIFICACIONES.md` | Notificaciones *(extra Media)* | Todos | Media (UI mock) | `HU16` |

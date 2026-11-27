@@ -1,6 +1,7 @@
 import {
   ArrowLeft,
   Ban,
+  Bell,
   Calendar,
   Pencil,
   CalendarX,
@@ -53,6 +54,7 @@ export type NombreIcono =
   | 'reportes'
   | 'editar'
   | 'cancelar'
+  | 'notificaciones'
   | 'mas';
 
 const ICONOS: Record<NombreIcono, LucideIcon> = {
@@ -64,6 +66,7 @@ const ICONOS: Record<NombreIcono, LucideIcon> = {
   reportes: ChartColumn,
   editar: Pencil,
   cancelar: Ban,
+  notificaciones: Bell,
   mas: Ellipsis,
   inicio: House,
   cuenta: CircleUser,

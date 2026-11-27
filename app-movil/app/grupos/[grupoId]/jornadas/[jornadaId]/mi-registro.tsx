@@ -1,8 +1,12 @@
+import { Encabezado } from '@/components/ui/Encabezado';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
-  Pressable,
+  KeyboardAvoidingView,
+  Linking,
+  Modal,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -12,19 +16,44 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Aviso } from '@/components/ui/Aviso';
 import { Boton } from '@/components/ui/Boton';
+import { CampoTexto } from '@/components/ui/CampoTexto';
 import { ESTADO_ASISTENCIA, Estado } from '@/components/ui/Estado';
-import { Icono } from '@/components/ui/Icono';
+import { GaleriaFotos } from '@/components/ui/GaleriaFotos';
+import { HojaAcciones } from '@/components/ui/HojaAcciones';
 import { Seccion } from '@/components/ui/Seccion';
-import { formatearDia, formatearDuracion, horaEnZona } from '@/lib/fecha';
+import { formatearDia, formatearDuracion, formatearFecha, horaEnZona } from '@/lib/fecha';
 import {
+  agregarFotoSimulada,
+  obtenerFotosDeJornada,
+  suscribirFotos,
+  tengoFotoEnJornada,
+} from '@/lib/fotosStore';
+import {
+  derivarEstadoJornada,
   obtenerGrupoPorId,
   obtenerJornadaPorId,
   obtenerMiAsistenciaEnJornada,
+  obtenerMiRolEnGrupo,
   obtenerResponsableDeGrupo,
   obtenerSesionActual,
   suscribirStore,
 } from '@/lib/gruposStore';
-import { cifrasTabulares, colores, espaciados, fuentes, interletrado, radios, tipografia } from '@/lib/tema';
+import {
+  crearSolicitudRevision,
+  obtenerMiSolicitud,
+  suscribirRevisiones,
+} from '@/lib/revisionesStore';
+import {
+  cifrasTabulares,
+  colores,
+  espaciados,
+  forma,
+  fuentes,
+  interletrado,
+  radios,
+  tipografia,
+} from '@/lib/tema';
+import { ErrorDominio } from '@/types/dominio';
 
 type EstadoVista = 'normal' | 'cargando' | 'error';
 
@@ -44,6 +73,13 @@ export default function DetalleRegistroScreen() {
 
   const [estadoVista, setEstadoVista] = useState<EstadoVista>('normal');
   const [tick, setTick] = useState(0);
+  const [modalRevision, setModalRevision] = useState(false);
+  const [motivoSolicitud, setMotivoSolicitud] = useState('');
+  const [errorMotivo, setErrorMotivo] = useState('');
+  const [enviandoSolicitud, setEnviandoSolicitud] = useState(false);
+  const [hojaCamaraAbierta, setHojaCamaraAbierta] = useState(false);
+  const [errorFoto, setErrorFoto] = useState<'permiso' | 'subida' | null>(null);
+  const [mensajeFoto, setMensajeFoto] = useState('');
 
   const recargar = useCallback(() => {
     setTick((prev) => prev + 1);
@@ -52,32 +88,32 @@ export default function DetalleRegistroScreen() {
   useFocusEffect(
     useCallback(() => {
       recargar();
-      return suscribirStore(recargar);
+      const desuscribirStore = suscribirStore(recargar);
+      const desuscribirRev = suscribirRevisiones(recargar);
+      const desuscribirFotos = suscribirFotos(recargar);
+      return () => {
+        desuscribirStore();
+        desuscribirRev();
+        desuscribirFotos();
+      };
     }, [recargar]),
   );
 
   void tick;
   const sesion = obtenerSesionActual();
   const grupo = grupoId ? obtenerGrupoPorId(grupoId) : undefined;
+  const rol = grupoId ? obtenerMiRolEnGrupo(grupoId) : null;
   const jornada = jornadaId ? obtenerJornadaPorId(jornadaId) : undefined;
   const asistencia = jornadaId ? obtenerMiAsistenciaEnJornada(jornadaId) : undefined;
+  const miSolicitud = jornadaId ? obtenerMiSolicitud(jornadaId) : undefined;
   const responsable = grupoId ? obtenerResponsableDeGrupo(grupoId) : undefined;
+  const fotos = jornadaId ? obtenerFotosDeJornada(jornadaId).filter((foto) => foto.autor_id === sesion?.id) : [];
+  const tengoFoto = jornadaId ? tengoFotoEnJornada(jornadaId) : false;
 
   if (!sesion || !grupo || !jornada) {
     return (
-      <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
-        <View style={styles.barraSuperior}>
-          <Pressable
-            accessibilityLabel="Volver"
-            accessibilityRole="button"
-            onPress={() => router.back()}
-            style={styles.botonIcono}
-          >
-            <Icono color={colores.tinta} nombre="volver" tamano={22} />
-          </Pressable>
-          <Text style={styles.tituloBarra}>Detalle del registro</Text>
-          <View style={styles.espacioDerecha} />
-        </View>
+      <SafeAreaView edges={['bottom']} style={styles.pantalla}>
+        <Encabezado onVolver={() => router.back()} titulo="Detalle del registro" />
         <View style={styles.contenido}>
           <Aviso
             accion={
@@ -112,20 +148,91 @@ export default function DetalleRegistroScreen() {
     asistencia.minutos_reconocidos !== null &&
     asistencia.minutos_reconocidos < asistencia.duracion_minutos;
 
+  const puedeSolicitarRevision =
+    !jornada.cancelada &&
+    rol === 'participante' &&
+    (!miSolicitud || miSolicitud.estado !== 'pendiente');
+
+  const abrirModalRevision = () => {
+    setMotivoSolicitud('');
+    setErrorMotivo('');
+    setModalRevision(true);
+  };
+
+  const manejarEnviarSolicitud = () => {
+    const limpio = motivoSolicitud.trim();
+    if (!limpio) {
+      setErrorMotivo('Escribe qué hay que revisar.');
+      return;
+    }
+    if (limpio.length < 10) {
+      setErrorMotivo('Describe qué hay que revisar con al menos 10 caracteres.');
+      return;
+    }
+
+    setErrorMotivo('');
+    setEnviandoSolicitud(true);
+    try {
+      crearSolicitudRevision(jornada.id, limpio);
+      setModalRevision(false);
+      setMotivoSolicitud('');
+      recargar();
+    } catch (error) {
+      if (error instanceof ErrorDominio) {
+        setErrorMotivo(error.message);
+      } else {
+        setErrorMotivo('No pudimos enviar tu solicitud. Intenta de nuevo.');
+      }
+    } finally {
+      setEnviandoSolicitud(false);
+    }
+  };
+
+  const estadoJornada = derivarEstadoJornada(jornada);
+  const puedeAgregarFoto =
+    Boolean(rol) && !jornada.cancelada && estadoJornada !== 'programada';
+  const motivoBloqueoFoto = jornada.cancelada
+    ? 'Las jornadas canceladas no admiten nuevas fotos.'
+    : estadoJornada === 'programada'
+      ? 'Podrás agregar fotos cuando la jornada inicie.'
+      : !rol
+        ? 'Ya no perteneces activamente a este grupo.'
+        : undefined;
+  const faltaFotoObligatoria =
+    jornada.modo_fotos === 'obligatorias' && !jornada.cancelada && !tengoFoto;
+
+  const tomarFoto = () => {
+    setErrorFoto(null);
+    setMensajeFoto('');
+    try {
+      agregarFotoSimulada(jornada.id);
+      recargar();
+    } catch (error) {
+      setErrorFoto('subida');
+      setMensajeFoto(
+        error instanceof ErrorDominio
+          ? error.message
+          : 'No pudimos guardar la foto. Intenta de nuevo.',
+      );
+    }
+  };
+
+  const solicitarAgregarFoto = () => {
+    if (__DEV__) {
+      setHojaCamaraAbierta(true);
+    } else {
+      tomarFoto();
+    }
+  };
+
+  const manejarAbrirAjustes = () => {
+    Linking.openSettings().catch(() => {
+      setMensajeFoto('Abre los ajustes del teléfono para conceder el permiso de cámara.');
+    });
+  };
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
-      <View style={styles.barraSuperior}>
-        <Pressable
-          accessibilityLabel="Volver"
-          accessibilityRole="button"
-          onPress={() => router.back()}
-          style={styles.botonIcono}
-        >
-          <Icono color={colores.tinta} nombre="volver" tamano={22} />
-        </Pressable>
-        <Text style={styles.tituloBarra}>Detalle del registro</Text>
-        <View style={styles.espacioDerecha} />
-      </View>
+    <SafeAreaView edges={['bottom']} style={styles.pantalla}>
+      <Encabezado onVolver={() => router.back()} titulo="Detalle del registro" />
 
       <ScrollView contentContainerStyle={styles.contenido} showsVerticalScrollIndicator={false}>
 
@@ -167,6 +274,30 @@ export default function DetalleRegistroScreen() {
               </View>
               <Text style={styles.metaGrupo}>{grupo.nombre}</Text>
               <Text style={styles.metaFecha}>{fechaTexto}</Text>
+              {jornada.requiere_validacion ? (
+                asistencia ? (
+                  <View style={styles.filaValidacion}>
+                    <Estado
+                      tono={
+                        asistencia.estado_validacion === 'aprobado'
+                          ? 'aprobadoValidacion'
+                          : 'pendienteValidacion'
+                      }
+                    />
+                    <Text style={styles.textoValidacion}>
+                      {asistencia.estado_validacion === 'aprobado'
+                        ? 'Este registro fue aprobado y cuenta en tus totales.'
+                        : 'Tus horas cuentan cuando el responsable las apruebe.'}
+                    </Text>
+                  </View>
+                ) : (
+                  <Text style={styles.textoValidacion}>
+                    Esta jornada exige validación previa del responsable.
+                  </Text>
+                )
+              ) : (
+                <Text style={styles.textoValidacion}>Esta jornada no exige validación previa.</Text>
+              )}
             </View>
 
             {jornada.cancelada ? (
@@ -235,16 +366,196 @@ export default function DetalleRegistroScreen() {
               </View>
             ) : null}
 
-            <View style={styles.bloqueDuda}>
-              <Text style={styles.tituloDuda}>¿Algo no cuadra?</Text>
-              <Text style={styles.textoDuda}>
-                Avísale hoy al responsable mientras todos lo recuerdan
-                {responsable ? ` (${responsable.nombre})` : ''}.
-              </Text>
-            </View>
+            {rol === 'participante' && jornada.modo_fotos !== 'no_permitidas' ? (
+              <Seccion titulo="Fotos de la jornada">
+                {faltaFotoObligatoria ? (
+                  <Aviso
+                    texto="Esta jornada pide al menos una foto para completar tu asistencia."
+                    tipo="info"
+                  />
+                ) : null}
+
+                {errorFoto === 'permiso' ? (
+                  <Aviso
+                    accion={
+                      <View style={styles.filaBotonesFoto}>
+                        <Boton
+                          onPress={solicitarAgregarFoto}
+                          tamano="sm"
+                          titulo="Reintentar"
+                          variante="secundario"
+                        />
+                        <Boton
+                          onPress={manejarAbrirAjustes}
+                          tamano="sm"
+                          titulo="Abrir ajustes"
+                          variante="fantasma"
+                        />
+                      </View>
+                    }
+                    texto={
+                      mensajeFoto ||
+                      'Necesitamos acceso a tu cámara para tomar la foto de evidencia.'
+                    }
+                    tipo="error"
+                  />
+                ) : null}
+
+                {errorFoto === 'subida' ? (
+                  <Aviso
+                    accion={
+                      <Boton
+                        onPress={solicitarAgregarFoto}
+                        tamano="sm"
+                        titulo="Reintentar"
+                        variante="secundario"
+                      />
+                    }
+                    texto={mensajeFoto || 'No pudimos subir la foto. Intenta de nuevo.'}
+                    tipo="error"
+                  />
+                ) : null}
+
+                <GaleriaFotos
+                  esResponsable={false}
+                  fotos={fotos}
+                  motivoBloqueoAgregar={motivoBloqueoFoto}
+                  onAgregarFoto={solicitarAgregarFoto}
+                  puedeAgregar={puedeAgregarFoto}
+                />
+              </Seccion>
+            ) : null}
+
+            {!jornada.cancelada || miSolicitud ? (
+              <Seccion titulo="Revisión">
+                {miSolicitud ? (
+                  <View style={styles.tarjetaRevision}>
+                    <View style={styles.filaEstadoRevision}>
+                      <Estado tono={miSolicitud.estado} />
+                      <Text style={[styles.fechaRevision, cifrasTabulares]}>
+                        {formatearFecha(miSolicitud.creado_en, {
+                          day: 'numeric',
+                          month: 'short',
+                        })}{' '}
+                        · {horaEnZona(miSolicitud.creado_en).slice(0, 5)}
+                      </Text>
+                    </View>
+                    <Text style={styles.textoMotivo}>{miSolicitud.motivo_solicitud}</Text>
+                    {miSolicitud.motivo_resolucion ? (
+                      <View style={styles.cajaResolucion}>
+                        <Text style={styles.etiquetaResolucion}>Respuesta del responsable</Text>
+                        <Text style={styles.textoResolucion}>
+                          {miSolicitud.motivo_resolucion}
+                        </Text>
+                      </View>
+                    ) : null}
+                  </View>
+                ) : (
+                  <View style={styles.bloqueDuda}>
+                    <Text style={styles.tituloDuda}>¿Algo no está bien en tu registro?</Text>
+                    <Text style={styles.textoDuda}>
+                      Si falta una marca o tus horas no coinciden, envía una solicitud de revisión
+                      {responsable ? ` a ${responsable.nombre}` : ''}.
+                    </Text>
+                  </View>
+                )}
+
+                {puedeSolicitarRevision ? (
+                  <Boton
+                    onPress={abrirModalRevision}
+                    titulo="Solicitar revisión"
+                    variante="secundario"
+                  />
+                ) : null}
+              </Seccion>
+            ) : null}
           </>
         ) : null}
       </ScrollView>
+
+      <Modal
+        animationType="fade"
+        onRequestClose={() => setModalRevision(false)}
+        transparent
+        visible={modalRevision}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.veloModal}
+        >
+          <ScrollView style={styles.marcoModal} contentContainerStyle={styles.tarjetaModal} keyboardShouldPersistTaps="handled">
+            <Text style={styles.tituloModal}>Solicitar revisión</Text>
+            <Text style={styles.cuerpoModal}>
+              Explica qué hay que revisar en tu asistencia u horas. Tu registro no cambia hasta que
+              el responsable lo revise.
+            </Text>
+            <CampoTexto
+              error={errorMotivo || undefined}
+              etiqueta="Motivo"
+              maxLength={500}
+              multilinea
+              numberOfLines={4}
+              onChangeText={(texto) => {
+                setMotivoSolicitud(texto);
+                if (errorMotivo) {
+                  setErrorMotivo('');
+                }
+              }}
+              placeholder="Ej. Llegué a tiempo pero no aparece mi entrada."
+              value={motivoSolicitud}
+            />
+            <View style={styles.botonesModal}>
+              <View style={styles.colBotonModal}>
+                <Boton
+                  deshabilitado={enviandoSolicitud}
+                  onPress={() => setModalRevision(false)}
+                  titulo="Cancelar"
+                  variante="secundario"
+                />
+              </View>
+              <View style={styles.colBotonModal}>
+                <Boton
+                  cargando={enviandoSolicitud}
+                  onPress={manejarEnviarSolicitud}
+                  titulo="Enviar solicitud"
+                />
+              </View>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      <HojaAcciones
+        acciones={[
+          {
+            etiqueta: 'Tomar foto',
+            icono: 'camara',
+            onPress: tomarFoto,
+          },
+          {
+            etiqueta: 'Permiso denegado',
+            icono: 'alerta',
+            peligro: true,
+            onPress: () => {
+              setErrorFoto('permiso');
+              setMensajeFoto(
+                'Necesitamos acceso a tu cámara para tomar la foto de evidencia.',
+              );
+            },
+          },
+          {
+            etiqueta: 'Error al subir',
+            icono: 'cerrar',
+            peligro: true,
+            onPress: () => {
+              setErrorFoto('subida');
+              setMensajeFoto('No pudimos subir la foto. Revisa tu conexión e intenta de nuevo.');
+            },
+          },
+        ]}
+        onCerrar={() => setHojaCamaraAbierta(false)}
+        visible={hojaCamaraAbierta}
+      />
     </SafeAreaView>
   );
 }
@@ -323,6 +634,19 @@ const styles = StyleSheet.create({
     fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
   },
+  filaValidacion: {
+    borderTopColor: forma.line,
+    borderTopWidth: 1,
+    gap: espaciados.xs,
+    marginTop: espaciados.xs,
+    paddingTop: espaciados.sm,
+  },
+  textoValidacion: {
+    color: forma.muted,
+    fontFamily: fuentes.normal,
+    fontSize: tipografia.micro,
+    lineHeight: 16,
+  },
   tarjetaDatos: {
     backgroundColor: colores.superficie,
     borderRadius: radios.tarjeta,
@@ -379,5 +703,83 @@ const styles = StyleSheet.create({
     color: colores.tintaSuave,
     fontFamily: fuentes.normal,
     fontSize: tipografia.cuerpoSm,
+  },
+  tarjetaRevision: {
+    backgroundColor: forma.paper,
+    borderRadius: radios.superficie,
+    gap: espaciados.sm,
+    padding: espaciados.lg,
+  },
+  filaEstadoRevision: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  fechaRevision: {
+    color: forma.muted,
+    fontFamily: fuentes.normal,
+    fontSize: tipografia.micro,
+  },
+  cajaResolucion: {
+    backgroundColor: forma.canvas,
+    borderRadius: radios.md,
+    gap: espaciados.xs,
+    marginTop: espaciados.xs,
+    padding: espaciados.md,
+  },
+  etiquetaResolucion: {
+    color: forma.muted,
+    fontFamily: fuentes.fuerte,
+    fontSize: tipografia.micro,
+  },
+  textoResolucion: {
+    color: forma.ink,
+    fontFamily: fuentes.normal,
+    fontSize: tipografia.cuerpoSm,
+    lineHeight: 20,
+  },
+  veloModal: {
+    alignItems: 'center',
+    backgroundColor: forma.scrim,
+    flex: 1,
+    justifyContent: 'center',
+    padding: espaciados.lg,
+  },
+  marcoModal: {
+    width: '100%',
+    flexGrow: 0,
+    maxHeight: '100%',
+  },
+  tarjetaModal: {
+    backgroundColor: forma.paper,
+    borderRadius: radios.modal,
+    gap: espaciados.md,
+    padding: espaciados.xl,
+    width: '100%',
+  },
+  tituloModal: {
+    color: forma.ink,
+    fontFamily: fuentes.fuerte,
+    fontSize: tipografia.titulo,
+    letterSpacing: interletrado.titulo,
+  },
+  cuerpoModal: {
+    color: forma.muted,
+    fontFamily: fuentes.normal,
+    fontSize: tipografia.cuerpoSm,
+    lineHeight: 20,
+  },
+  botonesModal: {
+    flexDirection: 'row',
+    gap: espaciados.sm,
+    marginTop: espaciados.xs,
+  },
+  colBotonModal: {
+    flex: 1,
+  },
+  filaBotonesFoto: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: espaciados.xs,
   },
 });

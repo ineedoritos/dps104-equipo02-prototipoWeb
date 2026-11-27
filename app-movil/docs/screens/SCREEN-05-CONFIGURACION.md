@@ -12,17 +12,19 @@
   - **Por QR:** cada participante escanea un código temporal; el responsable puede corregir.
 - Switch **Control de horas (`control_horas`)**:
   - **Regla T1 (`HU04 CA02`):** es **independiente de la modalidad** (funciona tanto en `manual` como en `qr`; concilia la nota vieja del wireflow).
-- Selector excluyente **Modo de fotografías (`modo_fotos`)** *(etiquetado como `Próximamente` mientras `HU10` no tenga lógica real, pero con el valor actual visible)*:
+- Selector excluyente **Modo de fotografías (`modo_fotos`)**:
   - **No se usan (`no_permitidas`):** nadie puede subir fotos en las jornadas.
   - **Opcionales (`opcionales`):** los integrantes pueden agregar fotos como evidencia.
   - **Obligatorias (`obligatorias`):** cada integrante debe subir al menos una foto para que su asistencia cuente.
+- Switch **Comprobar cercanía por GPS (`gps_habilitado`)**:
+  - Activo cuando `modalidad_asistencia === 'qr'`; deshabilitado automáticamente y forzado a `false` si la modalidad es `manual` (`HU11`).
+- Switch **Exigir validación (`requiere_validacion`)**:
+  - Activo: *"Los registros cuentan cuando un responsable los aprueba."* (`HU12`).
 - Bloque **Funciones opcionales (`MEDIA`)**:
-  - `Comprobar cercanía por GPS (solo QR)` — deshabilitado automáticamente y forzado a `false` si la modalidad es `manual`.
   - `Notificaciones` (`notificaciones_habilitadas`).
-  - `Exigir validación` (`requiere_validacion`).
-  - *(En `MVP · Alta`, estos switches pueden mostrarse claramente etiquetados como `Próximamente / Media` o deshabilitados hasta habilitar su issue.)*
+  - *(Los switches aún sin flujo completo muestran claramente `Próximamente` hasta habilitar su historia.)*
 - Nota al pie: *"Los cambios aplican a jornadas nuevas. Los registros anteriores no cambian."*
-- Botón principal: **Guardar cambios** → actualiza `grupos` y vuelve a `SCREEN-04`.
+- Cada cambio de configuración se guarda al seleccionar la opción. La pantalla permanece abierta.
 - Bloque **Salir del grupo** (al final, separado de la configuración):
   - Si hay otro responsable activo: botón **Salir del grupo** con confirmación.
   - Si soy el **último responsable**: elijo entre los demás integrantes quién queda a cargo; el botón **Salir y dejar a {nombre}** asciende a esa persona a `responsable` y me retira en un solo paso. El grupo nunca queda sin responsable (`HU03 CA02`, `ERR_ULTIMO_RESPONSABLE`).

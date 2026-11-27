@@ -1,0 +1,90 @@
+[
+  {
+    "id": "not-01",
+    "usuario_id": "usr-02",
+    "jornada_id": "jor-03",
+    "tipo_evento": "horas_actualizadas",
+    "clave_unica": "horas_actualizadas:asi-02:2026-11-18T12:35:00-06:00",
+    "titulo": "Horas actualizadas",
+    "mensaje": "Se ajustaron tus horas en Inventario de bodega (3 h reconocidas).",
+    "leida": false,
+    "creado_en": "2026-11-26T18:30:00-06:00"
+  },
+  {
+    "id": "not-02",
+    "usuario_id": "usr-02",
+    "jornada_id": "jor-05",
+    "tipo_evento": "solicitud_revision",
+    "clave_unica": "solicitud_revision:seed-jor-05-usr-04",
+    "titulo": "Nueva solicitud de revisión",
+    "mensaje": "Sofía Martínez pidió revisar su asistencia en Entrenamiento táctico.",
+    "leida": false,
+    "creado_en": "2026-11-26T16:15:00-06:00"
+  },
+  {
+    "id": "not-03",
+    "usuario_id": "usr-02",
+    "jornada_id": "jor-01",
+    "tipo_evento": "asistencia_modificada",
+    "clave_unica": "asistencia_modificada:asi-01:2026-11-25T21:15:00-06:00",
+    "titulo": "Asistencia actualizada",
+    "mensaje": "Tu registro en Clasificación de víveres quedó marcado como presente.",
+    "leida": false,
+    "creado_en": "2026-11-25T21:20:00-06:00"
+  },
+  {
+    "id": "not-04",
+    "usuario_id": "usr-02",
+    "jornada_id": "jor-03",
+    "tipo_evento": "asistencia_modificada",
+    "clave_unica": "asistencia_modificada:asi-02:2026-11-18T12:30:00-06:00",
+    "titulo": "Asistencia confirmada",
+    "mensaje": "Se registró tu participación en Inventario de bodega.",
+    "leida": true,
+    "creado_en": "2026-11-24T10:00:00-06:00"
+  },
+  {
+    "id": "not-05",
+    "usuario_id": "usr-01",
+    "jornada_id": "jor-01",
+    "tipo_evento": "solicitud_revision",
+    "clave_unica": "solicitud_revision:seed-jor-01-usr-03",
+    "titulo": "Nueva solicitud de revisión",
+    "mensaje": "Diego Ramírez pidió revisar su registro en Clasificación de víveres.",
+    "leida": false,
+    "creado_en": "2026-11-26T17:40:00-06:00"
+  },
+  {
+    "id": "not-06",
+    "usuario_id": "usr-01",
+    "jornada_id": "jor-05",
+    "tipo_evento": "asistencia_modificada",
+    "clave_unica": "asistencia_modificada:asi-05:2026-11-25T18:10:00-06:00",
+    "titulo": "Asistencia registrada",
+    "mensaje": "Quedaste marcado como presente en Entrenamiento táctico.",
+    "leida": true,
+    "creado_en": "2026-11-25T18:12:00-06:00"
+  },
+  {
+    "id": "not-07",
+    "usuario_id": "usr-03",
+    "jornada_id": "jor-03",
+    "tipo_evento": "asistencia_modificada",
+    "clave_unica": "asistencia_modificada:asi-03:2026-11-18T12:40:00-06:00",
+    "titulo": "Ausencia justificada",
+    "mensaje": "Se registró tu ausencia justificada en Inventario de bodega.",
+    "leida": false,
+    "creado_en": "2026-11-25T09:15:00-06:00"
+  },
+  {
+    "id": "not-08",
+    "usuario_id": "usr-04",
+    "jornada_id": "jor-05",
+    "tipo_evento": "asistencia_modificada",
+    "clave_unica": "asistencia_modificada:asi-06:2026-11-25T18:10:00-06:00",
+    "titulo": "Asistencia registrada",
+    "mensaje": "Se actualizó tu estado a ausente en Entrenamiento táctico.",
+    "leida": false,
+    "creado_en": "2026-11-25T18:15:00-06:00"
+  }
+]

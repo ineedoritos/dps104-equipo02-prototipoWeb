@@ -1,0 +1,46 @@
+[
+  {
+    "id": "sol-01",
+    "jornada_id": "jor-01",
+    "participante_id": "usr-03",
+    "motivo_solicitud": "Estuve en la clasificación de víveres desde las 19:15 y no aparezco en la lista.",
+    "estado": "pendiente",
+    "motivo_resolucion": null,
+    "resuelta_por": null,
+    "creado_en": "2026-11-26T17:40:00-06:00",
+    "resuelta_en": null
+  },
+  {
+    "id": "sol-02",
+    "jornada_id": "jor-03",
+    "participante_id": "usr-02",
+    "motivo_solicitud": "Me retiré unos minutos antes del cierre; solicito confirmar mis minutos reconocidos.",
+    "estado": "resuelta",
+    "motivo_resolucion": "Revisamos la bitácora del inventario y confirmamos 180 minutos reconocidos.",
+    "resuelta_por": "usr-01",
+    "creado_en": "2026-11-18T14:10:00-06:00",
+    "resuelta_en": "2026-11-18T16:20:00-06:00"
+  },
+  {
+    "id": "sol-03",
+    "jornada_id": "jor-05",
+    "participante_id": "usr-04",
+    "motivo_solicitud": "Creo que sí asistí al entrenamiento de ese día aunque llegué tarde.",
+    "estado": "rechazada",
+    "motivo_resolucion": "No encontramos registro de llegada ni confirmación con el cuerpo técnico.",
+    "resuelta_por": "usr-02",
+    "creado_en": "2026-11-25T22:30:00-06:00",
+    "resuelta_en": "2026-11-26T09:15:00-06:00"
+  },
+  {
+    "id": "sol-04",
+    "jornada_id": "jor-05",
+    "participante_id": "usr-01",
+    "motivo_solicitud": "Solicito validar que mi asistencia quedó registrada para el reporte semanal.",
+    "estado": "pendiente",
+    "motivo_resolucion": null,
+    "resuelta_por": null,
+    "creado_en": "2026-11-26T15:00:00-06:00",
+    "resuelta_en": null
+  }
+]

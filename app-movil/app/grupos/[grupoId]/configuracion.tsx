@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -15,6 +15,7 @@ import {
   obtenerMiRolEnGrupo,
   obtenerSesionActual,
   salirDelGrupo,
+  suscribirStore,
 } from '@/lib/gruposStore';
 import { colores, espaciados, fuentes, interletrado, radios, tipografia } from '@/lib/tema';
 import { ErrorDominio, type ModalidadAsistencia, type ModoFotos } from '@/types/dominio';
@@ -54,53 +55,30 @@ export default function ConfiguracionGrupoScreen() {
   const router = useRouter();
   const { grupoId } = useLocalSearchParams<{ grupoId: string }>();
 
-  const grupo = grupoId ? obtenerGrupoPorId(grupoId) : undefined;
+  const leerGrupo = () => obtenerGrupoPorId(grupoId);
+  const grupo = useSyncExternalStore(suscribirStore, leerGrupo, leerGrupo);
   const rol = grupoId ? obtenerMiRolEnGrupo(grupoId) : null;
 
-  const [modalidad, setModalidad] = useState<ModalidadAsistencia>(
-    grupo?.modalidad_asistencia ?? 'manual',
-  );
-  const [controlHoras, setControlHoras] = useState<boolean>(grupo?.control_horas ?? false);
-  const [gpsHabilitado, setGpsHabilitado] = useState<boolean>(grupo?.gps_habilitado ?? false);
-  const [modoFotos, setModoFotos] = useState<ModoFotos>(grupo?.modo_fotos ?? 'no_permitidas');
-  const [guardando, setGuardando] = useState(false);
-  const [error, setError] = useState('');
+  type Cambio = Partial<Parameters<typeof actualizarConfiguracionGrupo>[1]>;
+  const [fallo, setFallo] = useState<{ mensaje: string; cambio: Cambio } | null>(null);
   const [sucesorId, setSucesorId] = useState<string | null>(null);
   const [errorSalida, setErrorSalida] = useState('');
 
-  const cambiarModalidad = (nueva: ModalidadAsistencia) => {
-    setModalidad(nueva);
-    if (nueva === 'manual') {
-      setGpsHabilitado(false);
-    }
-  };
+  const guardarCambio = (cambio: Cambio) => {
+    const actual = leerGrupo();
+    if (!actual) return;
 
-  const manejarGuardar = () => {
-    if (!grupoId) {
-      return;
+    try {
+      actualizarConfiguracionGrupo(grupoId, { ...actual, ...cambio });
+      setFallo(null);
+    } catch (err) {
+      setFallo({
+        cambio,
+        mensaje: err instanceof ErrorDominio
+          ? err.message
+          : 'No pudimos guardar el cambio. Intenta de nuevo.',
+      });
     }
-    setError('');
-    setGuardando(true);
-
-    setTimeout(() => {
-      try {
-        actualizarConfiguracionGrupo(grupoId, {
-          modalidad_asistencia: modalidad,
-          control_horas: controlHoras,
-          gps_habilitado: modalidad === 'qr' ? gpsHabilitado : false,
-          modo_fotos: modoFotos,
-        });
-        setGuardando(false);
-        router.back();
-      } catch (err) {
-        setGuardando(false);
-        if (err instanceof ErrorDominio) {
-          setError(err.message);
-        } else {
-          setError('No pudimos guardar los cambios. Intenta de nuevo.');
-        }
-      }
-    }, 200);
   };
 
   if (!grupo || rol !== 'responsable') {
@@ -124,6 +102,14 @@ export default function ConfiguracionGrupoScreen() {
       </SafeAreaView>
     );
   }
+
+  const {
+    modalidad_asistencia: modalidad,
+    control_horas: controlHoras,
+    gps_habilitado: gpsHabilitado,
+    modo_fotos: modoFotos,
+    requiere_validacion: requiereValidacion,
+  } = grupo;
 
   const sesion = obtenerSesionActual();
   const otrosIntegrantes = obtenerIntegrantesActivos(grupo.id).filter(
@@ -167,10 +153,10 @@ export default function ConfiguracionGrupoScreen() {
       <Encabezado onVolver={() => router.back()} titulo="Configuración" />
 
       <ScrollView contentContainerStyle={styles.contenido}>
-        {error ? (
+        {fallo ? (
           <Aviso
-            accion={<Boton onPress={manejarGuardar} tamano="sm" titulo="Reintentar" variante="secundario" />}
-            texto={error}
+            accion={<Boton onPress={() => guardarCambio(fallo.cambio)} tamano="sm" titulo="Reintentar" variante="secundario" />}
+            texto={fallo.mensaje}
             tipo="error"
           />
         ) : null}
@@ -179,8 +165,7 @@ export default function ConfiguracionGrupoScreen() {
           <Text style={styles.tituloBloque}>¿Cómo se registra la asistencia?</Text>
           <SelectorSegmentado
             accessibilityLabel="Cómo se registra la asistencia"
-            deshabilitado={guardando}
-            onChange={cambiarModalidad}
+            onChange={(valor) => guardarCambio({ modalidad_asistencia: valor })}
             opciones={OPCIONES_MODALIDAD}
             valor={modalidad}
           />
@@ -195,8 +180,7 @@ export default function ConfiguracionGrupoScreen() {
               </Text>
             </View>
             <Switch
-              disabled={guardando}
-              onValueChange={setControlHoras}
+              onValueChange={(valor) => guardarCambio({ control_horas: valor })}
               thumbColor={colores.superficie}
               trackColor={{ false: colores.bordeFuerte, true: colores.acento }}
               value={controlHoras}
@@ -205,19 +189,66 @@ export default function ConfiguracionGrupoScreen() {
         </View>
 
         <View style={styles.tarjeta}>
-          <View style={styles.encabezadoOpcional}>
-            <Text style={styles.tituloBloque}>Modo de fotografías</Text>
-            <View style={styles.etiquetaProximamente}>
-              <Text style={styles.textoProximamente}>Próximamente</Text>
-            </View>
-          </View>
+          <Text style={styles.tituloBloque}>Modo de fotografías</Text>
           <SelectorSegmentado
             accessibilityLabel="Modo de fotografías"
-            deshabilitado={guardando}
-            onChange={setModoFotos}
+            onChange={(valor) => guardarCambio({ modo_fotos: valor })}
             opciones={OPCIONES_MODO_FOTOS}
             valor={modoFotos}
           />
+        </View>
+
+        <View style={styles.tarjeta}>
+          <Pressable
+            accessibilityLabel="Comprobar cercanía por GPS (solo QR)"
+            accessibilityRole="switch"
+            accessibilityState={{
+              checked: modalidad === 'qr' ? gpsHabilitado : false,
+              disabled: modalidad === 'manual',
+            }}
+            disabled={modalidad === 'manual'}
+            onPress={() => guardarCambio({ gps_habilitado: !gpsHabilitado })}
+            style={styles.filaSwitch}
+          >
+            <View style={styles.opcionTexto}>
+              <Text style={styles.tituloBloque}>Comprobar cercanía por GPS (solo QR)</Text>
+              <Text style={styles.descOpcion}>
+                {modalidad === 'manual'
+                  ? 'Disponible solo cuando la asistencia es por QR.'
+                  : 'Verifica al escanear que el participante esté a 100 m o menos del lugar.'}
+              </Text>
+            </View>
+            <Switch
+              disabled={modalidad === 'manual'}
+              onValueChange={(valor) => guardarCambio({ gps_habilitado: valor })}
+              thumbColor={colores.superficie}
+              trackColor={{ false: colores.bordeFuerte, true: colores.acento }}
+              value={modalidad === 'qr' ? gpsHabilitado : false}
+            />
+          </Pressable>
+        </View>
+
+        <View style={styles.tarjeta}>
+          <Pressable
+            accessibilityLabel="Exigir validación"
+            accessibilityRole="switch"
+            accessibilityState={{ checked: requiereValidacion }}
+            onPress={() => guardarCambio({ requiere_validacion: !requiereValidacion })}
+            style={styles.filaSwitch}
+          >
+            <View style={styles.opcionTexto}>
+              <Text style={styles.tituloBloque}>Exigir validación</Text>
+              <Text style={styles.descOpcion}>
+                Los registros cuentan cuando un responsable los aprueba.
+              </Text>
+            </View>
+            <Switch
+              onValueChange={(valor) => guardarCambio({ requiere_validacion: valor })}
+              thumbColor={colores.superficie}
+              trackColor={{ false: colores.bordeFuerte, true: colores.acento }}
+              value={requiereValidacion}
+            />
+          </Pressable>
         </View>
 
         <View style={styles.tarjeta}>
@@ -230,33 +261,8 @@ export default function ConfiguracionGrupoScreen() {
 
           <View style={styles.filaSwitch}>
             <View style={styles.opcionTexto}>
-              <Text style={styles.tituloOpcion}>Comprobar cercanía por GPS (solo QR)</Text>
-              <Text style={styles.descOpcion}>
-                {modalidad === 'manual'
-                  ? 'Disponible solo cuando la asistencia es por QR.'
-                  : 'Verifica que el escaneo ocurra cerca del punto de la jornada.'}
-              </Text>
-            </View>
-            <Switch
-              disabled
-              thumbColor={colores.superficie}
-              trackColor={{ false: colores.borde, true: colores.acento }}
-              value={modalidad === 'qr' ? gpsHabilitado : false}
-            />
-          </View>
-
-          <View style={[styles.filaSwitch, styles.filaSeparada]}>
-            <View style={styles.opcionTexto}>
               <Text style={styles.tituloOpcion}>Notificaciones</Text>
               <Text style={styles.descOpcion}>Avisos de cambios en asistencia o revisiones.</Text>
-            </View>
-            <Switch disabled thumbColor={colores.superficie} trackColor={{ false: colores.borde, true: colores.acento }} value={false} />
-          </View>
-
-          <View style={[styles.filaSwitch, styles.filaSeparada]}>
-            <View style={styles.opcionTexto}>
-              <Text style={styles.tituloOpcion}>Exigir validación</Text>
-              <Text style={styles.descOpcion}>Aprobación previa del responsable antes de acreditar.</Text>
             </View>
             <Switch disabled thumbColor={colores.superficie} trackColor={{ false: colores.borde, true: colores.acento }} value={false} />
           </View>
@@ -266,7 +272,6 @@ export default function ConfiguracionGrupoScreen() {
           Los cambios aplican a jornadas nuevas. Los registros anteriores no cambian.
         </Text>
 
-        <Boton cargando={guardando} onPress={manejarGuardar} titulo="Guardar cambios" />
 
         <View style={styles.tarjeta}>
           <Text style={styles.tituloBloque}>Salir del grupo</Text>

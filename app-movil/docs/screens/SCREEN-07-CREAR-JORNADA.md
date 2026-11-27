@@ -14,7 +14,7 @@
   - `Fecha` (un solo día en `America/El_Salvador`) + `Hora de inicio` + `Hora de fin` (`fin_en > inicio_en` mismo día).
   - *(En modo edición: si ya existen asistencias o fotos, los campos de fecha/hora aparecen bloqueados con aviso: "Ya hay registros; el horario quedó fijo".)*
 - Tarjeta informativa de solo lectura: *"Usa la configuración actual del grupo"* (ej. `Asistencia por QR · con control de horas`).
-- **[Media · `HU11`]** Si `gps_habilitado = true`: botón **Capturar ubicación actual (GPS)** que guarda `ref_latitud`, `ref_longitud` y `ref_ubicacion_en` mostrando precisión obtenida (sin mapa).
+- **[Media · `HU11`]** Si `gps_habilitado = true`: bloque **Ubicación de la jornada** con botón **Capturar ubicación actual** (simulado en desarrollo con `HojaAcciones`) que guarda `ref_latitud`, `ref_longitud` y `ref_ubicacion_en` mostrando precisión y hora (sin mapa ni coordenadas en crudo). No permite guardar la jornada sin ubicación fijada.
 - Botón principal: **Crear jornada** (o **Guardar cambios**) → navega a `SCREEN-08`.
 
 ## Estados obligatorios (`RNF04`)
