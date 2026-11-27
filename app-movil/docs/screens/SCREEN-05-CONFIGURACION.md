@@ -12,7 +12,7 @@
   - **Por QR:** cada participante escanea un código temporal; el responsable puede corregir.
 - Switch **Control de horas (`control_horas`)**:
   - **Regla T1 (`HU04 CA02`):** es **independiente de la modalidad** (funciona tanto en `manual` como en `qr`; concilia la nota vieja del wireflow).
-- Selector excluyente **Modo de fotografías (`modo_fotos`)** *(etiquetado como `Próximamente` mientras `HU10` no tenga lógica real, pero con el valor actual visible)*:
+- Selector excluyente **Modo de fotografías (`modo_fotos`)**:
   - **No se usan (`no_permitidas`):** nadie puede subir fotos en las jornadas.
   - **Opcionales (`opcionales`):** los integrantes pueden agregar fotos como evidencia.
   - **Obligatorias (`obligatorias`):** cada integrante debe subir al menos una foto para que su asistencia cuente.

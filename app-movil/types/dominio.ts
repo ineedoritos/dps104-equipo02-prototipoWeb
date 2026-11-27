@@ -208,3 +208,14 @@ export interface SolicitudRevision {
   creado_en: string;
   resuelta_en: string | null;
 }
+
+// Media · HU10
+export interface FotoJornada {
+  id: string;
+  jornada_id: string;
+  autor_id: string;
+  ruta_storage: string;
+  retirada_en: string | null;
+  retirada_por: string | null;
+  creado_en: string;
+}

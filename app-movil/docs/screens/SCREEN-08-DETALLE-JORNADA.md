@@ -17,7 +17,7 @@
     - Botón principal: **Pasar lista** → `SCREEN-09`.
   - Botón **Editar jornada** → `SCREEN-07` *(si no está cancelada)*.
   - Botón destructivo **Cancelar jornada** (con modal de confirmación) → marca `cancelada = true`, conserva registros excluyéndolos de totales y bloquea nuevos registros.
-- **[Media · `HU10`]** Bloque **Fotos de la jornada** (solo si `modo_fotos !== 'no_permitidas'`): galería con autor/fecha, botón `+` (cámara) y opción del responsable de retirar foto.
+- **[Media · `HU10`]** Bloque **Fotos de la jornada** (solo si `modo_fotos !== 'no_permitidas'`): galería en cuadrícula de 3 columnas (`GaleriaFotos`) con autor y fecha, vista ampliada en modal, botón **Agregar foto** en jornadas iniciadas y no canceladas (cámara simulada en desarrollo con `HojaAcciones`), manejo de permiso denegado (**Reintentar** y **Abrir ajustes**) y error de subida, y opción del responsable de **Retirar foto** con confirmación sin modificar asistencias.
 - **[Media · `HU13`]** Fila **Solicitudes de revisión** (si la jornada tiene solicitudes): muestra contador de pendientes (`Pendiente`) y abre `app/grupos/[grupoId]/jornadas/[jornadaId]/revisiones.tsx` para resolver o rechazar con `motivo_resolucion` obligatorio y acceder a **Corregir asistencia** (`SCREEN-09`) o **Ajustar horas** (`SCREEN-10`).
 
 ## Estados obligatorios (`RNF04`)

@@ -205,12 +205,7 @@ export default function ConfiguracionGrupoScreen() {
         </View>
 
         <View style={styles.tarjeta}>
-          <View style={styles.encabezadoOpcional}>
-            <Text style={styles.tituloBloque}>Modo de fotografías</Text>
-            <View style={styles.etiquetaProximamente}>
-              <Text style={styles.textoProximamente}>Próximamente</Text>
-            </View>
-          </View>
+          <Text style={styles.tituloBloque}>Modo de fotografías</Text>
           <SelectorSegmentado
             accessibilityLabel="Modo de fotografías"
             deshabilitado={guardando}

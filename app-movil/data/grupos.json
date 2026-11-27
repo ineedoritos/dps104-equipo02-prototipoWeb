@@ -6,7 +6,7 @@
     "modalidad_asistencia": "qr",
     "control_horas": true,
     "gps_habilitado": false,
-    "modo_fotos": "no_permitidas",
+    "modo_fotos": "opcionales",
     "requiere_validacion": false,
     "notificaciones_habilitadas": false,
     "creado_por": "usr-01",

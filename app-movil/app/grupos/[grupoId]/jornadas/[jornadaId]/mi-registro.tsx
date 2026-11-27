@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
+  Linking,
   Modal,
   Platform,
   Pressable,
@@ -17,10 +18,20 @@ import { Aviso } from '@/components/ui/Aviso';
 import { Boton } from '@/components/ui/Boton';
 import { CampoTexto } from '@/components/ui/CampoTexto';
 import { ESTADO_ASISTENCIA, Estado } from '@/components/ui/Estado';
+import { GaleriaFotos } from '@/components/ui/GaleriaFotos';
+import { HojaAcciones } from '@/components/ui/HojaAcciones';
 import { Icono } from '@/components/ui/Icono';
 import { Seccion } from '@/components/ui/Seccion';
 import { formatearDia, formatearDuracion, formatearFecha, horaEnZona } from '@/lib/fecha';
 import {
+  agregarFotoSimulada,
+  obtenerFotosDeJornada,
+  retirarFoto,
+  suscribirFotos,
+  tengoFotoEnJornada,
+} from '@/lib/fotosStore';
+import {
+  derivarEstadoJornada,
   obtenerGrupoPorId,
   obtenerJornadaPorId,
   obtenerMiAsistenciaEnJornada,
@@ -34,7 +45,16 @@ import {
   obtenerMiSolicitud,
   suscribirRevisiones,
 } from '@/lib/revisionesStore';
-import { cifrasTabulares, colores, espaciados, forma, fuentes, interletrado, radios, tipografia } from '@/lib/tema';
+import {
+  cifrasTabulares,
+  colores,
+  espaciados,
+  forma,
+  fuentes,
+  interletrado,
+  radios,
+  tipografia,
+} from '@/lib/tema';
 import { ErrorDominio } from '@/types/dominio';
 
 type EstadoVista = 'normal' | 'cargando' | 'error';
@@ -59,6 +79,9 @@ export default function DetalleRegistroScreen() {
   const [motivoSolicitud, setMotivoSolicitud] = useState('');
   const [errorMotivo, setErrorMotivo] = useState('');
   const [enviandoSolicitud, setEnviandoSolicitud] = useState(false);
+  const [hojaCamaraAbierta, setHojaCamaraAbierta] = useState(false);
+  const [errorFoto, setErrorFoto] = useState<'permiso' | 'subida' | null>(null);
+  const [mensajeFoto, setMensajeFoto] = useState('');
 
   const recargar = useCallback(() => {
     setTick((prev) => prev + 1);
@@ -69,9 +92,11 @@ export default function DetalleRegistroScreen() {
       recargar();
       const desuscribirStore = suscribirStore(recargar);
       const desuscribirRev = suscribirRevisiones(recargar);
+      const desuscribirFotos = suscribirFotos(recargar);
       return () => {
         desuscribirStore();
         desuscribirRev();
+        desuscribirFotos();
       };
     }, [recargar]),
   );
@@ -84,6 +109,8 @@ export default function DetalleRegistroScreen() {
   const asistencia = jornadaId ? obtenerMiAsistenciaEnJornada(jornadaId) : undefined;
   const miSolicitud = jornadaId ? obtenerMiSolicitud(jornadaId) : undefined;
   const responsable = grupoId ? obtenerResponsableDeGrupo(grupoId) : undefined;
+  const fotos = jornadaId ? obtenerFotosDeJornada(jornadaId) : [];
+  const tengoFoto = jornadaId ? tengoFotoEnJornada(jornadaId) : false;
 
   if (!sesion || !grupo || !jornada) {
     return (
@@ -174,6 +201,62 @@ export default function DetalleRegistroScreen() {
     }
   };
 
+  const estadoJornada = derivarEstadoJornada(jornada);
+  const puedeAgregarFoto =
+    Boolean(rol) && !jornada.cancelada && estadoJornada !== 'programada';
+  const motivoBloqueoFoto = jornada.cancelada
+    ? 'Las jornadas canceladas no admiten nuevas fotos.'
+    : estadoJornada === 'programada'
+      ? 'Podrás agregar fotos cuando la jornada inicie.'
+      : !rol
+        ? 'Ya no perteneces activamente a este grupo.'
+        : undefined;
+  const faltaFotoObligatoria =
+    jornada.modo_fotos === 'obligatorias' && !jornada.cancelada && !tengoFoto;
+
+  const tomarFoto = () => {
+    setErrorFoto(null);
+    setMensajeFoto('');
+    try {
+      agregarFotoSimulada(jornada.id);
+      recargar();
+    } catch (error) {
+      setErrorFoto('subida');
+      setMensajeFoto(
+        error instanceof ErrorDominio
+          ? error.message
+          : 'No pudimos guardar la foto. Intenta de nuevo.',
+      );
+    }
+  };
+
+  const solicitarAgregarFoto = () => {
+    if (__DEV__) {
+      setHojaCamaraAbierta(true);
+    } else {
+      tomarFoto();
+    }
+  };
+
+  const manejarRetirarFoto = (fotoId: string) => {
+    try {
+      retirarFoto(fotoId);
+      recargar();
+    } catch (error) {
+      setErrorFoto('subida');
+      setMensajeFoto(
+        error instanceof ErrorDominio
+          ? error.message
+          : 'No pudimos retirar la foto. Intenta de nuevo.',
+      );
+    }
+  };
+
+  const manejarAbrirAjustes = () => {
+    Linking.openSettings().catch(() => {
+      setMensajeFoto('Abre los ajustes del teléfono para conceder el permiso de cámara.');
+    });
+  };
   return (
     <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
       <View style={styles.barraSuperior}>
@@ -297,6 +380,67 @@ export default function DetalleRegistroScreen() {
               </View>
             ) : null}
 
+            {jornada.modo_fotos !== 'no_permitidas' ? (
+              <Seccion titulo="Fotos de la jornada">
+                {faltaFotoObligatoria ? (
+                  <Aviso
+                    texto="Esta jornada pide al menos una foto para completar tu asistencia."
+                    tipo="info"
+                  />
+                ) : null}
+
+                {errorFoto === 'permiso' ? (
+                  <Aviso
+                    accion={
+                      <View style={styles.filaBotonesFoto}>
+                        <Boton
+                          onPress={solicitarAgregarFoto}
+                          tamano="sm"
+                          titulo="Reintentar"
+                          variante="secundario"
+                        />
+                        <Boton
+                          onPress={manejarAbrirAjustes}
+                          tamano="sm"
+                          titulo="Abrir ajustes"
+                          variante="fantasma"
+                        />
+                      </View>
+                    }
+                    texto={
+                      mensajeFoto ||
+                      'Necesitamos acceso a tu cámara para tomar la foto de evidencia.'
+                    }
+                    tipo="error"
+                  />
+                ) : null}
+
+                {errorFoto === 'subida' ? (
+                  <Aviso
+                    accion={
+                      <Boton
+                        onPress={solicitarAgregarFoto}
+                        tamano="sm"
+                        titulo="Reintentar"
+                        variante="secundario"
+                      />
+                    }
+                    texto={mensajeFoto || 'No pudimos subir la foto. Intenta de nuevo.'}
+                    tipo="error"
+                  />
+                ) : null}
+
+                <GaleriaFotos
+                  esResponsable={rol === 'responsable'}
+                  fotos={fotos}
+                  motivoBloqueoAgregar={motivoBloqueoFoto}
+                  onAgregarFoto={solicitarAgregarFoto}
+                  onRetirarFoto={manejarRetirarFoto}
+                  puedeAgregar={puedeAgregarFoto}
+                />
+              </Seccion>
+            ) : null}
+
             {!jornada.cancelada || miSolicitud ? (
               <Seccion titulo="Revisión">
                 {miSolicitud ? (
@@ -395,6 +539,38 @@ export default function DetalleRegistroScreen() {
           </View>
         </KeyboardAvoidingView>
       </Modal>
+
+      <HojaAcciones
+        acciones={[
+          {
+            etiqueta: 'Tomar foto',
+            icono: 'camara',
+            onPress: tomarFoto,
+          },
+          {
+            etiqueta: 'Permiso denegado',
+            icono: 'alerta',
+            peligro: true,
+            onPress: () => {
+              setErrorFoto('permiso');
+              setMensajeFoto(
+                'Necesitamos acceso a tu cámara para tomar la foto de evidencia.',
+              );
+            },
+          },
+          {
+            etiqueta: 'Error al subir',
+            icono: 'cerrar',
+            peligro: true,
+            onPress: () => {
+              setErrorFoto('subida');
+              setMensajeFoto('No pudimos subir la foto. Revisa tu conexión e intenta de nuevo.');
+            },
+          },
+        ]}
+        onCerrar={() => setHojaCamaraAbierta(false)}
+        visible={hojaCamaraAbierta}
+      />
     </SafeAreaView>
   );
 }
@@ -597,5 +773,10 @@ const styles = StyleSheet.create({
   },
   colBotonModal: {
     flex: 1,
+  },
+  filaBotonesFoto: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: espaciados.xs,
   },
 });
