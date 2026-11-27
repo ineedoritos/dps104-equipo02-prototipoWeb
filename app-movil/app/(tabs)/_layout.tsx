@@ -16,9 +16,14 @@ export default function TabsLayout() {
           letterSpacing: interletrado.tituloSm,
         },
         headerShadowVisible: false,
-        // Mismo encabezado en las tres pestañas; el cambio entre ellas se desplaza suavemente.
+        // Mismo encabezado en las pestañas; el cambio entre ellas se desplaza suavemente.
         // Encabezado unico de la app (mismo que el del grupo y los formularios).
-        header: ({ options }) => <Encabezado titulo={options.title ?? ''} />,
+        header: ({ options }) => (
+          <Encabezado
+            derecha={options.headerRight?.({ canGoBack: false, tintColor: colores.tinta })}
+            titulo={options.title ?? ''}
+          />
+        ),
         animation: 'shift',
         sceneStyle: { backgroundColor: colores.papel },
       }}
@@ -26,6 +31,7 @@ export default function TabsLayout() {
     >
       <Tabs.Screen name="index" options={{ title: 'Mis grupos' }} />
       <Tabs.Screen name="historial" options={{ title: 'Mi historial' }} />
+      <Tabs.Screen name="notificaciones" options={{ title: 'Notificaciones' }} />
       <Tabs.Screen name="cuenta" options={{ title: 'Cuenta' }} />
     </Tabs>
   );

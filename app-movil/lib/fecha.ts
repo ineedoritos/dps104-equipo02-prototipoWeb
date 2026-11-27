@@ -128,3 +128,36 @@ export function formatearDuracion(minutos: number | null | undefined): string {
   }
   return `${horas} h ${String(resto).padStart(2, '0')} min`;
 }
+
+/** Formatea un instante como tiempo relativo legible en zona El Salvador. */
+export function formatearFechaRelativa(
+  fecha: Date | string,
+  ahora: Date = new Date(),
+): string {
+  const destino = aFecha(fecha);
+  const diffMin = Math.floor((ahora.getTime() - destino.getTime()) / 60000);
+
+  if (diffMin >= 0 && diffMin < 1) {
+    return 'Hace un momento';
+  }
+  if (diffMin >= 1 && diffMin < 60) {
+    return `Hace ${diffMin} min`;
+  }
+
+  const hoy = fechaEnZona(ahora);
+  const diaDestino = fechaEnZona(destino);
+  const horaCorta = horaEnZona(destino).slice(0, 5);
+
+  if (diaDestino === hoy && diffMin >= 0) {
+    const diffHoras = Math.floor(diffMin / 60);
+    return `Hace ${diffHoras} h`;
+  }
+
+  const ayer = fechaEnZona(new Date(ahora.getTime() - 86400000));
+  if (diaDestino === ayer) {
+    return `Ayer · ${horaCorta}`;
+  }
+
+  const fechaCorta = formatearDia(diaDestino, { day: 'numeric', month: 'short' });
+  return `${fechaCorta} · ${horaCorta}`;
+}

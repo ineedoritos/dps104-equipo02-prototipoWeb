@@ -6,6 +6,7 @@ import integrantesJson from '@/data/integrantes.json';
 import jornadasJson from '@/data/jornadas.json';
 import usuariosJson from '@/data/usuarios.json';
 import { aISOConOffset, fechaEnZona, fechaHoraEnZona, horaEnZona } from '@/lib/fecha';
+import { crearNotificacion } from '@/lib/notificacionesStore';
 import {
   ErrorDominio,
   type Asistencia,
@@ -707,6 +708,13 @@ export function guardarAsistenciasManual(
       .map((a) => [a.participante_id, a]),
   );
 
+  const eventosNotificacion: Array<{
+    participanteId: string;
+    asistenciaId: string;
+    estado: EstadoAsistencia;
+    actualizadoEn: string;
+  }> = [];
+
   for (const cambio of cambios) {
     if (cambio.estado === null) {
       siguientes.delete(cambio.participanteId);
@@ -714,15 +722,20 @@ export function guardarAsistenciasManual(
     }
 
     const previa = siguientes.get(cambio.participanteId);
+    const motivoLimpio =
+      cambio.estado === 'justificada' ? (cambio.motivoAusencia?.trim() ?? null) : null;
+    const huboCambio =
+      !previa ||
+      previa.estado !== cambio.estado ||
+      (previa.motivo_ausencia ?? null) !== motivoLimpio;
     const esPresente = cambio.estado === 'presente';
 
-    siguientes.set(cambio.participanteId, {
+    const registroActualizado: Asistencia = {
       id: previa?.id ?? `asi-${Date.now()}-${cambio.participanteId}`,
       jornada_id: jornadaId,
       participante_id: cambio.participanteId,
       estado: cambio.estado,
-      motivo_ausencia:
-        cambio.estado === 'justificada' ? (cambio.motivoAusencia?.trim() ?? null) : null,
+      motivo_ausencia: motivoLimpio,
       origen: previa?.origen ?? 'manual',
       hora_entrada: esPresente && jornada.control_horas ? (previa?.hora_entrada ?? null) : null,
       hora_salida: esPresente && jornada.control_horas ? (previa?.hora_salida ?? null) : null,
@@ -735,14 +748,42 @@ export function guardarAsistenciasManual(
       estado_validacion: previa?.estado_validacion ?? 'aprobado',
       validado_por: actual.id,
       actualizado_por: actual.id,
-      actualizado_en: ahoraISO,
-    });
+      actualizado_en: huboCambio ? ahoraISO : (previa?.actualizado_en ?? ahoraISO),
+    };
+
+    siguientes.set(cambio.participanteId, registroActualizado);
+
+    if (huboCambio) {
+      eventosNotificacion.push({
+        participanteId: cambio.participanteId,
+        asistenciaId: registroActualizado.id,
+        estado: cambio.estado,
+        actualizadoEn: registroActualizado.actualizado_en,
+      });
+    }
   }
 
   asistencias = [
     ...asistencias.filter((a) => a.jornada_id !== jornadaId),
     ...Array.from(siguientes.values()),
   ];
+
+  const etiquetasEstado: Record<EstadoAsistencia, string> = {
+    presente: 'presente',
+    ausente: 'ausente',
+    justificada: 'justificada',
+  };
+  for (const evento of eventosNotificacion) {
+    crearNotificacion({
+      usuario_id: evento.participanteId,
+      jornada_id: jornadaId,
+      tipo_evento: 'asistencia_modificada',
+      clave_unica: `asistencia_modificada:${evento.asistenciaId}:${evento.actualizadoEn}`,
+      titulo: 'Asistencia actualizada',
+      mensaje: `Tu registro en ${jornada.titulo} quedó marcado como ${etiquetasEstado[evento.estado]}.`,
+    });
+  }
+
   notificar();
 }
 
@@ -883,6 +924,15 @@ export function ajustarHorasAsistencia(
   } else {
     asistencias = [...asistencias, actualizada];
   }
+
+  crearNotificacion({
+    usuario_id: participanteId,
+    jornada_id: jornadaId,
+    tipo_evento: 'horas_actualizadas',
+    clave_unica: `horas_actualizadas:${actualizada.id}:${actualizada.actualizado_en}`,
+    titulo: 'Horas actualizadas',
+    mensaje: `Se registraron ${datos.minutosReconocidos} min reconocidos en ${jornada.titulo}.`,
+  });
 
   notificar();
   return actualizada;

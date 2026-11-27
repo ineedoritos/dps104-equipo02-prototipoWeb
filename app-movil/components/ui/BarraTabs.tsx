@@ -1,15 +1,19 @@
 // expo-router no reexporta este tipo desde la raiz del paquete.
 import type { BottomTabBarProps } from 'expo-router/build/layouts/Tabs';
+import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Icono, TRAZO_ICONO } from '@/components/ui/Icono';
 import type { NombreIcono } from '@/components/ui/Icono';
-import { espaciados, forma, fuentes, radios } from '@/lib/tema';
+import { suscribirStore } from '@/lib/gruposStore';
+import { contarNoLeidas, suscribirNotificaciones } from '@/lib/notificacionesStore';
+import { cifrasTabulares, espaciados, forma, fuentes, radios } from '@/lib/tema';
 
 /** Icono de cada destino, por nombre de ruta. */
 const ICONO_RUTA: Record<string, NombreIcono> = {
   index: 'gente',
   historial: 'reloj',
+  notificaciones: 'notificaciones',
   cuenta: 'cuenta',
 };
 
@@ -22,6 +26,19 @@ const INSET = 6;
  * el resto en `muted`. La etiqueta siempre se ve.
  */
 export function BarraTabs({ state, descriptors, emitter, navigateToTab, insets }: BottomTabBarProps) {
+  const [noLeidas, setNoLeidas] = useState<number>(() => contarNoLeidas());
+
+  useEffect(() => {
+    const actualizar = () => setNoLeidas(contarNoLeidas());
+    actualizar();
+    const desuscribirNotif = suscribirNotificaciones(actualizar);
+    const desuscribirStore = suscribirStore(actualizar);
+    return () => {
+      desuscribirNotif();
+      desuscribirStore();
+    };
+  }, []);
+
   return (
     <View
       style={[styles.zona, { paddingBottom: Math.max(insets.bottom, espaciados.lg) }]}
@@ -32,10 +49,14 @@ export function BarraTabs({ state, descriptors, emitter, navigateToTab, insets }
           const activo = state.index === indice;
           const etiqueta = typeof options.title === 'string' ? options.title : ruta.name;
           const color = activo ? forma.ink : forma.muted;
+          const mostrarContador = ruta.name === 'notificaciones' && noLeidas > 0;
+          const etiquetaAccesible = mostrarContador
+            ? `${etiqueta}, ${noLeidas} sin leer`
+            : etiqueta;
 
           return (
             <Pressable
-              accessibilityLabel={etiqueta}
+              accessibilityLabel={etiquetaAccesible}
               accessibilityRole="tab"
               accessibilityState={{ selected: activo }}
               key={ruta.key}
@@ -56,13 +77,24 @@ export function BarraTabs({ state, descriptors, emitter, navigateToTab, insets }
                 pressed && styles.presionado,
               ]}
             >
-              <Icono
-                color={color}
-                nombre={ICONO_RUTA[ruta.name] ?? 'inicio'}
-                tamano={20}
-                trazo={activo ? TRAZO_ICONO.activo : TRAZO_ICONO.normal}
-              />
+              <View style={styles.iconoContenedor}>
+                <Icono
+                  color={color}
+                  nombre={ICONO_RUTA[ruta.name] ?? 'inicio'}
+                  tamano={20}
+                  trazo={activo ? TRAZO_ICONO.activo : TRAZO_ICONO.normal}
+                />
+                {mostrarContador ? (
+                  <View style={styles.insignia}>
+                    <Text style={[styles.textoInsignia, cifrasTabulares]}>
+                      {noLeidas > 99 ? '99+' : String(noLeidas)}
+                    </Text>
+                  </View>
+                ) : null}
+              </View>
               <Text
+                adjustsFontSizeToFit
+                minimumFontScale={0.82}
                 numberOfLines={1}
                 style={[styles.etiqueta, { color }, activo && styles.etiquetaActiva]}
               >
@@ -87,7 +119,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: INSET,
     marginBottom: espaciados.sm,
-    marginHorizontal: espaciados.xl,
+    marginHorizontal: espaciados.lg,
     padding: INSET,
   },
   destino: {
@@ -98,7 +130,30 @@ const styles = StyleSheet.create({
     height: 56,
     justifyContent: 'center',
     minWidth: 64,
-    paddingHorizontal: espaciados.sm,
+    paddingHorizontal: espaciados.xs,
+  },
+  iconoContenedor: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  insignia: {
+    alignItems: 'center',
+    backgroundColor: forma.roseInk,
+    borderRadius: radios.pill,
+    height: 16,
+    justifyContent: 'center',
+    minWidth: 16,
+    paddingHorizontal: espaciados.xs,
+    position: 'absolute',
+    right: -10,
+    top: -4,
+  },
+  textoInsignia: {
+    color: forma.onAction,
+    fontFamily: fuentes.fuerte,
+    fontSize: 10,
+    lineHeight: 12,
   },
   destinoActivo: {
     backgroundColor: forma.canvas,

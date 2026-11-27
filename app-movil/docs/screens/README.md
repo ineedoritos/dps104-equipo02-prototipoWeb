@@ -56,4 +56,4 @@ app/
 | 15 | `SCREEN-15-ENTRADA-REGISTRADA.md` | 15 Entrada registrada | Participante | Alta | `HU08`, `HU09` |
 | 16 | `SCREEN-16-MI-HISTORIAL.md` | 16 Mi historial | Integrante | Alta | `HU14` |
 | 17 | `SCREEN-17-DETALLE-REGISTRO.md` | 17 Detalle del registro | Participante | Alta (+Rev. Media) | `HU14`, `HU13` |
-| 18 | `SCREEN-18-NOTIFICACIONES.md` | Notificaciones *(extra Media)* | Todos | Media | `HU16` |
+| 18 | `SCREEN-18-NOTIFICACIONES.md` | Notificaciones *(extra Media)* | Todos | Media (UI mock) | `HU16` |

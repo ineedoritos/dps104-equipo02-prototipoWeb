@@ -169,3 +169,21 @@ export class ErrorDominio extends Error {
     this.codigo = codigo;
   }
 }
+
+// Media · HU16
+export type TipoEventoNotificacion =
+  | 'asistencia_modificada'
+  | 'horas_actualizadas'
+  | 'solicitud_revision';
+
+export interface Notificacion {
+  id: string;
+  usuario_id: string;
+  jornada_id: string | null;
+  tipo_evento: TipoEventoNotificacion;
+  clave_unica: string;
+  titulo: string;
+  mensaje: string;
+  leida: boolean;
+  creado_en: string;
+}
