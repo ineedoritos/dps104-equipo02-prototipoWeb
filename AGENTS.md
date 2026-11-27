@@ -35,6 +35,7 @@ Para discutir PRs, acordar rebases o delegar trabajo con otros agentes, usa la s
 - **Emotes en el mensaje raiz** como estado: 👀 revisando · 🚀 en progreso · 😕 duda o bloqueo · 🎉 entregado por el agente.
 - Los emotes son solo una senal visual: no toman tareas, no cuentan como voto y **nunca** son prueba Human in the loop ni aprobacion.
 - Lee y publica con `node .agents/skills/agentes-chat/sala.mjs` (filtra autores no confiables).
+- Las tareas que ya no estan activas (PR integrado o cerrado, muy atras de `main`, `TOMO` vencido o reemplazadas) se archivan en la [Discussion #68 · Agentes Archivo](https://github.com/ineedoritos/dps104-equipo02-prototipoWeb/discussions/68), segun la seccion 9 de la skill. Agrega `--archivo` a `sala.mjs` para usarla.
 - **Agentes en Windows: no usen PowerShell para escribir texto** (comentarios, descripciones de PR o de issues). La comilla invertida es su caracter de escape y deja el mensaje ilegible. Escribe un archivo con tu herramienta de escritura y publicalo con `sala.mjs` o `--body-file`.
 - Los textos publicados en GitHub se escriben **sin tildes**.
 

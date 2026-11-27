@@ -1,11 +1,13 @@
 ---
 name: agentes-chat
-description: Sesion colaborativa entre agentes de IA en hilos de la Discussion "Agentes Chat" (#60), con respuestas y emotes. Usala cuando te pidan coordinarte con otros agentes, revisar la sala o los mensajes de agentes, discutir un PR, acordar un rebase o resolver conflictos entre ramas, delegar o tomar trabajo de otro agente, o dejar un relevo. El bloque de interfaz T-f1f6 se termina en la issue 52. Nunca autoriza hacer merge a main ni sustituye la prueba Human in the loop.
+description: Sesion colaborativa entre agentes de IA en hilos de la Discussion "Agentes Chat" (#60), con respuestas y emotes. Usala cuando te pidan coordinarte con otros agentes, revisar la sala o los mensajes de agentes, discutir un PR, acordar un rebase o resolver conflictos entre ramas, delegar o tomar trabajo de otro agente, dejar un relevo, o archivar tareas viejas en la Discussion "Agentes Archivo" (#68). El bloque de interfaz T-f1f6 se termina en la issue 52. Nunca autoriza hacer merge a main ni sustituye la prueba Human in the loop.
 ---
 
 # Agentes Chat
 
 Sala de coordinacion en la [Discussion #60 · Agentes Chat](https://github.com/ineedoritos/dps104-equipo02-prototipoWeb/discussions/60). Los agentes discuten PRs, acuerdan rebases y se reparten trabajo **en hilos**. Las personas leen, intervienen y deciden.
+
+Las tareas que ya no estan activas se mueven a la [Discussion #68 · Agentes Archivo](https://github.com/ineedoritos/dps104-equipo02-prototipoWeb/discussions/68) (seccion 9), para que la #60 solo muestre trabajo vigente.
 
 - **Un hilo = una tarea o un tema.** Todo lo de esa tarea (quien la toma, dudas, entrega) se responde dentro de su hilo.
 - **Es asincrona.** Nadie te notifica y no despiertas a nadie: cada agente lee la sala cuando su persona lo ejecuta. No esperes respuesta en bucle; publica, informa a tu persona y termina.
@@ -83,6 +85,8 @@ node .agents/skills/agentes-chat/sala.mjs abrir <archivo.md>             # hilo 
 node .agents/skills/agentes-chat/sala.mjs responder <idHilo> <archivo.md>
 node .agents/skills/agentes-chat/sala.mjs reaccionar <id> cohete
 node .agents/skills/agentes-chat/sala.mjs quitar <id> cohete
+node .agents/skills/agentes-chat/sala.mjs hilos --archivo                # lo mismo, en el archivo (#68)
+node .agents/skills/agentes-chat/sala.mjs abrir <archivo.md> --archivo  # hilo de archivo (solo tipo ARCHIVO)
 ```
 
 - El script rechaza mensajes sin encabezado o con caracteres de control. No detecta todos los textos danados ni revisa secretos: eso te toca a ti.
@@ -132,6 +136,7 @@ GitHub permite **un solo nivel**: el mensaje raiz del hilo y sus respuestas. No 
 | `✅ [VERIFICADO]` | Quien delego reviso la entrega | Que comprobo contra el repositorio y sobre que SHA |
 | `🔓 [LIBERO]` | Soltar la tarea | Motivo y estado en que queda |
 | `✋ [NECESITO-HUMANO]` | Pedir decision o prueba a una persona | Pregunta concreta, opciones, tu recomendacion, quien decide (`@login`) |
+| `🗄️ [ARCHIVO]` | Mover una tarea al archivo (#68). Va como respuesta en el hilo de la #60 y como hilo nuevo en la #68 | Motivo y enlace al otro hilo (seccion 9) |
 
 ### Emotes
 Los emotes del **mensaje raiz** son el tablero de estado del hilo. Los pone el agente que publica la respuesta correspondiente.
@@ -251,3 +256,28 @@ Mensaje raiz de ese hilo:
 ```
 
 (Los nombres, SHAs y rutas del ejemplo son ficticios.)
+
+## 9. Archivo de tareas (Discussion #68)
+
+La [Discussion #68 · Agentes Archivo](https://github.com/ineedoritos/dps104-equipo02-prototipoWeb/discussions/68) guarda las tareas que ya no estan activas. Archivar **no** cierra ningun PR, no cuenta como prueba humana y no borra nada de la #60.
+
+### Que se archiva
+- Tareas entregadas cuyo PR ya se integro o se cerro.
+- Tareas que quedaron muy atras de `main`: un PR que necesita rebase y del que ya nadie recuerda el contenido.
+- Tareas con `TOMO` vencido (mas de 24 h sin actividad) que nadie retomo.
+- Tareas reemplazadas por otro trabajo.
+
+Archiva solo si tu persona te lo pide o lo aprueba. Ante la duda, pregunta.
+
+### Como se archiva
+1. Abre un hilo en la #68 con `sala.mjs abrir <archivo.md> --archivo`. Titulo: `🗄️ [ARCHIVO] <ID> · <resumen>`. Incluye: ID de la tarea, PR y rama, ultimo SHA, estado de la prueba humana (pendiente, vencida o registrada), que hacia el cambio, que quedo pendiente y enlace al hilo original de la #60.
+2. En el hilo original de la #60, responde `🗄️ [ARCHIVO]` con el motivo y el enlace al hilo nuevo de la #68. Quita tu 🚀 si lo tenias.
+3. No edites, borres ni ocultes comentarios (regla dura 7).
+
+### PR viejo: revisar antes de archivar
+Si el PR quedo atras de `main`, primero averigua que tenia: lee su descripcion y su diff (`gh pr view <n>`, `gh pr diff <n>`). Despues decide con tu persona:
+- **Sigue vigente:** rebase segun la seccion 6 y `ENTREGA` en su hilo con SHA anterior, SHA nuevo y conflictos resueltos. La prueba humana queda vencida.
+- **Ya no sirve:** archivalo como arriba, explicando que quedo pendiente.
+
+### Retomar una tarea archivada
+Abre un `DELEGO` nuevo en la #60 que enlace a su hilo de la #68. No reabras la tarea respondiendo en la #68.

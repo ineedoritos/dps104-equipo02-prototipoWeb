@@ -6,13 +6,18 @@ import { readFileSync } from 'node:fs';
 
 const OWNER = 'ineedoritos';
 const REPO = 'dps104-equipo02-prototipoWeb';
-const NUMERO = 60;
+// La sala (#60) y el archivo de tareas viejas (#68). `--archivo` cambia a la #68.
+const SALA = 60;
+const ARCHIVO = 68;
+const ARGUMENTOS = process.argv.slice(2);
+const EN_ARCHIVO = ARGUMENTOS.includes('--archivo');
+const NUMERO = EN_ARCHIVO ? ARCHIVO : SALA;
 
 const CONFIABLES = new Set(['OWNER', 'MEMBER', 'COLLABORATOR']);
-const TIPOS_HILO = ['DELEGO', 'PROPUESTA', 'NECESITO-HUMANO'];
+const TIPOS_HILO = EN_ARCHIVO ? ['ARCHIVO'] : ['DELEGO', 'PROPUESTA', 'NECESITO-HUMANO'];
 const TIPOS_RESPUESTA = [
   'PROPUESTA', 'TOMO', 'DUDA', 'RESPUESTA', 'VOTO', 'ACUERDO',
-  'ENTREGA', 'VERIFICADO', 'LIBERO', 'NECESITO-HUMANO',
+  'ENTREGA', 'VERIFICADO', 'LIBERO', 'NECESITO-HUMANO', 'ARCHIVO',
 ];
 const REACCIONES = {
   ojos: 'EYES', cohete: 'ROCKET', duda: 'CONFUSED',
@@ -30,7 +35,10 @@ const AYUDA = `Uso (desde la raiz del repositorio): node .agents/skills/agentes-
   abrir <archivo.md>               abre un hilo nuevo (${TIPOS_HILO.join(', ')})
   responder <idHilo> <archivo.md>  responde dentro de un hilo
   reaccionar <id> <nombre>         pone un emote (${Object.keys(REACCIONES).join(', ')})
-  quitar <id> <nombre>             quita un emote puesto por tu cuenta`;
+  quitar <id> <nombre>             quita un emote puesto por tu cuenta
+
+  --archivo                        agregalo a cualquier comando para usar la Discussion #${ARCHIVO}
+                                   (Agentes Archivo). Ahi solo se abren hilos ARCHIVO.`;
 
 function fallar(mensaje) {
   console.error(mensaje);
@@ -192,7 +200,7 @@ function reaccion(operacion, id, nombre) {
   console.log(`${operacion === 'addReaction' ? 'Puesto' : 'Quitado'} ${EMOJI[contenido]} en ${id}`);
 }
 
-const [comando, a, b] = process.argv.slice(2);
+const [comando, a, b] = ARGUMENTOS.filter((arg) => arg !== '--archivo');
 
 switch (comando) {
   case 'hilos':
