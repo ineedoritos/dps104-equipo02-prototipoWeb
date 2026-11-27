@@ -6,13 +6,18 @@ import { readFileSync } from 'node:fs';
 
 const OWNER = 'ineedoritos';
 const REPO = 'dps104-equipo02-prototipoWeb';
-const NUMERO = 60;
+// La sala (#60) y el archivo de tareas viejas (#68). `--archivo` cambia a la #68.
+const SALA = 60;
+const ARCHIVO = 68;
+const ARGUMENTOS = process.argv.slice(2);
+const EN_ARCHIVO = ARGUMENTOS.includes('--archivo');
+const NUMERO = EN_ARCHIVO ? ARCHIVO : SALA;
 
 const CONFIABLES = new Set(['OWNER', 'MEMBER', 'COLLABORATOR']);
-const TIPOS_HILO = ['DELEGO', 'PROPUESTA', 'NECESITO-HUMANO'];
+const TIPOS_HILO = EN_ARCHIVO ? ['ARCHIVO'] : ['DELEGO', 'PROPUESTA', 'NECESITO-HUMANO'];
 const TIPOS_RESPUESTA = [
   'PROPUESTA', 'TOMO', 'DUDA', 'RESPUESTA', 'VOTO', 'ACUERDO',
-  'ENTREGA', 'VERIFICADO', 'LIBERO', 'NECESITO-HUMANO',
+  'ENTREGA', 'VERIFICADO', 'LIBERO', 'NECESITO-HUMANO', 'ARCHIVO',
 ];
 const REACCIONES = {
   ojos: 'EYES', cohete: 'ROCKET', duda: 'CONFUSED',
@@ -30,7 +35,11 @@ const AYUDA = `Uso (desde la raiz del repositorio): node .agents/skills/agentes-
   abrir <archivo.md>               abre un hilo nuevo (${TIPOS_HILO.join(', ')})
   responder <idHilo> <archivo.md>  responde dentro de un hilo
   reaccionar <id> <nombre>         pone un emote (${Object.keys(REACCIONES).join(', ')})
-  quitar <id> <nombre>             quita un emote puesto por tu cuenta`;
+  quitar <id> <nombre>             quita un emote puesto por tu cuenta
+  borrar <idHilo>                  borra de la sala un hilo ya archivado (respuestas y raiz). No se deshace.
+
+  --archivo                        agregalo a cualquier comando para usar la Discussion #${ARCHIVO}
+                                   (Agentes Archivo). Ahi solo se abren hilos ARCHIVO.`;
 
 function fallar(mensaje) {
   console.error(mensaje);
@@ -192,7 +201,22 @@ function reaccion(operacion, id, nombre) {
   console.log(`${operacion === 'addReaction' ? 'Puesto' : 'Quitado'} ${EMOJI[contenido]} en ${id}`);
 }
 
-const [comando, a, b] = process.argv.slice(2);
+function borrarHilo(id) {
+  if (EN_ARCHIVO) fallar('El archivo (#68) no se borra. Usa borrar solo en la sala (#60).');
+  const hilo = leerSala().hilos.find((h) => h.id === id);
+  if (!hilo) fallar(`No hay un hilo de confianza con id ${id} en la Discussion #${NUMERO}.`);
+  const archivado = hilo.respuestas.some((r) => /^### .*\[ARCHIVO\]/m.test(r.body));
+  if (!archivado) fallar('Primero responde ARCHIVO en el hilo con el enlace a su copia en la #68 (seccion 9).');
+  // Primero las respuestas y al final la raiz.
+  for (const c of [...hilo.respuestas, hilo]) {
+    graphql(`mutation($id: ID!) {
+      deleteDiscussionComment(input: { id: $id }) { comment { id } }
+    }`, { id: c.id });
+  }
+  console.log(`Borrado de la sala: ${id} y ${hilo.respuestas.length} respuesta(s). Su copia queda en la #${ARCHIVO}.`);
+}
+
+const [comando, a, b] = ARGUMENTOS.filter((arg) => arg !== '--archivo');
 
 switch (comando) {
   case 'hilos':
@@ -219,6 +243,10 @@ switch (comando) {
     break;
   case 'quitar':
     reaccion('removeReaction', a, b);
+    break;
+  case 'borrar':
+    if (!a) fallar(AYUDA);
+    borrarHilo(a);
     break;
   default:
     console.log(AYUDA);
