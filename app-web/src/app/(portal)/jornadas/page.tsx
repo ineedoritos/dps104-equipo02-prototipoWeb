@@ -2,9 +2,11 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Calendar, Clock, QrCode, UserCheck } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { FiltroPeriodo } from "@/components/reportes/filtro-periodo";
+import { ArrowRight, Clock, QrCode, UserCheck } from "lucide-react";
 
-import { useContextoPortal } from "@/components/layout/contexto-portal";
+import { rutaPortal, useContextoPortal } from "@/components/layout/contexto-portal";
 import {
   ControlEstadoVista,
   EstadoErrorVista,
@@ -14,7 +16,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -46,10 +47,28 @@ const ETIQUETA_ESTADO: Record<
 
 export default function JornadasPage() {
   const { contextoActivo } = useContextoPortal();
-  const [desdeDia, setDesdeDia] = useState("");
-  const [hastaDia, setHastaDia] = useState("");
-  const [estadoFiltro, setEstadoFiltro] =
-    useState<FiltroEstadoJornada>("todas");
+  const parametros = useSearchParams();
+  const desde = parametros.get("desde") ?? "";
+  const hasta = parametros.get("hasta") ?? "";
+  const rangoValido = !desde || !hasta || desde <= hasta;
+  const desdeDia = rangoValido && /^\d{4}-\d{2}-\d{2}$/.test(desde) ? desde : "";
+  const hastaDia = rangoValido && /^\d{4}-\d{2}-\d{2}$/.test(hasta) ? hasta : "";
+  const estado = parametros.get("estado");
+  const estadoFiltro: FiltroEstadoJornada = estado && Object.hasOwn(ETIQUETA_ESTADO, estado)
+    ? estado as EstadoJornadaDerivado
+    : "todas";
+  const filtros: Record<string, string> = {};
+  if (desdeDia) filtros.desde = desdeDia;
+  if (hastaDia) filtros.hasta = hastaDia;
+  if (estadoFiltro !== "todas") filtros.estado = estadoFiltro;
+  const periodo = parametros.get("periodo");
+  if (periodo) filtros.periodo = periodo;
+
+  function aplicarFiltros(siguientes: Record<string, string>) {
+    window.history.replaceState(null, "", rutaPortal("/jornadas", contextoActivo?.id, siguientes));
+  }
+
+  const [reinicioFiltro, setReinicioFiltro] = useState(0);
   const [estadoForzado, setEstadoForzado] =
     useState<EstadoVistaForzado>("normal");
 
@@ -77,7 +96,7 @@ export default function JornadasPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Jornadas</h1>
+          <h1 className="text-balance text-3xl font-semibold tracking-tight text-forma-ink">Jornadas</h1>
           <p className="text-sm text-muted-foreground">
             Esta vista está disponible para los responsables del grupo.
           </p>
@@ -86,7 +105,7 @@ export default function JornadasPage() {
           titulo="Selecciona un grupo donde seas responsable"
           descripcion="Cambia de grupo para explorar el historial de jornadas o consulta tus registros en Mi reporte."
           accion={
-            <Button nativeButton={false} render={<Link href="/grupos" />} size="sm">
+            <Button nativeButton={false} render={<Link href={rutaPortal("/grupos", contextoActivo?.id)} />} size="sm">
               Ir a Grupos
             </Button>
           }
@@ -99,7 +118,7 @@ export default function JornadasPage() {
     <div className="space-y-6">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="text-balance text-3xl font-semibold tracking-tight text-forma-ink">
             Jornadas del grupo
           </h1>
           <p className="text-sm text-muted-foreground">
@@ -108,46 +127,31 @@ export default function JornadasPage() {
           </p>
         </div>
 
-        <ControlEstadoVista
-          estado={estadoForzado}
-          alCambiar={setEstadoForzado}
-        />
       </div>
 
-      {/* Filtros */}
-      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card p-4">
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Calendar className="h-3.5 w-3.5" />
-          <label className="flex items-center gap-1.5">
-            <span>Desde</span>
-            <Input
-              type="date"
-              value={desdeDia}
-              onChange={(e) => setDesdeDia(e.target.value)}
-              className="h-8 w-auto bg-background text-xs"
-              aria-label="Filtrar desde fecha"
-            />
-          </label>
-          <label className="flex items-center gap-1.5">
-            <span>Hasta</span>
-            <Input
-              type="date"
-              value={hastaDia}
-              onChange={(e) => setHastaDia(e.target.value)}
-              className="h-8 w-auto bg-background text-xs"
-              aria-label="Filtrar hasta fecha"
-            />
-          </label>
-        </div>
-
+      <div className="flex flex-wrap items-end gap-4 rounded-2xl bg-forma-paper p-4 sm:p-5">
+        <FiltroPeriodo
+          key={reinicioFiltro}
+          valor={{
+            tipo: periodo === "7d" || periodo === "mes" || periodo === "todo"
+              ? periodo
+              : desdeDia || hastaDia ? "personalizado" : "todo",
+            desdeDia,
+            hastaDia,
+          }}
+          alCambiar={(valor) => aplicarFiltros({
+            ...filtros,
+            desde: valor.desdeDia,
+            hasta: valor.hastaDia,
+            periodo: valor.tipo,
+          })}
+        />
         <Select
           value={estadoFiltro}
-          onValueChange={(val) =>
-            setEstadoFiltro((val as FiltroEstadoJornada) ?? "todas")
-          }
+          onValueChange={(val) => aplicarFiltros({ ...filtros, estado: val ?? "todas" })}
         >
-          <SelectTrigger className="h-8 w-44 bg-background text-xs">
-            <SelectValue placeholder="Estado" />
+          <SelectTrigger aria-label="Estado de jornada" className="w-full bg-forma-canvas sm:w-auto">
+            <SelectValue>{estadoFiltro === "todas" ? "Todas las jornadas" : ETIQUETA_ESTADO[estadoFiltro].texto}</SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="todas">Todas las jornadas</SelectItem>
@@ -164,9 +168,8 @@ export default function JornadasPage() {
             variant="ghost"
             size="xs"
             onClick={() => {
-              setDesdeDia("");
-              setHastaDia("");
-              setEstadoFiltro("todas");
+              setReinicioFiltro((actual) => actual + 1);
+              aplicarFiltros({});
             }}
           >
             Limpiar filtros
@@ -262,7 +265,7 @@ export default function JornadasPage() {
 
                     <Button
                       nativeButton={false}
-                      render={<Link href={`/jornadas/${jornada.id}`} />}
+                      render={<Link href={rutaPortal(`/jornadas/${jornada.id}`, contextoActivo?.id, filtros)} />}
                       variant="outline"
                       size="sm"
                       className="gap-1.5"
@@ -277,6 +280,7 @@ export default function JornadasPage() {
           })}
         </div>
       )}
+      <ControlEstadoVista estado={estadoForzado} alCambiar={setEstadoForzado} />
     </div>
   );
 }

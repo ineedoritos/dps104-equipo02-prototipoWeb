@@ -1,12 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { ArrowRight, Search, UserCheck, Users } from "lucide-react";
 
 import {
   CONTEXTOS_BASE,
-  type ContextoPortal,
+  rutaPortal,
   useContextoPortal,
 } from "@/components/layout/contexto-portal";
 import { Badge } from "@/components/ui/badge";
@@ -21,8 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 
 export default function GruposPage() {
-  const router = useRouter();
-  const { contextoActivo, seleccionarGrupo, seleccionarPersonal } =
+  const { contextoActivo } =
     useContextoPortal();
   const [busqueda, setBusqueda] = useState("");
 
@@ -36,25 +35,11 @@ export default function GruposPage() {
     );
   }, [busqueda]);
 
-  function entrarAGrupo(grupo: ContextoPortal) {
-    seleccionarGrupo(grupo.id);
-    if (grupo.rol === "responsable") {
-      router.push("/dashboard");
-      return;
-    }
-    router.push("/mi-reporte");
-  }
-
-  function irAMiReporte() {
-    seleccionarPersonal();
-    router.push("/mi-reporte");
-  }
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="text-balance text-3xl font-semibold tracking-tight text-forma-ink">
             Seleccionar grupo
           </h1>
           <p className="text-sm text-muted-foreground">
@@ -63,9 +48,9 @@ export default function GruposPage() {
         </div>
 
         <Button
-          type="button"
+          nativeButton={false}
           variant="outline"
-          onClick={irAMiReporte}
+          render={<Link href={rutaPortal("/mi-reporte", contextoActivo?.id)} />}
           className="gap-2 self-start sm:self-auto"
         >
           <UserCheck className="h-4 w-4" />
@@ -74,7 +59,7 @@ export default function GruposPage() {
       </div>
 
       <div className="relative max-w-md">
-        <Search className="h-4 w-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+        <Search aria-hidden="true" className="h-4 w-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
         <Input
           type="search"
           placeholder="Buscar grupo por nombre o descripción..."
@@ -93,18 +78,18 @@ export default function GruposPage() {
               No se encontraron grupos con ese criterio
             </p>
             <p className="text-xs text-muted-foreground">
-              Intenta con otro nombre o limpia el filtro de búsqueda.
+              Prueba con otro nombre.
             </p>
+            <Button variant="ghost" onClick={() => setBusqueda("")}>Limpiar búsqueda</Button>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid max-w-4xl gap-3">
           {gruposFiltrados.map((grupo) => {
             const esActivo = contextoActivo?.id === grupo.id;
             return (
               <Card
                 key={grupo.id}
-                className={esActivo ? "border-primary/60" : undefined}
               >
                 <CardHeader className="space-y-2">
                   <div className="flex items-start justify-between gap-2">
@@ -127,16 +112,20 @@ export default function GruposPage() {
                 </CardHeader>
                 <CardContent className="flex items-center justify-between gap-2">
                   <span className="text-xs text-muted-foreground">
-                    {esActivo ? "Contexto actual" : "Disponible"}
+                    {esActivo ? "Grupo actual" : null}
                   </span>
                   <Button
-                    type="button"
-                    size="sm"
-                    variant={esActivo ? "default" : "outline"}
-                    onClick={() => entrarAGrupo(grupo)}
+                    nativeButton={false}
+                    variant="outline"
+                    render={
+                      <Link href={grupo.rol === "responsable"
+                        ? rutaPortal("/dashboard", grupo.id)
+                        : rutaPortal("/mi-reporte", grupo.id, { alcance: grupo.id })
+                      } />
+                    }
                     className="gap-1.5"
                   >
-                    <span>{esActivo ? "Continuar" : "Entrar"}</span>
+                    <span>{grupo.rol === "responsable" ? "Ver resumen" : "Ver mi reporte"}</span>
                     <ArrowRight className="h-3.5 w-3.5" />
                   </Button>
                 </CardContent>

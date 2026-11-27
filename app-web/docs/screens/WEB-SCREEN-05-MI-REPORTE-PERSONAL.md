@@ -4,6 +4,8 @@
 - **RF / RNF:** `RF14`, `RF-WEB-04`, `RF-WEB-06`, `RF-WEB-07`, `RNF03`, `RNF04`, `RNF-WEB-02`
 - **Actor:** Cualquier usuario autenticado (Participante o Responsable consultando su propio historial)
 
+Al entrar desde un grupo como participante, el reporte abre con ese grupo filtrado. El filtro personal se conserva en la URL y es independiente del grupo activo en el encabezado.
+
 ## Objetivo
 Permitir a cualquier persona consultar sus propias estadísticas de asistencia, horas y motivos de ajuste (incluyendo grupos de los que salió o fue retirada) y descargar su propio reporte en PDF o Excel client-side.
 

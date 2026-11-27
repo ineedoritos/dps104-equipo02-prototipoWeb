@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { rutaPortal, useContextoPortal } from "@/components/layout/contexto-portal";
 import { Download } from "lucide-react";
 
 import {
@@ -49,7 +51,9 @@ const BADGE_ESTADO: Record<
 };
 
 export default function MiReportePage() {
-  const [grupoFiltro, setGrupoFiltro] = useState("todos");
+  const router = useRouter();
+  const parametros = useSearchParams();
+  const { contextoActivo } = useContextoPortal();
   const [filtro, setFiltro] = useState<FiltroPeriodoValor>(() =>
     crearFiltroInicial("todo"),
   );
@@ -58,6 +62,10 @@ export default function MiReportePage() {
   const [avisoExportacion, setAvisoExportacion] = useState<string | null>(null);
 
   const gruposPersonales = useMemo(() => obtenerGruposPersonales(), []);
+
+  const alcance = parametros.get("alcance");
+  const grupoPersonal = gruposPersonales.find(({ grupo }) => grupo.id === alcance)?.grupo;
+  const grupoFiltro = grupoPersonal?.id ?? "todos";
 
   const reporte = useMemo(
     () => obtenerMiReportePersonal(grupoFiltro, filtro),
@@ -80,7 +88,7 @@ export default function MiReportePage() {
     <div className="space-y-6">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="text-balance text-3xl font-semibold tracking-tight text-forma-ink">
             Mi reporte personal
           </h1>
           <p className="text-sm text-muted-foreground">
@@ -89,22 +97,18 @@ export default function MiReportePage() {
           </p>
         </div>
 
-        <ControlEstadoVista
-          estado={estadoForzado}
-          alCambiar={setEstadoForzado}
-        />
       </div>
 
       {/* Filtros y exportacion */}
-      <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4">
+      <div className="flex flex-col gap-3 rounded-2xl bg-forma-paper p-4 sm:p-5">
         <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3">
           <div className="flex flex-wrap items-center gap-3">
             <Select
               value={grupoFiltro}
-              onValueChange={(val) => setGrupoFiltro(val ?? "todos")}
+              onValueChange={(val) => router.replace(rutaPortal("/mi-reporte", contextoActivo?.id, { alcance: val ?? "todos" }), { scroll: false })}
             >
-              <SelectTrigger className="h-8 w-64 bg-background text-xs">
-                <SelectValue placeholder="Filtrar por grupo" />
+              <SelectTrigger aria-label="Filtrar por grupo" className="w-full bg-forma-canvas sm:w-auto">
+                <SelectValue>{grupoPersonal?.nombre ?? "Todos mis grupos"}</SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="todos">Todos mis grupos</SelectItem>
@@ -241,8 +245,8 @@ export default function MiReportePage() {
 
           {/* Tabla de registros propios */}
           <Card>
-            <CardContent className="p-0 overflow-x-auto">
-              <Table>
+            <CardContent className="p-0">
+              <Table aria-label="Mis registros de asistencia">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Fecha</TableHead>
@@ -357,6 +361,7 @@ export default function MiReportePage() {
           </Card>
         </>
       )}
+      <ControlEstadoVista estado={estadoForzado} alCambiar={setEstadoForzado} />
     </div>
   );
 }

@@ -62,7 +62,7 @@ export function EstadoVacioVista({
         <Inbox className="h-9 w-9 mx-auto text-muted-foreground" />
         <div className="space-y-1">
           <p className="text-sm font-medium text-foreground">{titulo}</p>
-          <p className="text-xs text-muted-foreground max-w-md mx-auto">
+          <p className="text-sm text-forma-muted max-w-md mx-auto">
             {descripcion}
           </p>
         </div>
@@ -84,12 +84,12 @@ export function EstadoErrorVista({
   alReintentar,
 }: EstadoErrorVistaProps) {
   return (
-    <Card className="border-destructive/40">
+    <Card className="bg-forma-rose">
       <CardContent className="py-10 text-center space-y-3" role="alert">
-        <AlertCircle className="h-9 w-9 mx-auto text-destructive" />
+        <AlertCircle className="h-9 w-9 mx-auto text-forma-rose-ink" />
         <div className="space-y-1">
           <p className="text-sm font-medium text-foreground">{titulo}</p>
-          <p className="text-xs text-muted-foreground max-w-md mx-auto">
+          <p className="text-sm text-forma-muted max-w-md mx-auto">
             {mensaje}
           </p>
         </div>

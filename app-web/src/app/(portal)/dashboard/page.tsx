@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowRight, CalendarDays, ClipboardList } from "lucide-react";
 
 import { GraficosDashboard } from "@/components/charts/graficos-dashboard";
-import { useContextoPortal } from "@/components/layout/contexto-portal";
+import { rutaPortal, useContextoPortal } from "@/components/layout/contexto-portal";
 import {
   ControlEstadoVista,
   EstadoErrorVista,
@@ -44,7 +44,7 @@ export default function DashboardPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="text-balance text-3xl font-semibold tracking-tight text-forma-ink">
             Resumen del grupo
           </h1>
           <p className="text-sm text-muted-foreground">
@@ -57,12 +57,12 @@ export default function DashboardPage() {
           descripcion="Puedes elegir otro grupo desde el selector o consultar tu historial personal en Mi reporte."
           accion={
             <div className="flex flex-wrap justify-center gap-2">
-              <Button nativeButton={false} render={<Link href="/grupos" />} size="sm">
+              <Button nativeButton={false} render={<Link href={rutaPortal("/grupos", contextoActivo?.id)} />} size="sm">
                 Ir a Grupos
               </Button>
               <Button
                 nativeButton={false}
-                render={<Link href="/mi-reporte" />}
+                render={<Link href={rutaPortal("/mi-reporte", contextoActivo?.id)} />}
                 variant="outline"
                 size="sm"
               >
@@ -84,48 +84,21 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Resumen de {contextoActivo?.nombre}
+          <h1 className="text-balance text-3xl font-semibold tracking-tight text-forma-ink">
+            Resumen
           </h1>
           <p className="text-sm text-muted-foreground">
-            Indicadores generales de asistencia, jornadas y tendencia por
-            período.
+            Asistencia, jornadas y horas del período seleccionado.
           </p>
         </div>
 
-        <ControlEstadoVista
-          estado={estadoForzado}
-          alCambiar={setEstadoForzado}
-        />
       </div>
 
       {/* Barra de filtros de periodo */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-xl border border-border bg-card p-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-2xl bg-forma-paper p-4 sm:p-5">
         <FiltroPeriodo valor={filtro} alCambiar={setFiltro} />
 
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            nativeButton={false}
-            render={<Link href="/reportes" />}
-            variant="outline"
-            size="sm"
-            className="gap-1.5"
-          >
-            <ClipboardList className="h-3.5 w-3.5" />
-            <span>Ver reporte detallado</span>
-            <ArrowRight className="h-3.5 w-3.5" />
-          </Button>
-          <Button
-            nativeButton={false}
-            render={<Link href="/jornadas" />}
-            variant="outline"
-            size="sm"
-            className="gap-1.5"
-          >
-            <CalendarDays className="h-3.5 w-3.5" />
-            <span>Explorar jornadas</span>
-          </Button>
-        </div>
+
       </div>
 
       {estadoForzado === "error" ? (
@@ -232,6 +205,30 @@ export default function DashboardPage() {
           />
         </>
       )}
+      <div className="flex flex-wrap items-center gap-2">
+          <Button
+            nativeButton={false}
+            render={<Link href={rutaPortal("/reportes", contextoActivo?.id)} />}
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+          >
+            <ClipboardList className="h-3.5 w-3.5" />
+            <span>Ver reporte detallado</span>
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Button>
+          <Button
+            nativeButton={false}
+            render={<Link href={rutaPortal("/jornadas", contextoActivo?.id)} />}
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+          >
+            <CalendarDays className="h-3.5 w-3.5" />
+            <span>Explorar jornadas</span>
+          </Button>
+        </div>
+      <ControlEstadoVista estado={estadoForzado} alCambiar={setEstadoForzado} />
     </div>
   );
 }

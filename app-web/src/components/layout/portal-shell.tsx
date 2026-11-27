@@ -2,21 +2,18 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   ChevronLeft,
   ChevronRight,
   LogOut,
   Menu,
   User,
-  UserCheck,
-  Users,
   X,
 } from "lucide-react";
 
-import { useContextoPortal } from "@/components/layout/contexto-portal";
+import { rutaPortal, useContextoPortal } from "@/components/layout/contexto-portal";
 import { ListaNavegacion } from "@/components/layout/lista-navegacion";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -27,7 +24,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
   SheetClose,
@@ -40,12 +36,10 @@ import { cn } from "@/lib/utils";
 
 export function PortalShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const { contextoActivo, seleccionarPersonal } = useContextoPortal();
+  const enGrupos = usePathname() === "/grupos";
+  const { contextoActivo } = useContextoPortal();
   const [colapsado, setColapsado] = useState(false);
   const [menuMovilAbierto, setMenuMovilAbierto] = useState(false);
-
-  const esResponsable =
-    contextoActivo?.tipo === "grupo" && contextoActivo.rol === "responsable";
 
   return (
     <div className="flex min-h-dvh bg-background text-foreground">
@@ -57,19 +51,19 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
       </a>
       <aside
         className={cn(
-          "hidden shrink-0 flex-col border-r border-sidebar-border bg-sidebar md:flex",
+          "hidden shrink-0 flex-col bg-forma-paper md:flex",
           colapsado ? "w-16" : "w-60",
         )}
       >
         <div
           className={cn(
-            "flex min-h-16 items-center gap-2 border-b border-sidebar-border px-3",
+            "flex min-h-16 items-center gap-2  px-3",
             colapsado ? "justify-center" : "justify-between",
           )}
         >
           {!colapsado && (
             <Link
-              href="/grupos"
+              href={rutaPortal("/grupos", contextoActivo?.id)}
               className="min-w-0 truncate rounded-sm text-sm font-semibold tracking-tight text-foreground focus-visible:outline-2 focus-visible:outline-ring"
             >
               Registro de actividades
@@ -93,14 +87,14 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
 
         <div className="flex-1 overflow-y-auto">
           <ListaNavegacion
-            esResponsable={esResponsable}
+
             colapsado={colapsado}
           />
         </div>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex min-h-16 items-center justify-between gap-2 border-b border-border bg-card px-3 sm:gap-3 sm:px-6">
+        <header className="flex min-h-16 items-center justify-between gap-2 bg-forma-paper px-3 sm:gap-3 sm:px-6">
           <div className="flex min-w-0 flex-1 items-center gap-2">
             <Sheet open={menuMovilAbierto} onOpenChange={setMenuMovilAbierto}>
               <SheetTrigger
@@ -119,9 +113,9 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
               <SheetContent
                 side="left"
                 showCloseButton={false}
-                className="gap-0 overflow-y-auto overscroll-contain p-0 motion-reduce:transition-none"
+                className="gap-0 rounded-r-3xl bg-forma-paper p-0 motion-reduce:transition-none"
               >
-                <SheetHeader className="min-h-16 flex-row items-center justify-between gap-2 border-b border-border px-4 py-2">
+                <SheetHeader className="min-h-16 flex-row items-center justify-between gap-2 px-4 py-2">
                   <SheetTitle className="text-left text-sm font-semibold">
                     Registro de actividades
                   </SheetTitle>
@@ -135,40 +129,30 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
                   </SheetClose>
                 </SheetHeader>
                 <ListaNavegacion
-                  esResponsable={esResponsable}
+
                   alNavegar={() => setMenuMovilAbierto(false)}
                 />
               </SheetContent>
             </Sheet>
 
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-auto min-h-11 min-w-0 max-w-96 shrink justify-between gap-2 bg-secondary px-3 py-1.5"
-              nativeButton={false}
-              render={<Link href="/grupos" />}
-            >
-              <span className="flex min-w-0 flex-col items-start gap-0.5 sm:flex-row sm:items-center sm:gap-2">
-                <span className="max-w-full truncate">
-                  {contextoActivo?.nombre ?? "Seleccionar grupo"}
-                </span>
-                {contextoActivo?.rol && (
-                  <Badge
-                    variant={
-                      contextoActivo.rol === "responsable"
-                        ? "default"
-                        : "secondary"
-                    }
-                    className="shrink-0 text-xs font-medium"
-                  >
-                    {contextoActivo.rol === "responsable"
-                      ? "Responsable"
-                      : "Participante"}
-                  </Badge>
-                )}
-              </span>
-              <ChevronRight aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
-            </Button>
+            <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 py-2">
+              {contextoActivo && (
+                <div className="min-w-0">
+                  <p className="break-words font-semibold text-forma-ink">{contextoActivo.nombre}</p>
+                  <p className="text-sm text-forma-muted">
+                    {contextoActivo.rol === "responsable" ? "Responsable" : "Participante"}
+                  </p>
+                </div>
+              )}
+              {!enGrupos && (
+                <Link
+                href={rutaPortal("/grupos", contextoActivo?.id)}
+                className="inline-flex min-h-11 items-center rounded-full px-3 text-sm text-forma-muted hover:bg-forma-fill focus-visible:outline-2 focus-visible:outline-ring"
+              >
+                {contextoActivo ? "Cambiar grupo" : "Elegir grupo"}
+                </Link>
+              )}
+            </div>
           </div>
 
           <DropdownMenu>
@@ -186,7 +170,7 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
               <User aria-hidden="true" className="h-4 w-4" />
               <span className="hidden sm:inline">Cuenta</span>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuContent align="end" className="w-56 rounded-2xl bg-forma-paper shadow-none">
               <DropdownMenuGroup>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-0.5">
@@ -200,20 +184,6 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
                 </DropdownMenuLabel>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => router.push("/grupos")}>
-                <Users aria-hidden="true" className="mr-2 h-4 w-4" />
-                <span>Cambiar grupo</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => {
-                  seleccionarPersonal();
-                  router.push("/mi-reporte");
-                }}
-              >
-                <UserCheck aria-hidden="true" className="mr-2 h-4 w-4" />
-                <span>Mi reporte personal</span>
-              </DropdownMenuItem>
-              <Separator className="my-1" />
               <DropdownMenuItem
                 variant="destructive"
                 onClick={() => router.push("/login")}

@@ -1,6 +1,8 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext } from "react";
+
+import { useSearchParams } from "next/navigation";
 
 export type RolGrupo = "responsable" | "participante";
 
@@ -36,57 +38,30 @@ export const CONTEXTOS_BASE: ContextoPortal[] = [
   },
 ];
 
-interface ContextoPortalValor {
-  contextoActivo: ContextoPortal | null;
-  seleccionarGrupo: (id: string) => ContextoPortal | null;
-  seleccionarPersonal: () => void;
+export function rutaPortal(
+  ruta: string,
+  grupoId?: string,
+  filtros?: Record<string, string>,
+): string {
+  const parametros = new URLSearchParams(filtros);
+  if (grupoId) parametros.set("grupo", grupoId);
+  const consulta = parametros.toString();
+  return consulta ? `${ruta}?${consulta}` : ruta;
 }
 
-const PERSONAL_CONTEXTO: ContextoPortal = {
-  id: "personal",
-  nombre: "Mi reporte personal",
-  descripcion: "Consulta consolidada de tus asistencias e historial.",
-  tipo: "personal",
-};
+const ContextoPortalContext = createContext<ContextoPortal | null>(null);
 
-const ContextoPortalContext = createContext<ContextoPortalValor | null>(null);
-
-export function ContextoPortalProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const [contextoActivo, setContextoActivo] = useState<ContextoPortal | null>(
-    CONTEXTOS_BASE[0],
-  );
-
-  function seleccionarGrupo(id: string): ContextoPortal | null {
-    const encontrado = CONTEXTOS_BASE.find((item) => item.id === id) ?? null;
-    if (encontrado) {
-      setContextoActivo(encontrado);
-    }
-    return encontrado;
-  }
-
-  function seleccionarPersonal() {
-    setContextoActivo(PERSONAL_CONTEXTO);
-  }
+export function ContextoPortalProvider({ children }: { children: React.ReactNode }) {
+  const grupoId = useSearchParams().get("grupo");
+  const grupo = CONTEXTOS_BASE.find((item) => item.id === grupoId) ?? null;
 
   return (
-    <ContextoPortalContext.Provider
-      value={{ contextoActivo, seleccionarGrupo, seleccionarPersonal }}
-    >
+    <ContextoPortalContext.Provider value={grupo}>
       {children}
     </ContextoPortalContext.Provider>
   );
 }
 
-export function useContextoPortal(): ContextoPortalValor {
-  const contexto = useContext(ContextoPortalContext);
-  if (!contexto) {
-    throw new Error(
-      "useContextoPortal debe usarse dentro de ContextoPortalProvider.",
-    );
-  }
-  return contexto;
+export function useContextoPortal() {
+  return { contextoActivo: useContext(ContextoPortalContext) };
 }

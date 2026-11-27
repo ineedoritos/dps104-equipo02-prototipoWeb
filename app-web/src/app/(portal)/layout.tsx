@@ -8,10 +8,10 @@ export default function PortalLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ContextoPortalProvider>
-      <Suspense fallback={null}>
+    <Suspense fallback={null}>
+      <ContextoPortalProvider>
         <PortalShell>{children}</PortalShell>
-      </Suspense>
-    </ContextoPortalProvider>
+      </ContextoPortalProvider>
+    </Suspense>
   );
 }

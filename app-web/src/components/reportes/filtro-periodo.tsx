@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar } from "lucide-react";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,19 +13,27 @@ interface FiltroPeriodoProps {
 }
 
 const PRESETS: Array<{ id: PeriodoPredefinido; etiqueta: string }> = [
-  { id: "7d", etiqueta: "Últimos 7 días" },
+  { id: "7d", etiqueta: "7 días" },
   { id: "mes", etiqueta: "Este mes" },
   { id: "todo", etiqueta: "Todo" },
 ];
 
 export function FiltroPeriodo({ valor, alCambiar }: FiltroPeriodoProps) {
-  const rangoInvalido =
-    valor.tipo === "personalizado" &&
-    Boolean(valor.desdeDia) &&
-    Boolean(valor.hastaDia) &&
-    valor.desdeDia > valor.hastaDia;
+  const [borrador, setBorrador] = useState<FiltroPeriodoValor | null>(null);
+  const fechas = borrador ?? valor;
+
+  function cambiarFecha(campo: "desdeDia" | "hastaDia", fecha: string) {
+    const siguiente: FiltroPeriodoValor = { ...fechas, tipo: "personalizado", [campo]: fecha };
+    if (siguiente.desdeDia && siguiente.hastaDia && siguiente.desdeDia > siguiente.hastaDia) {
+      setBorrador(siguiente);
+      return;
+    }
+    setBorrador(null);
+    alCambiar(siguiente);
+  }
 
   function aplicarPreset(preset: PeriodoPredefinido) {
+    setBorrador(null);
     const rango = obtenerRangoPeriodo(preset);
     alCambiar({
       tipo: preset,
@@ -37,13 +45,14 @@ export function FiltroPeriodo({ valor, alCambiar }: FiltroPeriodoProps) {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center gap-2">
-        <div className="inline-flex items-center gap-1 rounded-lg border border-border bg-card p-1">
+        <div role="group" aria-label="Período" className="grid grid-cols-3 items-center gap-1 rounded-full bg-forma-fill p-1">
           {PRESETS.map((preset) => (
             <Button
               key={preset.id}
               type="button"
-              size="xs"
-              variant={valor.tipo === preset.id ? "default" : "ghost"}
+              aria-pressed={!borrador && valor.tipo === preset.id}
+              variant={!borrador && valor.tipo === preset.id ? "secondary" : "ghost"}
+              className={!borrador && valor.tipo === preset.id ? "min-w-0 bg-forma-paper px-2 font-semibold" : "min-w-0 px-2"}
               onClick={() => aplicarPreset(preset.id)}
             >
               {preset.etiqueta}
@@ -51,44 +60,31 @@ export function FiltroPeriodo({ valor, alCambiar }: FiltroPeriodoProps) {
           ))}
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-          <Calendar className="h-3.5 w-3.5 hidden sm:inline" />
-          <label className="flex items-center gap-1.5">
+        <div className="grid grid-cols-1 gap-3 text-sm text-forma-muted min-[360px]:grid-cols-2">
+          <label className="grid min-w-0 gap-1">
             <span>Desde</span>
             <Input
               type="date"
-              value={valor.desdeDia}
-              onChange={(e) =>
-                alCambiar({
-                  tipo: "personalizado",
-                  desdeDia: e.target.value,
-                  hastaDia: valor.hastaDia,
-                })
-              }
-              className="h-8 w-auto bg-card text-xs"
-              aria-label="Fecha desde"
+              value={fechas.desdeDia}
+              onChange={(event) => cambiarFecha("desdeDia", event.target.value)}
+              aria-invalid={Boolean(borrador)}
+              className="bg-forma-paper"
             />
           </label>
-          <label className="flex items-center gap-1.5">
+          <label className="grid min-w-0 gap-1">
             <span>Hasta</span>
             <Input
               type="date"
-              value={valor.hastaDia}
-              onChange={(e) =>
-                alCambiar({
-                  tipo: "personalizado",
-                  desdeDia: valor.desdeDia,
-                  hastaDia: e.target.value,
-                })
-              }
-              className="h-8 w-auto bg-card text-xs"
-              aria-label="Fecha hasta"
+              value={fechas.hastaDia}
+              onChange={(event) => cambiarFecha("hastaDia", event.target.value)}
+              aria-invalid={Boolean(borrador)}
+              className="bg-forma-paper"
             />
           </label>
         </div>
       </div>
 
-      {rangoInvalido && (
+      {borrador && (
         <p className="text-xs text-destructive" role="alert">
           La fecha inicial no puede ser mayor que la fecha final.
         </p>

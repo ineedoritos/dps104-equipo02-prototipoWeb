@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { rutaPortal, useContextoPortal } from "@/components/layout/contexto-portal";
 import { cn } from "@/lib/utils";
 
 interface ItemNavegacion {
@@ -53,16 +54,16 @@ const ITEMS_NAVEGACION: readonly ItemNavegacion[] = [
 ];
 
 interface ListaNavegacionProps {
-  esResponsable: boolean;
   colapsado?: boolean;
   alNavegar?: () => void;
 }
 
 export function ListaNavegacion({
-  esResponsable,
   colapsado = false,
   alNavegar,
 }: ListaNavegacionProps) {
+  const { contextoActivo } = useContextoPortal();
+  const esResponsable = contextoActivo?.rol === "responsable";
   const pathname = usePathname();
   const items = ITEMS_NAVEGACION.filter(
     (item) => !item.soloResponsable || esResponsable,
@@ -78,15 +79,15 @@ export function ListaNavegacion({
         const enlace = (
           <Link
             key={item.href}
-            href={item.href}
+            href={rutaPortal(item.href, contextoActivo?.id)}
             onNavigate={alNavegar}
             aria-label={colapsado ? item.etiqueta : undefined}
             aria-current={paginaActual ? "page" : activo ? "location" : undefined}
             className={cn(
-              "flex min-h-11 items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring motion-safe:transition-colors",
+              "flex min-h-11 items-center gap-3 rounded-full px-3 py-2 text-sm font-medium focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring motion-safe:transition-colors",
               activo
-                ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                ? "bg-forma-canvas font-semibold text-forma-ink"
+                : "text-forma-muted hover:bg-forma-fill hover:text-forma-ink",
               colapsado && "justify-center px-2",
             )}
           >
