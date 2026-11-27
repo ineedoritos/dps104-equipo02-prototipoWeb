@@ -9,6 +9,8 @@ Nunca adivines reglas de negocio, nombres de tablas ni rutas de pantallas. Antes
 3. Tablas, restricciones, RLS y RPCs (todo en español): `docs/database.md`
 4. Pantalla(s) afectada(s): `docs/screens/SCREEN-*.md` y `docs/screens/README.md`
 5. Guía de verificación manual para el humano: `docs/e2e-manual-guide.md`
+6. Sistema de diseno (Forma): `../DESIGN.md`, aplicado en `lib/tema.ts`
+7. Interfaz de prioridad Media (HU10 a HU13, HU16): guia de cada tarea en `docs/guias-ui-media/`
 
 ## 2. Reglas de oro del proyecto
 - **No inventar alcance:** respeta estrictamente los *No-Goals* en `docs/specs/00-general.md` y la sección *"Fuera de alcance"* de cada issue.
