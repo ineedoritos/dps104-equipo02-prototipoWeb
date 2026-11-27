@@ -12,11 +12,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Aviso } from '@/components/ui/Aviso';
-import { BarraSuperior } from '@/components/ui/BarraSuperior';
 import { Boton } from '@/components/ui/Boton';
 import { Estado, type TonoEstado } from '@/components/ui/Estado';
 import { Icono } from '@/components/ui/Icono';
-import { fechaEnZona, formatearDia, horaEnZona } from '@/lib/fecha';
+import { formatearDia, horaEnZona } from '@/lib/fecha';
 import {
   cancelarJornada,
   derivarEstadoJornada,
@@ -26,7 +25,6 @@ import {
   obtenerResumenAsistenciaJornada,
   suscribirStore,
 } from '@/lib/gruposStore';
-import { mostrarControlesDePrueba } from '@/lib/opcionesPrueba';
 import { cifrasTabulares, colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
 import type { EstadoJornada, Jornada } from '@/types/dominio';
 
@@ -77,13 +75,23 @@ export default function DetalleJornadaScreen() {
 
   if (!grupo || !jornada || rol !== 'responsable') {
     return (
-      <SafeAreaView edges={['bottom']} style={styles.pantalla}>
-        <BarraSuperior titulo="Detalle de jornada" />
+      <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
+        <View style={styles.barraSuperior}>
+          <Pressable
+            accessibilityLabel="Volver"
+            accessibilityRole="button"
+            onPress={() => router.back()}
+            style={styles.botonIcono}
+          >
+            <Icono color={colores.tinta} nombre="volver" tamano={22} />
+          </Pressable>
+          <Text style={styles.tituloBarra}>Detalle de jornada</Text>
+          <View style={styles.espacioDerecha} />
+        </View>
         <View style={styles.contenido}>
           <Aviso
             accion={
               <Boton
-                icono="inicio"
                 onPress={() => router.replace('/(tabs)')}
                 tamano="sm"
                 titulo="Ir a Mis grupos"
@@ -100,7 +108,7 @@ export default function DetalleJornadaScreen() {
 
   const estado = derivarEstadoJornada(jornada);
   const metaEstado = MAPA_ESTADO_JORNADA[estado];
-  const fechaTexto = formatearDia(fechaEnZona(jornada.inicio_en), {
+  const fechaTexto = formatearDia(jornada.inicio_en.slice(0, 10), {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -109,7 +117,7 @@ export default function DetalleJornadaScreen() {
   const horaFin = horaEnZona(jornada.fin_en).slice(0, 5);
 
   const esQR = jornada.modalidad_asistencia === 'qr';
-  const puedeMostrarQR = mostrarControlesDePrueba && esQR && estado === 'en_curso' && !jornada.cancelada;
+  const puedeMostrarQR = esQR && estado === 'en_curso' && !jornada.cancelada;
   const puedePasarLista =
     !jornada.cancelada && (estado === 'en_curso' || estado === 'finalizada');
 
@@ -120,11 +128,24 @@ export default function DetalleJornadaScreen() {
   };
 
   return (
-    <SafeAreaView edges={['bottom']} style={styles.pantalla}>
-      <BarraSuperior accessibilityLabelVolver="Volver al grupo" titulo="Detalle de jornada" />
+    <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
+      <View style={styles.barraSuperior}>
+        <Pressable
+          accessibilityLabel="Volver al grupo"
+          accessibilityRole="button"
+          onPress={() => router.back()}
+          style={styles.botonIcono}
+        >
+          <Icono color={colores.tinta} nombre="volver" tamano={22} />
+        </Pressable>
+        <Text numberOfLines={1} style={styles.tituloBarra}>
+          Detalle de jornada
+        </Text>
+        <View style={styles.espacioDerecha} />
+      </View>
 
       <ScrollView contentContainerStyle={styles.contenido} showsVerticalScrollIndicator={false}>
-        {mostrarControlesDePrueba ? (
+        {__DEV__ ? (
           <View style={styles.barraEstados}>
             {(['normal', 'cargando', 'error'] as const).map((modo) => {
               const activo = estadoVista === modo;
@@ -177,12 +198,7 @@ export default function DetalleJornadaScreen() {
               />
             ) : null}
 
-            <View style={styles.detallePrincipal}>
-              <Text accessibilityRole="header" style={styles.tituloJornada}>{jornada.titulo}</Text>
-              {jornada.descripcion ? (
-                <Text style={styles.descripcionJornada}>{jornada.descripcion}</Text>
-              ) : null}
-
+            <View style={styles.tarjetaPrincipal}>
               <View style={styles.filaEstado}>
                 <Estado etiqueta={metaEstado.etiqueta} tono={metaEstado.tono} />
                 <Text style={styles.etiquetaModalidad}>
@@ -190,6 +206,9 @@ export default function DetalleJornadaScreen() {
                   {jornada.control_horas ? 'con horas' : 'sin horas'}
                 </Text>
               </View>
+
+              <Text style={styles.tituloJornada}>{jornada.titulo}</Text>
+              <Text style={styles.descripcionJornada}>{jornada.descripcion}</Text>
 
               <View style={styles.filaHorario}>
                 <Icono color={colores.tintaSuave} nombre="reloj" tamano={16} />
@@ -208,10 +227,10 @@ export default function DetalleJornadaScreen() {
               </View>
 
               <View style={styles.tarjetaStat}>
-                <Text style={[styles.valorStat, cifrasTabulares]}>
+                <Text style={[styles.valorStat, styles.colorAusente, cifrasTabulares]}>
                   {resumen.ausentesJustificadas}
                 </Text>
-                <Text style={styles.etiquetaStat}>Ausencias</Text>
+                <Text style={styles.etiquetaStat}>Aus. / Justif.</Text>
               </View>
 
               <View style={styles.tarjetaStat}>
@@ -223,7 +242,6 @@ export default function DetalleJornadaScreen() {
             <View style={styles.acciones}>
               {puedeMostrarQR ? (
                 <Boton
-                  icono="qr"
                   onPress={() =>
                     router.push({
                       pathname: '/grupos/[grupoId]/jornadas/[jornadaId]/mostrar-qr',
@@ -236,14 +254,13 @@ export default function DetalleJornadaScreen() {
 
               {puedePasarLista ? (
                 <Boton
-                  icono="lista"
                   onPress={() =>
                     router.push({
                       pathname: '/grupos/[grupoId]/jornadas/[jornadaId]/asistencia',
                       params: { grupoId: grupo.id, jornadaId: jornada.id },
                     })
                   }
-                  titulo={puedeMostrarQR ? 'Ver asistencia y corregir' : 'Pasar lista'}
+                  titulo={esQR ? 'Ver asistencia y corregir' : 'Pasar lista'}
                   variante={puedeMostrarQR ? 'secundario' : 'primario'}
                 />
               ) : null}
@@ -256,27 +273,24 @@ export default function DetalleJornadaScreen() {
               ) : null}
 
               {!jornada.cancelada ? (
-                <View style={styles.filaAccionesSecundarias}>
-                  <Boton
-                    estilo={styles.botonSecundarioFila}
-                    icono="editar"
-                    onPress={() =>
-                      router.push({
-                        pathname: '/grupos/[grupoId]/jornadas/crear',
-                        params: { grupoId: grupo.id, jornadaId: jornada.id },
-                      })
-                    }
-                    titulo="Editar jornada"
-                    variante="secundario"
-                  />
-                  <Boton
-                    estilo={styles.botonSecundarioFila}
-                    icono="cerrar"
-                    onPress={() => setModalCancelar(true)}
-                    titulo="Cancelar jornada"
-                    variante="peligro"
-                  />
-                </View>
+                <Boton
+                  onPress={() =>
+                    router.push({
+                      pathname: '/grupos/[grupoId]/jornadas/crear',
+                      params: { grupoId: grupo.id, jornadaId: jornada.id },
+                    })
+                  }
+                  titulo="Editar jornada"
+                  variante="secundario"
+                />
+              ) : null}
+
+              {!jornada.cancelada ? (
+                <Boton
+                  onPress={() => setModalCancelar(true)}
+                  titulo="Cancelar jornada"
+                  variante="peligro"
+                />
               ) : null}
             </View>
           </>
@@ -390,8 +404,13 @@ const styles = StyleSheet.create({
     color: colores.tintaSuave,
     fontSize: tipografia.cuerpoSm,
   },
-  detallePrincipal: {
+  tarjetaPrincipal: {
+    backgroundColor: colores.superficie,
+    borderColor: colores.borde,
+    borderRadius: radios.tarjeta,
+    borderWidth: 1,
     gap: espaciados.sm,
+    padding: espaciados.lg,
   },
   filaEstado: {
     alignItems: 'center',
@@ -407,9 +426,8 @@ const styles = StyleSheet.create({
   },
   tituloJornada: {
     color: colores.tinta,
-    fontSize: tipografia.display,
-    fontWeight: pesos.encabezado,
-    letterSpacing: -0.6,
+    fontSize: tipografia.titulo,
+    fontWeight: pesos.fuerte,
   },
   descripcionJornada: {
     color: colores.tintaSuave,
@@ -428,16 +446,16 @@ const styles = StyleSheet.create({
     fontSize: tipografia.cuerpoSm,
   },
   gridResumen: {
-    backgroundColor: colores.superficieAlt,
-    borderRadius: radios.tarjeta,
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    padding: espaciados.xs,
+    gap: espaciados.sm,
   },
   tarjetaStat: {
     alignItems: 'center',
-    flexBasis: 76,
-    flexGrow: 1,
+    backgroundColor: colores.superficie,
+    borderColor: colores.borde,
+    borderRadius: radios.tarjeta,
+    borderWidth: 1,
+    flex: 1,
     gap: espaciados.xs,
     paddingHorizontal: espaciados.sm,
     paddingVertical: espaciados.md,
@@ -450,6 +468,9 @@ const styles = StyleSheet.create({
   colorPresente: {
     color: colores.presente,
   },
+  colorAusente: {
+    color: colores.ausente,
+  },
   etiquetaStat: {
     color: colores.tintaSuave,
     fontSize: tipografia.micro,
@@ -458,14 +479,6 @@ const styles = StyleSheet.create({
   },
   acciones: {
     gap: espaciados.md,
-  },
-  filaAccionesSecundarias: {
-    flexDirection: 'row',
-    gap: espaciados.md,
-    marginTop: espaciados.xs,
-  },
-  botonSecundarioFila: {
-    flex: 1,
   },
   veloModal: {
     alignItems: 'center',
@@ -477,7 +490,7 @@ const styles = StyleSheet.create({
   tarjetaModal: {
     backgroundColor: colores.superficie,
     borderColor: colores.borde,
-    borderRadius: radios.modal,
+    borderRadius: radios.tarjeta,
     borderWidth: 1,
     gap: espaciados.md,
     padding: espaciados.lg,

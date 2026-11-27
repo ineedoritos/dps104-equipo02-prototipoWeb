@@ -4,8 +4,8 @@ import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-nat
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Aviso } from '@/components/ui/Aviso';
-import { BarraSuperior } from '@/components/ui/BarraSuperior';
 import { Boton } from '@/components/ui/Boton';
+import { Icono } from '@/components/ui/Icono';
 import {
   actualizarConfiguracionGrupo,
   obtenerGrupoPorId,
@@ -65,13 +65,23 @@ export default function ConfiguracionGrupoScreen() {
 
   if (!grupo || rol !== 'responsable') {
     return (
-      <SafeAreaView edges={['bottom']} style={styles.pantalla}>
-        <BarraSuperior titulo="Configuración" />
+      <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
+        <View style={styles.barraSuperior}>
+          <Pressable
+            accessibilityLabel="Volver"
+            accessibilityRole="button"
+            onPress={() => router.back()}
+            style={styles.botonVolver}
+          >
+            <Icono color={colores.tinta} nombre="volver" tamano={22} />
+          </Pressable>
+          <Text style={styles.tituloBarra}>Configuración</Text>
+          <View style={styles.espacioDerecha} />
+        </View>
         <View style={styles.contenido}>
           <Aviso
             accion={
               <Boton
-                icono="inicio"
                 onPress={() => router.replace('/(tabs)')}
                 tamano="sm"
                 titulo="Ir a Mis grupos"
@@ -87,8 +97,21 @@ export default function ConfiguracionGrupoScreen() {
   }
 
   return (
-    <SafeAreaView edges={['bottom']} style={styles.pantalla}>
-      <BarraSuperior titulo="Configuración" />
+    <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
+      <View style={styles.barraSuperior}>
+        <Pressable
+          accessibilityLabel="Volver"
+          accessibilityRole="button"
+          onPress={() => router.back()}
+          style={styles.botonVolver}
+        >
+          <Icono color={colores.tinta} nombre="volver" tamano={22} />
+        </Pressable>
+        <Text accessibilityRole="header" style={styles.tituloBarra}>
+          Configuración
+        </Text>
+        <View style={styles.espacioDerecha} />
+      </View>
 
       <ScrollView contentContainerStyle={styles.contenido}>
         {error ? (
@@ -211,7 +234,7 @@ export default function ConfiguracionGrupoScreen() {
           Los cambios aplican a jornadas nuevas. Los registros anteriores no cambian.
         </Text>
 
-        <Boton cargando={guardando} icono="guardar" onPress={manejarGuardar} titulo="Guardar cambios" />
+        <Boton cargando={guardando} onPress={manejarGuardar} titulo="Guardar cambios" />
       </ScrollView>
     </SafeAreaView>
   );
@@ -262,7 +285,7 @@ const styles = StyleSheet.create({
   tituloBloque: {
     color: colores.tinta,
     fontSize: tipografia.tituloSm,
-    fontWeight: pesos.encabezado,
+    fontWeight: pesos.fuerte,
   },
   opcion: {
     alignItems: 'flex-start',
@@ -275,8 +298,8 @@ const styles = StyleSheet.create({
     padding: espaciados.md,
   },
   opcionActiva: {
-    backgroundColor: colores.superficie,
-    borderColor: colores.bordeFuerte,
+    backgroundColor: colores.acentoSuave,
+    borderColor: colores.acentoBorde,
   },
   radio: {
     alignItems: 'center',
@@ -322,8 +345,6 @@ const styles = StyleSheet.create({
   encabezadoOpcional: {
     alignItems: 'center',
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: espaciados.sm,
     justifyContent: 'space-between',
   },
   etiquetaProximamente: {

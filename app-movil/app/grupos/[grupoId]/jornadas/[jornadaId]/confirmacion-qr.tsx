@@ -4,7 +4,6 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Aviso } from '@/components/ui/Aviso';
-import { BarraSuperior } from '@/components/ui/BarraSuperior';
 import { Boton } from '@/components/ui/Boton';
 import { Icono } from '@/components/ui/Icono';
 import { formatearDuracion } from '@/lib/fecha';
@@ -69,12 +68,8 @@ export default function ConfirmacionQRScreen() {
     subtituloHora = '';
   }
 
-  const volverAlGrupo = () =>
-    router.dismissTo({ pathname: '/grupos/[grupoId]', params: { grupoId: grupo.id } });
-
   return (
-    <SafeAreaView edges={['bottom']} style={styles.pantalla}>
-      <BarraSuperior accessibilityLabelVolver="Volver al grupo" onVolver={volverAlGrupo} titulo="Registro de asistencia" />
+    <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
       <ScrollView contentContainerStyle={styles.contenido} showsVerticalScrollIndicator={false}>
         <View style={styles.tarjetaConfirmacion}>
           <View
@@ -84,7 +79,7 @@ export default function ConfirmacionQRScreen() {
             ]}
           >
             <Icono
-              color={esInformativa ? colores.info : colores.presente}
+              color={esInformativa ? colores.info : colores.acento}
               nombre={esInformativa ? 'info' : 'hecho'}
               tamano={36}
             />
@@ -107,10 +102,9 @@ export default function ConfirmacionQRScreen() {
 
         <View style={styles.acciones}>
           <Boton
-            estilo={styles.botonAccion}
             icono="reloj"
             onPress={() =>
-              router.dismissTo({
+              router.replace({
                 pathname: '/(tabs)/historial',
                 params: { grupoId: grupo.id },
               })
@@ -118,8 +112,12 @@ export default function ConfirmacionQRScreen() {
             titulo="Ver mi historial"
           />
           <Boton
-            estilo={styles.botonAccion}
-            onPress={volverAlGrupo}
+            onPress={() =>
+              router.replace({
+                pathname: '/grupos/[grupoId]',
+                params: { grupoId: grupo.id },
+              })
+            }
             titulo="Volver al grupo"
             variante="secundario"
           />
@@ -157,7 +155,7 @@ const styles = StyleSheet.create({
     width: 72,
   },
   circuloExito: {
-    backgroundColor: colores.presenteSuave,
+    backgroundColor: colores.acentoSuave,
   },
   circuloInfo: {
     backgroundColor: colores.infoSuave,
@@ -169,7 +167,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   subtituloHora: {
-    color: colores.tinta,
+    color: colores.acento,
     fontSize: tipografia.cuerpo,
     fontWeight: pesos.fuerte,
     textAlign: 'center',
@@ -201,10 +199,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   acciones: {
-    flexDirection: 'row',
     gap: espaciados.md,
-  },
-  botonAccion: {
-    flex: 1,
   },
 });

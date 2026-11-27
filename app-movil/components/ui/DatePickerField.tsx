@@ -1,11 +1,10 @@
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import dayjs from 'dayjs';
 import { useState } from 'react';
 import { Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Boton } from '@/components/ui/Boton';
 import { Icono } from '@/components/ui/Icono';
-import { alturaInteriorCampo, estilosCampo } from '@/components/ui/estilosCampo';
 import { cifrasTabulares, colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
 
 interface DatePickerFieldProps {
@@ -16,8 +15,6 @@ interface DatePickerFieldProps {
   minDate?: string;
   maxDate?: string;
   error?: string;
-  permitirLimpiar?: boolean;
-  deshabilitado?: boolean;
 }
 
 export function DatePickerField({
@@ -28,8 +25,6 @@ export function DatePickerField({
   minDate,
   maxDate,
   error,
-  permitirLimpiar = true,
-  deshabilitado = false,
 }: DatePickerFieldProps) {
   const [abierto, setAbierto] = useState(false);
 
@@ -37,32 +32,24 @@ export function DatePickerField({
   const fechaMinima = minDate ? dayjs(minDate, 'YYYY-MM-DD').toDate() : undefined;
   const fechaMaxima = maxDate ? dayjs(maxDate, 'YYYY-MM-DD').toDate() : undefined;
 
-  const manejarCambio = (fechaSeleccionada: Date) => {
+  const manejarCambio = (evento: DateTimePickerEvent, fechaSeleccionada?: Date) => {
     if (Platform.OS === 'android') {
       setAbierto(false);
     }
 
-    onChange(dayjs(fechaSeleccionada).format('YYYY-MM-DD'));
+    if (evento.type === 'set' && fechaSeleccionada) {
+      onChange(dayjs(fechaSeleccionada).format('YYYY-MM-DD'));
+    }
   };
 
   return (
-    <View style={estilosCampo.contenedor}>
-      <Text style={estilosCampo.etiqueta}>{label}</Text>
+    <View style={styles.contenedor}>
+      <Text style={styles.etiqueta}>{label}</Text>
 
-      <View
-        style={[
-          estilosCampo.marco,
-          abierto && estilosCampo.enfocado,
-          error ? estilosCampo.conError : null,
-          deshabilitado && estilosCampo.deshabilitado,
-        ]}
-      >
+      <View style={[styles.campoContenedor, error ? styles.campoConError : null]}>
         <Pressable
           accessibilityLabel={`Seleccionar fecha ${label}`}
           accessibilityRole="button"
-          accessibilityState={{ disabled: deshabilitado }}
-          disabled={deshabilitado}
-          accessibilityValue={{ text: value ? dayjs(value).format('DD/MM/YYYY') : placeholder }}
           onPress={() => setAbierto(true)}
           style={({ pressed }) => [styles.campo, pressed && styles.campoPresionado]}
         >
@@ -72,10 +59,11 @@ export function DatePickerField({
           </Text>
         </Pressable>
 
-        {value && permitirLimpiar && !deshabilitado ? (
+        {value ? (
           <Pressable
             accessibilityLabel={`Limpiar fecha ${label}`}
             accessibilityRole="button"
+            hitSlop={4}
             onPress={() => onChange('')}
             style={({ pressed }) => [styles.botonLimpiar, pressed && styles.campoPresionado]}
           >
@@ -84,7 +72,7 @@ export function DatePickerField({
         ) : null}
       </View>
 
-      {error ? <Text accessibilityLiveRegion="polite" style={estilosCampo.textoError}>{error}</Text> : null}
+      {error ? <Text style={styles.textoError}>{error}</Text> : null}
 
       {abierto && Platform.OS === 'android' ? (
         <DateTimePicker
@@ -92,8 +80,7 @@ export function DatePickerField({
           maximumDate={fechaMaxima}
           minimumDate={fechaMinima}
           mode="date"
-          onDismiss={() => setAbierto(false)}
-          onValueChange={(_, fechaSeleccionada) => manejarCambio(fechaSeleccionada)}
+          onChange={manejarCambio}
           value={fechaActual}
         />
       ) : null}
@@ -113,7 +100,7 @@ export function DatePickerField({
                 maximumDate={fechaMaxima}
                 minimumDate={fechaMinima}
                 mode="date"
-                onValueChange={(_, fechaSeleccionada) => manejarCambio(fechaSeleccionada)}
+                onChange={manejarCambio}
                 value={fechaActual}
               />
               <Boton onPress={() => setAbierto(false)} titulo="Listo" />
@@ -126,20 +113,38 @@ export function DatePickerField({
 }
 
 const styles = StyleSheet.create({
+  contenedor: {
+    gap: espaciados.xs,
+  },
+  etiqueta: {
+    color: colores.tintaSuave,
+    fontSize: tipografia.micro,
+    fontWeight: pesos.fuerte,
+    letterSpacing: 0.2,
+  },
+  campoContenedor: {
+    alignItems: 'center',
+    backgroundColor: colores.superficie,
+    borderColor: colores.borde,
+    borderRadius: radios.campo,
+    borderWidth: 1,
+    flexDirection: 'row',
+    minHeight: 48,
+  },
+  campoConError: {
+    borderColor: colores.ausente,
+  },
   campo: {
     alignItems: 'center',
     flex: 1,
-    minWidth: 0,
-    borderRadius: radios.campo,
     flexDirection: 'row',
     gap: espaciados.sm,
-    minHeight: alturaInteriorCampo,
-    paddingVertical: espaciados.sm,
+    minHeight: 46,
     paddingLeft: espaciados.md,
     paddingRight: espaciados.sm,
   },
   campoPresionado: {
-    backgroundColor: colores.acentoSuave,
+    opacity: 0.75,
   },
   campoTexto: {
     ...cifrasTabulares,
@@ -148,13 +153,18 @@ const styles = StyleSheet.create({
     fontSize: tipografia.cuerpo,
   },
   placeholder: {
-    color: colores.tintaSuave,
+    color: colores.tintaTenue,
   },
   botonLimpiar: {
     alignItems: 'center',
-    height: 48,
+    height: 44,
     justifyContent: 'center',
-    width: 48,
+    width: 44,
+  },
+  textoError: {
+    color: colores.ausente,
+    fontSize: tipografia.micro,
+    lineHeight: 15,
   },
   overlay: {
     alignItems: 'center',
@@ -166,11 +176,10 @@ const styles = StyleSheet.create({
   modalTarjeta: {
     backgroundColor: colores.superficie,
     borderColor: colores.borde,
-    borderRadius: radios.modal,
+    borderRadius: radios.tarjeta,
     borderWidth: 1,
     gap: espaciados.md,
     padding: espaciados.lg,
-    maxWidth: 400,
     width: '100%',
   },
   tituloModal: {

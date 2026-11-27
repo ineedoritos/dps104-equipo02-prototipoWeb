@@ -11,11 +11,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Aviso } from '@/components/ui/Aviso';
-import { BarraSuperior } from '@/components/ui/BarraSuperior';
 import { Boton } from '@/components/ui/Boton';
 import { ESTADO_ASISTENCIA, Estado } from '@/components/ui/Estado';
+import { Icono } from '@/components/ui/Icono';
 import { Seccion } from '@/components/ui/Seccion';
-import { fechaEnZona, formatearDia, formatearDuracion, horaEnZona } from '@/lib/fecha';
+import { formatearDia, formatearDuracion, horaEnZona } from '@/lib/fecha';
 import {
   obtenerGrupoPorId,
   obtenerJornadaPorId,
@@ -24,7 +24,6 @@ import {
   obtenerSesionActual,
   suscribirStore,
 } from '@/lib/gruposStore';
-import { mostrarControlesDePrueba } from '@/lib/opcionesPrueba';
 import { cifrasTabulares, colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
 
 type EstadoVista = 'normal' | 'cargando' | 'error';
@@ -66,13 +65,23 @@ export default function DetalleRegistroScreen() {
 
   if (!sesion || !grupo || !jornada) {
     return (
-      <SafeAreaView edges={['bottom']} style={styles.pantalla}>
-        <BarraSuperior titulo="Detalle del registro" />
+      <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
+        <View style={styles.barraSuperior}>
+          <Pressable
+            accessibilityLabel="Volver"
+            accessibilityRole="button"
+            onPress={() => router.back()}
+            style={styles.botonIcono}
+          >
+            <Icono color={colores.tinta} nombre="volver" tamano={22} />
+          </Pressable>
+          <Text style={styles.tituloBarra}>Detalle del registro</Text>
+          <View style={styles.espacioDerecha} />
+        </View>
         <View style={styles.contenido}>
           <Aviso
             accion={
               <Boton
-                icono="reloj"
                 onPress={() => router.replace('/(tabs)/historial')}
                 tamano="sm"
                 titulo="Ir a Mi historial"
@@ -87,7 +96,7 @@ export default function DetalleRegistroScreen() {
     );
   }
 
-  const fechaTexto = formatearDia(fechaEnZona(jornada.inicio_en), {
+  const fechaTexto = formatearDia(jornada.inicio_en.slice(0, 10), {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -104,11 +113,22 @@ export default function DetalleRegistroScreen() {
     asistencia.minutos_reconocidos < asistencia.duracion_minutos;
 
   return (
-    <SafeAreaView edges={['bottom']} style={styles.pantalla}>
-      <BarraSuperior titulo="Detalle del registro" />
+    <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
+      <View style={styles.barraSuperior}>
+        <Pressable
+          accessibilityLabel="Volver"
+          accessibilityRole="button"
+          onPress={() => router.back()}
+          style={styles.botonIcono}
+        >
+          <Icono color={colores.tinta} nombre="volver" tamano={22} />
+        </Pressable>
+        <Text style={styles.tituloBarra}>Detalle del registro</Text>
+        <View style={styles.espacioDerecha} />
+      </View>
 
       <ScrollView contentContainerStyle={styles.contenido} showsVerticalScrollIndicator={false}>
-        {mostrarControlesDePrueba ? (
+        {__DEV__ ? (
           <View style={styles.barraEstados}>
             {(['normal', 'cargando', 'error'] as const).map((modo) => {
               const activo = estadoVista === modo;
@@ -355,8 +375,6 @@ const styles = StyleSheet.create({
   filaDato: {
     alignItems: 'center',
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: espaciados.sm,
     justifyContent: 'space-between',
     paddingVertical: espaciados.md,
   },

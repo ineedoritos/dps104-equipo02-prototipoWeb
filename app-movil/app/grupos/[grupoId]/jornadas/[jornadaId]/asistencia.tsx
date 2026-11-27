@@ -11,10 +11,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Aviso } from '@/components/ui/Aviso';
-import { BarraSuperior } from '@/components/ui/BarraSuperior';
 import { Boton } from '@/components/ui/Boton';
 import { CampoTexto } from '@/components/ui/CampoTexto';
 import { EstadoVacio } from '@/components/ui/EstadoVacio';
+import { Icono } from '@/components/ui/Icono';
 import { horaEnZona } from '@/lib/fecha';
 import {
   guardarAsistenciasManual,
@@ -25,7 +25,6 @@ import {
   obtenerParticipantesActivos,
   suscribirStore,
 } from '@/lib/gruposStore';
-import { mostrarControlesDePrueba } from '@/lib/opcionesPrueba';
 import { cifrasTabulares, colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
 import { ErrorDominio, type Asistencia, type EstadoAsistencia, type IntegranteConUsuario } from '@/types/dominio';
 
@@ -116,13 +115,23 @@ export default function AsistenciaManualScreen() {
 
   if (!grupo || !jornada || rol !== 'responsable') {
     return (
-      <SafeAreaView edges={['bottom']} style={styles.pantalla}>
-        <BarraSuperior titulo="Asistencia" />
+      <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
+        <View style={styles.barraSuperior}>
+          <Pressable
+            accessibilityLabel="Volver"
+            accessibilityRole="button"
+            onPress={() => router.back()}
+            style={styles.botonIcono}
+          >
+            <Icono color={colores.tinta} nombre="volver" tamano={22} />
+          </Pressable>
+          <Text style={styles.tituloBarra}>Asistencia</Text>
+          <View style={styles.espacioDerecha} />
+        </View>
         <View style={styles.contenido}>
           <Aviso
             accion={
               <Boton
-                icono="inicio"
                 onPress={() => router.replace('/(tabs)')}
                 tamano="sm"
                 titulo="Ir a Mis grupos"
@@ -231,11 +240,21 @@ export default function AsistenciaManualScreen() {
         : 'Manual · sin horas';
 
   return (
-    <SafeAreaView edges={['bottom']} style={styles.pantalla}>
-      <BarraSuperior
-        accessibilityLabelVolver="Volver al detalle de jornada"
-        titulo="Asistencia y correcciones"
-      />
+    <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
+      <View style={styles.barraSuperior}>
+        <Pressable
+          accessibilityLabel="Volver al detalle de jornada"
+          accessibilityRole="button"
+          onPress={() => router.back()}
+          style={styles.botonIcono}
+        >
+          <Icono color={colores.tinta} nombre="volver" tamano={22} />
+        </Pressable>
+        <Text numberOfLines={1} style={styles.tituloBarra}>
+          Asistencia y correcciones
+        </Text>
+        <View style={styles.espacioDerecha} />
+      </View>
 
       <ScrollView contentContainerStyle={styles.contenido} showsVerticalScrollIndicator={false}>
         <View style={styles.cabecera}>
@@ -249,7 +268,7 @@ export default function AsistenciaManualScreen() {
           </Text>
         </View>
 
-        {mostrarControlesDePrueba ? (
+        {__DEV__ ? (
           <View style={styles.barraEstados}>
             {(['normal', 'cargando', 'vacio', 'error'] as const).map((modo) => {
               const activo = estadoVista === modo;
@@ -327,18 +346,17 @@ export default function AsistenciaManualScreen() {
                     <View style={styles.grupoBotonesEstado}>
                       {(
                         [
-                          { codigo: 'P', nombre: 'Presente', estado: 'presente' as const },
-                          { codigo: 'A', nombre: 'Ausente', estado: 'ausente' as const },
-                          { codigo: 'J', nombre: 'Justificada', estado: 'justificada' as const },
+                          { codigo: 'P', estado: 'presente' as const },
+                          { codigo: 'A', estado: 'ausente' as const },
+                          { codigo: 'J', estado: 'justificada' as const },
                         ] as const
                       ).map((item) => {
                         const activo = borrador.estado === item.estado;
                         return (
                           <Pressable
                             key={item.codigo}
-                            accessibilityLabel={`${item.nombre} para ${integrante.usuario.nombre}`}
+                            accessibilityLabel={`${item.codigo} para ${integrante.usuario.nombre}`}
                             accessibilityRole="button"
-                            accessibilityState={{ selected: activo }}
                             onPress={() => seleccionarEstado(integrante.usuario_id, item.estado)}
                             style={[
                               styles.botonLetra,
@@ -523,9 +541,13 @@ const styles = StyleSheet.create({
     padding: espaciados.lg,
   },
   filaParticipante: {
-    gap: espaciados.md,
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: espaciados.sm,
+    justifyContent: 'space-between',
   },
   infoParticipante: {
+    flex: 1,
     gap: 2,
   },
   nombreParticipante: {
@@ -539,7 +561,7 @@ const styles = StyleSheet.create({
   },
   grupoBotonesEstado: {
     flexDirection: 'row',
-    gap: espaciados.sm,
+    gap: espaciados.xs,
   },
   botonLetra: {
     alignItems: 'center',
@@ -547,14 +569,13 @@ const styles = StyleSheet.create({
     borderColor: colores.borde,
     borderRadius: radios.campo,
     borderWidth: 1,
-    flex: 1,
-    minHeight: 48,
+    height: 40,
     justifyContent: 'center',
-    paddingVertical: espaciados.sm,
+    width: 40,
   },
   botonPresente: {
     backgroundColor: colores.presenteSuave,
-    borderColor: colores.presente,
+    borderColor: colores.acentoBorde,
   },
   botonAusente: {
     backgroundColor: colores.ausenteSuave,

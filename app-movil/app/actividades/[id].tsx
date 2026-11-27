@@ -4,7 +4,6 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Aviso } from '@/components/ui/Aviso';
-import { BarraSuperior } from '@/components/ui/BarraSuperior';
 import { Boton } from '@/components/ui/Boton';
 import { CampoTexto } from '@/components/ui/CampoTexto';
 import {
@@ -80,7 +79,7 @@ export default function ActividadDetalleScreen() {
 
   if (!actividad) {
     return (
-      <SafeAreaView edges={['bottom']} style={styles.pantalla}>
+      <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
         <View style={styles.vacioContenedor}>
           <EstadoVacio
             accion={
@@ -154,9 +153,19 @@ export default function ActividadDetalleScreen() {
   };
 
   return (
-    <SafeAreaView edges={['bottom']} style={styles.pantalla}>
-      <BarraSuperior titulo="Detalle de jornada" />
+    <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
       <ScrollView contentContainerStyle={styles.contenido} keyboardShouldPersistTaps="handled">
+        <Pressable
+          accessibilityLabel="Volver"
+          accessibilityRole="button"
+          hitSlop={4}
+          onPress={() => router.back()}
+          style={({ pressed }) => [styles.botonVolver, pressed && styles.presionado]}
+        >
+          <Icono color={colores.acento} nombre="volver" tamano={18} />
+          <Text style={styles.textoVolver}>Volver</Text>
+        </Pressable>
+
         <View style={styles.encabezado}>
           <Estado etiqueta={estadoJornada.etiqueta} tono={estadoJornada.tono} />
 
@@ -447,8 +456,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: espaciados.lg,
   },
+  botonVolver: {
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    gap: espaciados.xs,
+    minHeight: 44,
+  },
   presionado: {
     opacity: 0.75,
+  },
+  textoVolver: {
+    color: colores.acento,
+    fontSize: tipografia.cuerpoSm,
+    fontWeight: pesos.fuerte,
   },
   encabezado: {
     gap: espaciados.sm,

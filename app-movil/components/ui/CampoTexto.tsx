@@ -1,14 +1,12 @@
 import { useState } from 'react';
-import type { ComponentRef, ReactNode, Ref } from 'react';
+import type { ReactNode } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import type { StyleProp, TextInputProps, ViewStyle } from 'react-native';
 
-import { alturaInteriorCampo, estilosCampo } from '@/components/ui/estilosCampo';
-import { colores, espaciados, tipografia } from '@/lib/tema';
+import { colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
 
 export interface CampoTextoProps extends Omit<TextInputProps, 'style'> {
   etiqueta: string;
-  ref?: Ref<ComponentRef<typeof TextInput>>;
   error?: string;
   accesorio?: ReactNode;
   multilinea?: boolean;
@@ -19,34 +17,28 @@ export function CampoTexto({
   etiqueta,
   error,
   accesorio,
-  multilinea,
-  multiline,
+  multilinea = false,
   estilo,
   onBlur,
   onFocus,
   ...propiedades
 }: CampoTextoProps) {
   const [enfocado, setEnfocado] = useState(false);
-  const variasLineas = multilinea ?? multiline ?? false;
 
   return (
-    <View style={[estilosCampo.contenedor, estilo]}>
-      <Text style={estilosCampo.etiqueta}>{etiqueta}</Text>
+    <View style={[styles.contenedor, estilo]}>
+      <Text style={styles.etiqueta}>{etiqueta}</Text>
 
       <View
         style={[
-          estilosCampo.marco,
-          enfocado && estilosCampo.enfocado,
-          error ? estilosCampo.conError : null,
-          propiedades.editable === false && estilosCampo.deshabilitado,
+          styles.campoContenedor,
+          enfocado && styles.campoEnfocado,
+          error ? styles.campoConError : null,
         ]}
       >
         <TextInput
-          accessibilityLabel={etiqueta}
-          selectionColor={colores.acentoBorde}
-          cursorColor={colores.acento}
           {...propiedades}
-          multiline={variasLineas}
+          multiline={multilinea}
           onBlur={(evento) => {
             setEnfocado(false);
             onBlur?.(evento);
@@ -55,31 +47,59 @@ export function CampoTexto({
             setEnfocado(true);
             onFocus?.(evento);
           }}
-          placeholderTextColor={colores.tintaSuave}
-          style={[styles.campo, variasLineas && styles.campoMultilinea]}
-          textAlignVertical={variasLineas ? 'top' : 'center'}
+          placeholderTextColor={colores.tintaTenue}
+          style={[styles.campo, multilinea && styles.campoMultilinea]}
+          textAlignVertical={multilinea ? 'top' : 'center'}
           underlineColorAndroid="transparent"
         />
         {accesorio}
       </View>
 
-      {error ? <Text accessibilityLiveRegion="polite" style={estilosCampo.textoError}>{error}</Text> : null}
+      {error ? <Text style={styles.textoError}>{error}</Text> : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  contenedor: {
+    gap: espaciados.xs,
+  },
+  etiqueta: {
+    color: colores.tintaSuave,
+    fontSize: tipografia.micro,
+    fontWeight: pesos.fuerte,
+    letterSpacing: 0.2,
+  },
+  campoContenedor: {
+    alignItems: 'center',
+    backgroundColor: colores.superficie,
+    borderColor: colores.borde,
+    borderRadius: radios.campo,
+    borderWidth: 1,
+    flexDirection: 'row',
+    minHeight: 48,
+  },
+  campoEnfocado: {
+    borderColor: colores.acento,
+  },
+  campoConError: {
+    borderColor: colores.ausente,
+  },
   campo: {
     color: colores.tinta,
     flex: 1,
-    minWidth: 0,
     fontSize: tipografia.cuerpo,
-    minHeight: alturaInteriorCampo,
+    minHeight: 46,
     paddingHorizontal: espaciados.md,
     paddingVertical: espaciados.sm,
   },
   campoMultilinea: {
-    minHeight: 112,
+    minHeight: 96,
     paddingTop: espaciados.md,
+  },
+  textoError: {
+    color: colores.ausente,
+    fontSize: tipografia.micro,
+    lineHeight: 15,
   },
 });

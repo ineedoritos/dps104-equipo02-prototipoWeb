@@ -85,9 +85,8 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     borderRadius: radios.pill,
     flexDirection: 'row',
-    flexShrink: 1,
-    gap: espaciados.xs,
-    paddingHorizontal: espaciados.sm,
+    gap: espaciados.xs + 2,
+    paddingHorizontal: espaciados.sm + 2,
     paddingVertical: 4,
   },
   punto: {
@@ -96,7 +95,6 @@ const styles = StyleSheet.create({
     width: 6,
   },
   texto: {
-    flexShrink: 1,
     fontSize: tipografia.micro,
     fontWeight: pesos.fuerte,
   },

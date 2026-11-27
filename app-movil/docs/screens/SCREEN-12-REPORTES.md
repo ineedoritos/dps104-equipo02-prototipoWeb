@@ -10,7 +10,7 @@
 - Selector de **Período** (chips rápidos): *Últimos 7 días* | *Este mes* | *Todo* | *Personalizado (desde–hasta)*.
 - Debajo del selector, **barra apilada** con el total del grupo por categoría en el período seleccionado (presentes, ausencias justificadas, ausencias sin motivo). Mostrar el nombre y el total de cada categoría junto al gráfico para que se puedan leer sin distinguir los colores.
 - Tabla / lista de **solo lectura** (sin botones de exportar a PDF/Excel) por integrante:
-  - Cada fila muestra el nombre completo, presentes, ausencias y tasa. Si el grupo usa horas, muestra las reconocidas en el resumen y las registradas en el detalle expandido.
+  - Columnas: `Integrante` | `Pres.` | `Aus.` | `Tasa` *(+ `Horas reg. / rec.` si el grupo usa horas)*.
   - Al tocar la fila de un integrante, se despliega el detalle de sus ausencias justificadas y motivos (*ej. "2 justificadas: examen en el colegio, enfermedad · 2 sin motivo"*).
 - Nota explicativa al pie: *"Tasa = presentes ÷ (presentes + ausencias) × 100. Las justificadas cuentan como ausencia, pero se ve su motivo. Se excluyen jornadas canceladas y asistencias sin registrar. Solo lectura."*
 

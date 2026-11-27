@@ -21,7 +21,7 @@ export interface BotonProps {
 
 const COLORES_VARIANTE: Record<VarianteBoton, { fondo: string; texto: string; borde: string }> = {
   primario: { fondo: colores.acento, texto: colores.superficie, borde: colores.acento },
-  secundario: { fondo: colores.superficie, texto: colores.tinta, borde: colores.acentoBorde },
+  secundario: { fondo: colores.superficie, texto: colores.tinta, borde: colores.bordeFuerte },
   fantasma: { fondo: 'transparent', texto: colores.acento, borde: 'transparent' },
   peligro: { fondo: colores.ausenteSuave, texto: colores.ausente, borde: colores.ausenteSuave },
 };
@@ -51,8 +51,8 @@ export function Boton({
         styles.base,
         tamano === 'sm' ? styles.tamanoSm : styles.tamanoMd,
         { backgroundColor: paleta.fondo, borderColor: paleta.borde },
-        pressed && { backgroundColor: variante === 'primario' ? colores.grisTexto : colores.acentoSuave },
-        deshabilitado && !cargando && styles.inactivo,
+        pressed && styles.presionado,
+        inactivo && styles.inactivo,
         estilo,
       ]}
     >
@@ -79,17 +79,16 @@ export function Boton({
 const styles = StyleSheet.create({
   base: {
     alignItems: 'center',
-    borderRadius: radios.pill,
+    borderRadius: radios.campo,
     borderWidth: 1,
     justifyContent: 'center',
     paddingHorizontal: espaciados.lg,
-    paddingVertical: espaciados.sm,
   },
   tamanoMd: {
-    minHeight: 56,
+    minHeight: 48,
   },
   tamanoSm: {
-    minHeight: 48,
+    minHeight: 40,
     paddingHorizontal: espaciados.md,
   },
   contenido: {
@@ -97,18 +96,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: espaciados.sm,
     justifyContent: 'center',
-    maxWidth: '100%',
   },
   texto: {
-    flexShrink: 1,
     fontWeight: pesos.fuerte,
-    textAlign: 'center',
   },
   textoMd: {
     fontSize: tipografia.cuerpo,
   },
   textoSm: {
     fontSize: tipografia.cuerpoSm,
+  },
+  presionado: {
+    opacity: 0.82,
   },
   inactivo: {
     opacity: 0.45,

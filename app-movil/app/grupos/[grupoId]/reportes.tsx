@@ -7,18 +7,15 @@ import {
   StyleSheet,
   Text,
   View,
-  useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { PestanasGrupo } from '@/components/grupos/PestanasGrupo';
 import { Aviso } from '@/components/ui/Aviso';
 import { BarraApilada } from '@/components/ui/BarraApilada';
-import { BarraSuperior } from '@/components/ui/BarraSuperior';
 import { Boton } from '@/components/ui/Boton';
 import { DatePickerField } from '@/components/ui/DatePickerField';
-import { Icono } from '@/components/ui/Icono';
 import { EstadoVacio } from '@/components/ui/EstadoVacio';
+import { Icono } from '@/components/ui/Icono';
 import { fechaEnZona } from '@/lib/fecha';
 import {
   obtenerGrupoPorId,
@@ -27,7 +24,6 @@ import {
   suscribirStore,
   type PeriodoReporte,
 } from '@/lib/gruposStore';
-import { mostrarControlesDePrueba } from '@/lib/opcionesPrueba';
 import { cifrasTabulares, colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
 
 type EstadoVista = 'normal' | 'cargando' | 'vacio' | 'error';
@@ -47,7 +43,6 @@ function formatearHorasDesdeMinutos(minutos: number): string {
 
 export default function ReportesGrupoScreen() {
   const router = useRouter();
-  const { width, fontScale } = useWindowDimensions();
   const { grupoId } = useLocalSearchParams<{ grupoId: string }>();
 
   const [periodo, setPeriodo] = useState<PeriodoReporte>('mes');
@@ -77,13 +72,23 @@ export default function ReportesGrupoScreen() {
 
   if (!grupo || rol !== 'responsable' || !reporte) {
     return (
-      <SafeAreaView edges={['bottom']} style={styles.pantalla}>
-        <BarraSuperior titulo="Reportes" />
+      <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
+        <View style={styles.barraSuperior}>
+          <Pressable
+            accessibilityLabel="Volver"
+            accessibilityRole="button"
+            onPress={() => router.back()}
+            style={styles.botonIcono}
+          >
+            <Icono color={colores.tinta} nombre="volver" tamano={22} />
+          </Pressable>
+          <Text style={styles.tituloBarra}>Reportes</Text>
+          <View style={styles.espacioDerecha} />
+        </View>
         <View style={styles.contenido}>
           <Aviso
             accion={
               <Boton
-                icono="inicio"
                 onPress={() => router.replace('/(tabs)')}
                 tamano="sm"
                 titulo="Ir a Mis grupos"
@@ -101,16 +106,56 @@ export default function ReportesGrupoScreen() {
   const totalRegistros =
     reporte.totalPresentes + reporte.totalJustificadas + reporte.totalAusentesSinMotivo;
   const sinDatos = estadoVista === 'vacio' || totalRegistros === 0;
-  const fechasEnFila = width >= 400 * Math.max(1, fontScale);
 
   return (
-    <SafeAreaView edges={['bottom']} style={styles.pantalla}>
-      <BarraSuperior accessibilityLabelVolver="Volver a Jornadas" titulo={grupo.nombre} />
-      <PestanasGrupo actual="reportes" esResponsable grupoId={grupo.id} />
+    <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
+      <View style={styles.barraSuperior}>
+        <Pressable
+          accessibilityLabel="Volver al grupo"
+          accessibilityRole="button"
+          onPress={() => router.back()}
+          style={styles.botonIcono}
+        >
+          <Icono color={colores.tinta} nombre="volver" tamano={22} />
+        </Pressable>
+        <Text numberOfLines={1} style={styles.tituloBarra}>
+          Reportes
+        </Text>
+        <View style={styles.espacioDerecha} />
+      </View>
 
       <ScrollView contentContainerStyle={styles.contenido} showsVerticalScrollIndicator={false}>
+        <View style={styles.tabsInternas}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() =>
+              router.replace({
+                pathname: '/grupos/[grupoId]',
+                params: { grupoId: grupo.id },
+              })
+            }
+            style={styles.tabInterna}
+          >
+            <Text style={styles.textoTab}>Jornadas</Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() =>
+              router.replace({
+                pathname: '/grupos/[grupoId]/integrantes',
+                params: { grupoId: grupo.id },
+              })
+            }
+            style={styles.tabInterna}
+          >
+            <Text style={styles.textoTab}>Integrantes</Text>
+          </Pressable>
+          <View style={[styles.tabInterna, styles.tabInternaActiva]}>
+            <Text style={[styles.textoTab, styles.textoTabActiva]}>Reportes</Text>
+          </View>
+        </View>
 
-        {mostrarControlesDePrueba ? (
+        {__DEV__ ? (
           <View style={styles.barraEstados}>
             {(['normal', 'cargando', 'vacio', 'error'] as const).map((modo) => {
               const activo = estadoVista === modo;
@@ -129,20 +174,15 @@ export default function ReportesGrupoScreen() {
           </View>
         ) : null}
 
-        <View style={styles.tarjetaFiltros}>
-          <Text accessibilityRole="header" style={styles.tituloFiltros}>Período del reporte</Text>
-          <View style={styles.gridPeriodos}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <View style={styles.filaPeriodos}>
             {OPCIONES_PERIODO.map((opcion) => {
               const activo = periodo === opcion.id;
               return (
                 <Pressable
                   key={opcion.id}
                   accessibilityRole="button"
-                  accessibilityState={{ selected: activo }}
-                  onPress={() => {
-                    setPeriodo(opcion.id);
-                    setExpandidoId(null);
-                  }}
+                  onPress={() => setPeriodo(opcion.id)}
                   style={[styles.chipPeriodo, activo && styles.chipPeriodoActivo]}
                 >
                   <Text style={[styles.textoPeriodo, activo && styles.textoPeriodoActivo]}>
@@ -152,31 +192,18 @@ export default function ReportesGrupoScreen() {
               );
             })}
           </View>
+        </ScrollView>
 
-          {periodo === 'personalizado' ? (
-            <View style={[styles.fechas, fechasEnFila && styles.fechasEnFila]}>
-              <View style={fechasEnFila ? styles.colFecha : undefined}>
-                <DatePickerField
-                  label="Desde"
-                  maxDate={hasta}
-                  onChange={setDesde}
-                  permitirLimpiar={false}
-                  value={desde}
-                />
-              </View>
-              <View style={fechasEnFila ? styles.colFecha : undefined}>
-                <DatePickerField
-                  label="Hasta"
-                  maxDate={fechaEnZona()}
-                  minDate={desde}
-                  onChange={setHasta}
-                  permitirLimpiar={false}
-                  value={hasta}
-                />
-              </View>
+        {periodo === 'personalizado' ? (
+          <View style={styles.filaFechas}>
+            <View style={styles.colFecha}>
+              <DatePickerField label="Desde" onChange={setDesde} value={desde} />
             </View>
-          ) : null}
-        </View>
+            <View style={styles.colFecha}>
+              <DatePickerField label="Hasta" onChange={setHasta} value={hasta} />
+            </View>
+          </View>
+        ) : null}
 
         {estadoVista === 'cargando' ? (
           <View style={styles.estadoCentro}>
@@ -202,7 +229,7 @@ export default function ReportesGrupoScreen() {
 
         {estadoVista !== 'cargando' && estadoVista !== 'error' && sinDatos ? (
           <EstadoVacio
-            descripcion="Prueba otro período. Las asistencias registradas aparecerán aquí."
+            descripcion="Cambia el rango de fechas o registra asistencias para ver las métricas del grupo."
             icono="calendario"
             titulo="No hay registros de asistencia en el período seleccionado"
           />
@@ -217,7 +244,15 @@ export default function ReportesGrupoScreen() {
             />
 
             <View style={styles.tabla}>
-              <Text accessibilityRole="header" style={styles.encabezadoTabla}>Por integrante</Text>
+              <View style={styles.encabezadoTabla}>
+                <Text style={[styles.colNombre, styles.textoEncabezado]}>Integrante</Text>
+                <Text style={[styles.colNum, styles.textoEncabezado]}>Pres.</Text>
+                <Text style={[styles.colNum, styles.textoEncabezado]}>Aus.</Text>
+                <Text style={[styles.colTasa, styles.textoEncabezado]}>Tasa</Text>
+                {grupo.control_horas ? (
+                  <Text style={[styles.colHoras, styles.textoEncabezado]}>Horas</Text>
+                ) : null}
+              </View>
 
               {reporte.filas.map((fila) => {
                 const expandida = expandidoId === fila.participante.id;
@@ -227,29 +262,27 @@ export default function ReportesGrupoScreen() {
                   <Pressable
                     key={fila.participante.id}
                     accessibilityRole="button"
-                    accessibilityState={{ expanded: expandida }}
                     onPress={() =>
                       setExpandidoId(expandida ? null : fila.participante.id)
                     }
-                    style={({ pressed }) => [styles.filaTabla, pressed && styles.filaPresionada]}
+                    style={styles.filaTabla}
                   >
                     <View style={styles.filaResumen}>
-                      <Text style={styles.textoNombre}>{fila.participante.nombre}</Text>
-                      <Icono
-                        color={colores.tintaSuave}
-                        nombre={expandida ? 'contraer' : 'expandir'}
-                      />
-                    </View>
-
-                    <View style={styles.metricas}>
-                      <Text style={[styles.textoDato, cifrasTabulares]}>{fila.presentes} presentes</Text>
-                      <Text style={[styles.textoDato, cifrasTabulares]}>{totalAusencias} ausencias</Text>
-                      <Text style={[styles.textoTasa, cifrasTabulares]}>
-                        {fila.tasaAsistencia === null ? 'Tasa —' : fila.tasaAsistencia + '% de asistencia'}
+                      <Text numberOfLines={1} style={[styles.colNombre, styles.textoNombre]}>
+                        {fila.participante.nombre}
+                      </Text>
+                      <Text style={[styles.colNum, styles.textoDato, cifrasTabulares]}>
+                        {fila.presentes}
+                      </Text>
+                      <Text style={[styles.colNum, styles.textoDato, cifrasTabulares]}>
+                        {totalAusencias}
+                      </Text>
+                      <Text style={[styles.colTasa, styles.textoTasa, cifrasTabulares]}>
+                        {fila.tasaAsistencia !== null ? `${fila.tasaAsistencia}%` : '—'}
                       </Text>
                       {grupo.control_horas ? (
-                        <Text style={[styles.textoDato, cifrasTabulares]}>
-                          {formatearHorasDesdeMinutos(fila.minutosReconocidos)} reconocidas
+                        <Text style={[styles.colHoras, styles.textoHoras, cifrasTabulares]}>
+                          {formatearHorasDesdeMinutos(fila.minutosReconocidos)}
                         </Text>
                       ) : null}
                     </View>
@@ -294,10 +327,64 @@ const styles = StyleSheet.create({
     backgroundColor: colores.papel,
     flex: 1,
   },
+  barraSuperior: {
+    alignItems: 'center',
+    backgroundColor: colores.superficie,
+    borderBottomColor: colores.borde,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: espaciados.sm,
+    paddingVertical: espaciados.sm,
+  },
+  botonIcono: {
+    alignItems: 'center',
+    height: 44,
+    justifyContent: 'center',
+    width: 44,
+  },
+  tituloBarra: {
+    color: colores.tinta,
+    flex: 1,
+    fontSize: tipografia.tituloSm,
+    fontWeight: pesos.fuerte,
+    textAlign: 'center',
+  },
+  espacioDerecha: {
+    width: 44,
+  },
   contenido: {
     gap: espaciados.lg,
     padding: espaciados.lg,
     paddingBottom: espaciados.xxxl,
+  },
+  tabsInternas: {
+    backgroundColor: colores.superficieAlt,
+    borderColor: colores.borde,
+    borderRadius: radios.campo,
+    borderWidth: 1,
+    flexDirection: 'row',
+    padding: espaciados.xs,
+  },
+  tabInterna: {
+    alignItems: 'center',
+    borderRadius: radios.sm,
+    flex: 1,
+    paddingVertical: espaciados.sm,
+  },
+  tabInternaActiva: {
+    backgroundColor: colores.superficie,
+    borderColor: colores.borde,
+    borderWidth: 1,
+  },
+  textoTab: {
+    color: colores.tintaSuave,
+    fontSize: tipografia.cuerpoSm,
+    fontWeight: pesos.medio,
+  },
+  textoTabActiva: {
+    color: colores.tinta,
+    fontWeight: pesos.fuerte,
   },
   barraEstados: {
     flexDirection: 'row',
@@ -325,48 +412,35 @@ const styles = StyleSheet.create({
     color: colores.acento,
     fontWeight: pesos.fuerte,
   },
-  tarjetaFiltros: {
-    gap: espaciados.md,
-  },
-  tituloFiltros: {
-    color: colores.tinta,
-    fontSize: tipografia.tituloSm,
-    fontWeight: pesos.encabezado,
-  },
-  gridPeriodos: {
+  filaPeriodos: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: espaciados.sm,
   },
   chipPeriodo: {
-    alignItems: 'center',
-    backgroundColor: colores.superficieAlt,
+    backgroundColor: colores.superficie,
     borderColor: colores.borde,
     borderRadius: radios.pill,
     borderWidth: 1,
-    flexBasis: '48%',
-    flexGrow: 1,
-    minHeight: 48,
-    justifyContent: 'center',
-    paddingHorizontal: espaciados.sm,
+    paddingHorizontal: espaciados.md,
     paddingVertical: espaciados.sm,
   },
   chipPeriodoActivo: {
-    backgroundColor: colores.superficie,
-    borderColor: colores.bordeFuerte,
+    backgroundColor: colores.acentoSuave,
+    borderColor: colores.acentoBorde,
   },
   textoPeriodo: {
     color: colores.tintaSuave,
-    textAlign: 'center',
     fontSize: tipografia.cuerpoSm,
     fontWeight: pesos.medio,
   },
   textoPeriodoActivo: {
-    color: colores.tinta,
+    color: colores.acento,
     fontWeight: pesos.fuerte,
   },
-  fechas: { gap: espaciados.sm },
-  fechasEnFila: { flexDirection: 'row' },
+  filaFechas: {
+    flexDirection: 'row',
+    gap: espaciados.md,
+  },
   colFecha: {
     flex: 1,
   },
@@ -387,45 +461,61 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   encabezadoTabla: {
-    color: colores.tinta,
-    fontSize: tipografia.tituloSm,
-    fontWeight: pesos.encabezado,
-    paddingHorizontal: espaciados.lg,
-    paddingVertical: espaciados.md,
+    backgroundColor: colores.superficieAlt,
+    borderBottomColor: colores.borde,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    paddingHorizontal: espaciados.md,
+    paddingVertical: espaciados.sm,
+  },
+  textoEncabezado: {
+    color: colores.tintaSuave,
+    fontSize: tipografia.micro,
+    fontWeight: pesos.fuerte,
   },
   filaTabla: {
-    borderTopColor: colores.borde,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    gap: espaciados.xs,
-    minHeight: 48,
-    paddingHorizontal: espaciados.lg,
+    borderBottomColor: colores.borde,
+    borderBottomWidth: 1,
+    paddingHorizontal: espaciados.md,
     paddingVertical: espaciados.md,
   },
-  filaPresionada: { backgroundColor: colores.superficieAlt },
   filaResumen: {
     alignItems: 'center',
     flexDirection: 'row',
   },
-  metricas: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    columnGap: espaciados.md,
-    rowGap: espaciados.xs,
+  colNombre: {
+    flex: 2,
+    paddingRight: espaciados.xs,
+  },
+  colNum: {
+    textAlign: 'center',
+    width: 40,
+  },
+  colTasa: {
+    textAlign: 'right',
+    width: 48,
+  },
+  colHoras: {
+    textAlign: 'right',
+    width: 68,
   },
   textoNombre: {
     color: colores.tinta,
-    flex: 1,
-    fontSize: tipografia.cuerpo,
+    fontSize: tipografia.cuerpoSm,
     fontWeight: pesos.fuerte,
   },
   textoDato: {
-    color: colores.tintaSuave,
+    color: colores.tinta,
     fontSize: tipografia.cuerpoSm,
   },
   textoTasa: {
     color: colores.acento,
     fontSize: tipografia.cuerpoSm,
     fontWeight: pesos.fuerte,
+  },
+  textoHoras: {
+    color: colores.tintaSuave,
+    fontSize: tipografia.micro,
   },
   detalleExpandido: {
     backgroundColor: colores.papel,
@@ -440,7 +530,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   notaPie: {
-    color: colores.tintaSuave,
+    color: colores.tintaTenue,
     fontSize: tipografia.micro,
     lineHeight: 17,
   },

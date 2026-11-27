@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { colores, espaciados } from '@/lib/tema';
+import { colores, espaciados, radios } from '@/lib/tema';
 
 interface MatrizQRProps {
   valor: string;
@@ -107,6 +107,9 @@ const styles = StyleSheet.create({
   marco: {
     alignSelf: 'center',
     backgroundColor: colores.superficie,
+    borderColor: colores.borde,
+    borderRadius: radios.tarjeta,
+    borderWidth: 1,
     padding: espaciados.lg,
   },
   atenuado: {

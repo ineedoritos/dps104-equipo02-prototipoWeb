@@ -2,17 +2,17 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
   View,
-  useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Aviso } from '@/components/ui/Aviso';
-import { BarraSuperior } from '@/components/ui/BarraSuperior';
 import { Boton } from '@/components/ui/Boton';
 import { CampoTexto } from '@/components/ui/CampoTexto';
 import { DatePickerField } from '@/components/ui/DatePickerField';
@@ -27,7 +27,6 @@ import {
   obtenerJornadaPorId,
   obtenerMiRolEnGrupo,
 } from '@/lib/gruposStore';
-import { mostrarControlesDePrueba } from '@/lib/opcionesPrueba';
 import { colores, espaciados, pesos, radios, tipografia } from '@/lib/tema';
 import { ErrorDominio } from '@/types/dominio';
 
@@ -35,8 +34,6 @@ type EstadoVista = 'normal' | 'cargando' | 'error';
 
 export default function CrearOEditarJornadaScreen() {
   const router = useRouter();
-  const { width, fontScale } = useWindowDimensions();
-  const horasEnColumna = width < 380 || fontScale > 1.3;
   const { grupoId, jornadaId } = useLocalSearchParams<{
     grupoId: string;
     jornadaId?: string;
@@ -61,13 +58,23 @@ export default function CrearOEditarJornadaScreen() {
   );
   const [enviando, setEnviando] = useState(false);
   const [errorGeneral, setErrorGeneral] = useState('');
-  const [intentoGuardar, setIntentoGuardar] = useState(false);
   const [estadoVista, setEstadoVista] = useState<EstadoVista>('normal');
 
   if (!grupo || rol !== 'responsable' || (jornadaId && !jornadaExistente)) {
     return (
-      <SafeAreaView edges={['bottom']} style={styles.pantalla}>
-        <BarraSuperior titulo="Jornada" />
+      <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
+        <View style={styles.barraSuperior}>
+          <Pressable
+            accessibilityLabel="Volver"
+            accessibilityRole="button"
+            onPress={() => router.back()}
+            style={styles.botonIcono}
+          >
+            <Icono color={colores.tinta} nombre="volver" tamano={22} />
+          </Pressable>
+          <Text style={styles.tituloBarra}>Jornada</Text>
+          <View style={styles.espacioDerecha} />
+        </View>
         <View style={styles.contenido}>
           <Aviso
             accion={
@@ -98,8 +105,22 @@ export default function CrearOEditarJornadaScreen() {
   const manejarGuardar = () => {
     setErrorGeneral('');
 
-    setIntentoGuardar(true);
-    if (!titulo.trim() || !descripcion.trim() || !fecha.trim() || errorHoraFin) return;
+    if (!titulo.trim()) {
+      setErrorGeneral('Ingresa un título para la jornada.');
+      return;
+    }
+    if (!descripcion.trim()) {
+      setErrorGeneral('Ingresa una descripción breve de la actividad.');
+      return;
+    }
+    if (!fecha.trim()) {
+      setErrorGeneral('Selecciona la fecha de la jornada.');
+      return;
+    }
+    if (errorHoraFin) {
+      setErrorGeneral(errorHoraFin);
+      return;
+    }
 
     setEnviando(true);
     try {
@@ -119,15 +140,10 @@ export default function CrearOEditarJornadaScreen() {
             horaFin,
           });
 
-      const detalle = {
+      router.replace({
         pathname: '/grupos/[grupoId]/jornadas/[jornadaId]',
         params: { grupoId: grupo.id, jornadaId: resultado.id },
-      } as const;
-      if (esEdicion) {
-        router.dismissTo(detalle);
-      } else {
-        router.replace(detalle);
-      }
+      });
     } catch (error) {
       if (error instanceof ErrorDominio) {
         setErrorGeneral(error.message);
@@ -140,80 +156,92 @@ export default function CrearOEditarJornadaScreen() {
   };
 
   return (
-    <SafeAreaView edges={['bottom']} style={styles.pantalla}>
-      <BarraSuperior titulo={esEdicion ? 'Editar jornada' : 'Nueva jornada'} />
+    <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
+      <View style={styles.barraSuperior}>
+        <Pressable
+          accessibilityLabel="Volver"
+          accessibilityRole="button"
+          onPress={() => router.back()}
+          style={styles.botonIcono}
+        >
+          <Icono color={colores.tinta} nombre="volver" tamano={22} />
+        </Pressable>
+        <Text style={styles.tituloBarra}>{esEdicion ? 'Editar jornada' : 'Nueva jornada'}</Text>
+        <View style={styles.espacioDerecha} />
+      </View>
 
-      <ScrollView
-        automaticallyAdjustKeyboardInsets
-        contentContainerStyle={styles.contenido}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={styles.flex}
       >
-        {mostrarControlesDePrueba ? (
-          <View style={styles.barraEstados}>
-            {(['normal', 'cargando', 'error'] as const).map((modo) => {
-              const activo = estadoVista === modo;
-              return (
-                <Pressable
-                  key={modo}
-                  onPress={() => setEstadoVista(modo)}
-                  style={[styles.chipEstado, activo && styles.chipEstadoActivo]}
-                >
-                  <Text style={[styles.textoChipEstado, activo && styles.textoChipEstadoActivo]}>
-                    {modo}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        ) : null}
-
-        {estadoVista === 'cargando' ? (
-          <View style={styles.estadoCentro}>
-            <ActivityIndicator color={colores.acento} size="large" />
-            <Text style={styles.textoCarga}>Cargando formulario…</Text>
-          </View>
-        ) : null}
-
-        {estadoVista === 'error' ? (
-          <Aviso
-            accion={
-              <Boton
-                onPress={() => setEstadoVista('normal')}
-                tamano="sm"
-                titulo="Reintentar"
-                variante="secundario"
-              />
-            }
-            texto="No pudimos cargar la información de la jornada. Intenta de nuevo."
-            tipo="error"
-          />
-        ) : null}
-
-        {estadoVista === 'normal' ? (
-          <>
-            <View style={styles.tarjetaInfo}>
-              <Icono color={colores.info} nombre="info" tamano={18} />
-              <View style={styles.tarjetaInfoTexto}>
-                <Text style={styles.tituloInfo}>Usa la configuración actual del grupo</Text>
-                <Text style={styles.subtituloInfo}>
-                  {modalidadTexto} · {horasTexto}
-                </Text>
-              </View>
+        <ScrollView
+          contentContainerStyle={styles.contenido}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          {__DEV__ ? (
+            <View style={styles.barraEstados}>
+              {(['normal', 'cargando', 'error'] as const).map((modo) => {
+                const activo = estadoVista === modo;
+                return (
+                  <Pressable
+                    key={modo}
+                    onPress={() => setEstadoVista(modo)}
+                    style={[styles.chipEstado, activo && styles.chipEstadoActivo]}
+                  >
+                    <Text style={[styles.textoChipEstado, activo && styles.textoChipEstadoActivo]}>
+                      {modo}
+                    </Text>
+                  </Pressable>
+                );
+              })}
             </View>
+          ) : null}
 
-            {horarioBloqueado ? (
-              <Aviso
-                texto="Ya hay registros de asistencia en esta jornada; el horario quedó fijo."
-                tipo="info"
-              />
-            ) : null}
+          {estadoVista === 'cargando' ? (
+            <View style={styles.estadoCentro}>
+              <ActivityIndicator color={colores.acento} size="large" />
+              <Text style={styles.textoCarga}>Cargando formulario…</Text>
+            </View>
+          ) : null}
 
-            {errorGeneral ? <Aviso texto={errorGeneral} tipo="error" /> : null}
+          {estadoVista === 'error' ? (
+            <Aviso
+              accion={
+                <Boton
+                  onPress={() => setEstadoVista('normal')}
+                  tamano="sm"
+                  titulo="Reintentar"
+                  variante="secundario"
+                />
+              }
+              texto="No pudimos cargar la información de la jornada. Intenta de nuevo."
+              tipo="error"
+            />
+          ) : null}
 
-            <View style={styles.panelFormulario}>
+          {estadoVista === 'normal' ? (
+            <>
+              <View style={styles.tarjetaInfo}>
+                <Icono color={colores.info} nombre="info" tamano={18} />
+                <View style={styles.tarjetaInfoTexto}>
+                  <Text style={styles.tituloInfo}>Usa la configuración actual del grupo</Text>
+                  <Text style={styles.subtituloInfo}>
+                    {modalidadTexto} · {horasTexto}
+                  </Text>
+                </View>
+              </View>
+
+              {horarioBloqueado ? (
+                <Aviso
+                  texto="Ya hay registros de asistencia en esta jornada; el horario quedó fijo."
+                  tipo="info"
+                />
+              ) : null}
+
+              {errorGeneral ? <Aviso texto={errorGeneral} tipo="error" /> : null}
+
               <CampoTexto
-                error={intentoGuardar && !titulo.trim() ? 'Ingresa un título para la jornada.' : undefined}
                 etiqueta="Título"
                 onChangeText={setTitulo}
                 placeholder="Ej. Entrega de paquetes alimentarios"
@@ -221,56 +249,51 @@ export default function CrearOEditarJornadaScreen() {
               />
 
               <CampoTexto
-                error={intentoGuardar && !descripcion.trim() ? 'Describe la actividad en unas palabras.' : undefined}
                 etiqueta="Descripción"
                 multilinea
                 numberOfLines={3}
                 onChangeText={setDescripcion}
-                placeholder="Describe qué actividad se realizará"
+                placeholder="Describe brevemente la actividad que se realizará"
                 value={descripcion}
               />
-            </View>
 
-            <View style={styles.panelFormulario}>
-              <Text accessibilityRole="header" style={styles.tituloSeccion}>Fecha y horario</Text>
-              <DatePickerField
-                deshabilitado={horarioBloqueado}
-                error={intentoGuardar && !fecha.trim() ? 'Selecciona la fecha de la jornada.' : undefined}
-                label="Fecha"
-                onChange={setFecha}
-                permitirLimpiar={false}
-                value={fecha}
-              />
+              <View style={horarioBloqueado ? styles.bloqueDeshabilitado : undefined} pointerEvents={horarioBloqueado ? 'none' : 'auto'}>
+                <DatePickerField
+                  label="Fecha (un solo día)"
+                  onChange={setFecha}
+                  value={fecha}
+                />
 
-              <View style={[styles.filaHoras, horasEnColumna && styles.horasEnColumna]}>
-                <View style={styles.colHora}>
-                  <HoraPickerField
-                    deshabilitado={horarioBloqueado}
-                    label="Hora de inicio"
-                    onChange={setHoraInicio}
-                    value={horaInicio}
-                  />
-                </View>
-                <View style={styles.colHora}>
-                  <HoraPickerField
-                    deshabilitado={horarioBloqueado}
-                    error={intentoGuardar ? errorHoraFin : undefined}
-                    label="Hora de fin"
-                    onChange={setHoraFin}
-                    value={horaFin}
-                  />
+                <View style={styles.filaHoras}>
+                  <View style={styles.colHora}>
+                    <HoraPickerField
+                      deshabilitado={horarioBloqueado}
+                      label="Hora de inicio"
+                      onChange={setHoraInicio}
+                      value={horaInicio}
+                    />
+                  </View>
+                  <View style={styles.colHora}>
+                    <HoraPickerField
+                      deshabilitado={horarioBloqueado}
+                      error={errorHoraFin}
+                      label="Hora de fin"
+                      onChange={setHoraFin}
+                      value={horaFin}
+                    />
+                  </View>
                 </View>
               </View>
-            </View>
 
-            <Boton
-              cargando={enviando}
-              onPress={manejarGuardar}
-              titulo={esEdicion ? 'Guardar cambios' : 'Crear jornada'}
-            />
-          </>
-        ) : null}
-      </ScrollView>
+              <Boton
+                cargando={enviando}
+                onPress={manejarGuardar}
+                titulo={esEdicion ? 'Guardar cambios' : 'Crear jornada'}
+              />
+            </>
+          ) : null}
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -283,10 +306,31 @@ const styles = StyleSheet.create({
   flex: {
     flex: 1,
   },
+  barraSuperior: {
+    alignItems: 'center',
+    backgroundColor: colores.superficie,
+    borderBottomColor: colores.borde,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: espaciados.sm,
+    paddingVertical: espaciados.sm,
+  },
+  botonIcono: {
+    alignItems: 'center',
+    height: 44,
+    justifyContent: 'center',
+    width: 44,
+  },
+  tituloBarra: {
+    color: colores.tinta,
+    fontSize: tipografia.tituloSm,
+    fontWeight: pesos.fuerte,
+  },
+  espacioDerecha: {
+    width: 44,
+  },
   contenido: {
-    alignSelf: 'center',
-    maxWidth: 560,
-    width: '100%',
     gap: espaciados.lg,
     padding: espaciados.lg,
     paddingBottom: espaciados.xxxl,
@@ -349,25 +393,14 @@ const styles = StyleSheet.create({
     color: colores.tintaSuave,
     fontSize: tipografia.cuerpoSm,
   },
-  panelFormulario: {
-    backgroundColor: colores.superficie,
-    borderColor: colores.borde,
-    borderRadius: radios.tarjeta,
-    borderWidth: 1,
-    gap: espaciados.md,
-    padding: espaciados.lg,
-  },
-  tituloSeccion: {
-    color: colores.tinta,
-    fontSize: tipografia.tituloSm,
-    fontWeight: pesos.fuerte,
+  bloqueDeshabilitado: {
+    gap: espaciados.lg,
+    opacity: 0.65,
   },
   filaHoras: {
     flexDirection: 'row',
     gap: espaciados.md,
-  },
-  horasEnColumna: {
-    flexDirection: 'column',
+    marginTop: espaciados.md,
   },
   colHora: {
     flex: 1,
