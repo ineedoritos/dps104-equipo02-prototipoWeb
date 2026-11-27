@@ -1,3 +1,4 @@
+import { Encabezado } from '@/components/ui/Encabezado';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import {
@@ -6,7 +7,6 @@ import {
   Linking,
   Modal,
   Platform,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -20,13 +20,11 @@ import { CampoTexto } from '@/components/ui/CampoTexto';
 import { ESTADO_ASISTENCIA, Estado } from '@/components/ui/Estado';
 import { GaleriaFotos } from '@/components/ui/GaleriaFotos';
 import { HojaAcciones } from '@/components/ui/HojaAcciones';
-import { Icono } from '@/components/ui/Icono';
 import { Seccion } from '@/components/ui/Seccion';
 import { formatearDia, formatearDuracion, formatearFecha, horaEnZona } from '@/lib/fecha';
 import {
   agregarFotoSimulada,
   obtenerFotosDeJornada,
-  retirarFoto,
   suscribirFotos,
   tengoFotoEnJornada,
 } from '@/lib/fotosStore';
@@ -109,24 +107,13 @@ export default function DetalleRegistroScreen() {
   const asistencia = jornadaId ? obtenerMiAsistenciaEnJornada(jornadaId) : undefined;
   const miSolicitud = jornadaId ? obtenerMiSolicitud(jornadaId) : undefined;
   const responsable = grupoId ? obtenerResponsableDeGrupo(grupoId) : undefined;
-  const fotos = jornadaId ? obtenerFotosDeJornada(jornadaId) : [];
+  const fotos = jornadaId ? obtenerFotosDeJornada(jornadaId).filter((foto) => foto.autor_id === sesion?.id) : [];
   const tengoFoto = jornadaId ? tengoFotoEnJornada(jornadaId) : false;
 
   if (!sesion || !grupo || !jornada) {
     return (
-      <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
-        <View style={styles.barraSuperior}>
-          <Pressable
-            accessibilityLabel="Volver"
-            accessibilityRole="button"
-            onPress={() => router.back()}
-            style={styles.botonIcono}
-          >
-            <Icono color={colores.tinta} nombre="volver" tamano={22} />
-          </Pressable>
-          <Text style={styles.tituloBarra}>Detalle del registro</Text>
-          <View style={styles.espacioDerecha} />
-        </View>
+      <SafeAreaView edges={['bottom']} style={styles.pantalla}>
+        <Encabezado onVolver={() => router.back()} titulo="Detalle del registro" />
         <View style={styles.contenido}>
           <Aviso
             accion={
@@ -238,39 +225,14 @@ export default function DetalleRegistroScreen() {
     }
   };
 
-  const manejarRetirarFoto = (fotoId: string) => {
-    try {
-      retirarFoto(fotoId);
-      recargar();
-    } catch (error) {
-      setErrorFoto('subida');
-      setMensajeFoto(
-        error instanceof ErrorDominio
-          ? error.message
-          : 'No pudimos retirar la foto. Intenta de nuevo.',
-      );
-    }
-  };
-
   const manejarAbrirAjustes = () => {
     Linking.openSettings().catch(() => {
       setMensajeFoto('Abre los ajustes del teléfono para conceder el permiso de cámara.');
     });
   };
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
-      <View style={styles.barraSuperior}>
-        <Pressable
-          accessibilityLabel="Volver"
-          accessibilityRole="button"
-          onPress={() => router.back()}
-          style={styles.botonIcono}
-        >
-          <Icono color={colores.tinta} nombre="volver" tamano={22} />
-        </Pressable>
-        <Text style={styles.tituloBarra}>Detalle del registro</Text>
-        <View style={styles.espacioDerecha} />
-      </View>
+    <SafeAreaView edges={['bottom']} style={styles.pantalla}>
+      <Encabezado onVolver={() => router.back()} titulo="Detalle del registro" />
 
       <ScrollView contentContainerStyle={styles.contenido} showsVerticalScrollIndicator={false}>
 
@@ -404,7 +366,7 @@ export default function DetalleRegistroScreen() {
               </View>
             ) : null}
 
-            {jornada.modo_fotos !== 'no_permitidas' ? (
+            {rol === 'participante' && jornada.modo_fotos !== 'no_permitidas' ? (
               <Seccion titulo="Fotos de la jornada">
                 {faltaFotoObligatoria ? (
                   <Aviso
@@ -455,11 +417,10 @@ export default function DetalleRegistroScreen() {
                 ) : null}
 
                 <GaleriaFotos
-                  esResponsable={rol === 'responsable'}
+                  esResponsable={false}
                   fotos={fotos}
                   motivoBloqueoAgregar={motivoBloqueoFoto}
                   onAgregarFoto={solicitarAgregarFoto}
-                  onRetirarFoto={manejarRetirarFoto}
                   puedeAgregar={puedeAgregarFoto}
                 />
               </Seccion>
@@ -522,7 +483,7 @@ export default function DetalleRegistroScreen() {
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.veloModal}
         >
-          <View style={styles.tarjetaModal}>
+          <ScrollView style={styles.marcoModal} contentContainerStyle={styles.tarjetaModal} keyboardShouldPersistTaps="handled">
             <Text style={styles.tituloModal}>Solicitar revisión</Text>
             <Text style={styles.cuerpoModal}>
               Explica qué hay que revisar en tu asistencia u horas. Tu registro no cambia hasta que
@@ -560,7 +521,7 @@ export default function DetalleRegistroScreen() {
                 />
               </View>
             </View>
-          </View>
+          </ScrollView>
         </KeyboardAvoidingView>
       </Modal>
 
@@ -783,6 +744,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: espaciados.lg,
+  },
+  marcoModal: {
+    width: '100%',
+    flexGrow: 0,
+    maxHeight: '100%',
   },
   tarjetaModal: {
     backgroundColor: forma.paper,

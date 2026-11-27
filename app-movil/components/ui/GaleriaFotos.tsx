@@ -7,7 +7,6 @@ import {
   StyleSheet,
   Text,
   View,
-  useWindowDimensions,
 } from 'react-native';
 
 import { Boton } from '@/components/ui/Boton';
@@ -32,8 +31,8 @@ export interface GaleriaFotosProps {
   esResponsable: boolean;
   motivoBloqueoAgregar?: string;
   cargandoAgregar?: boolean;
-  onAgregarFoto: () => void;
-  onRetirarFoto: (fotoId: string) => void;
+  onAgregarFoto?: () => void;
+  onRetirarFoto?: (fotoId: string) => void;
 }
 
 export function GaleriaFotos({
@@ -45,12 +44,11 @@ export function GaleriaFotos({
   onAgregarFoto,
   onRetirarFoto,
 }: GaleriaFotosProps) {
-  const { width } = useWindowDimensions();
+  const [anchoContenedor, setAnchoContenedor] = useState(0);
   const [fotoActiva, setFotoActiva] = useState<FotoJornada | null>(null);
   const [confirmarRetiro, setConfirmarRetiro] = useState(false);
 
-  const anchoContenedor = Math.max(240, width - espaciados.lg * 2);
-  const anchoCelda = Math.floor((anchoContenedor - espaciados.xs * 2) / 3);
+  const anchoCelda = Math.max(1, Math.floor((anchoContenedor - espaciados.xs * 2) / 3));
 
   const cerrarModal = () => {
     setFotoActiva(null);
@@ -63,11 +61,11 @@ export function GaleriaFotos({
     }
     const id = fotoActiva.id;
     cerrarModal();
-    onRetirarFoto(id);
+    onRetirarFoto?.(id);
   };
 
   return (
-    <View style={styles.contenedor}>
+    <View style={styles.contenedor} onLayout={(event) => setAnchoContenedor(event.nativeEvent.layout.width)}>
       {puedeAgregar || fotos.length > 0 ? (
         <View style={styles.cuadricula}>
           {puedeAgregar ? (

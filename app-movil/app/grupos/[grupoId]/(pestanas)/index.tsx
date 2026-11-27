@@ -2,7 +2,6 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
-  Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -23,6 +22,7 @@ import {
   obtenerGrupoPorId,
   obtenerJornadasDeGrupo,
   obtenerMiRolEnGrupo,
+  obtenerMiAsistenciaEnJornada,
   suscribirStore,
 } from '@/lib/gruposStore';
 import {cifrasTabulares, colores, espaciados, fuentes, radios, tipografia} from '@/lib/tema';
@@ -134,35 +134,18 @@ export default function GrupoDetalleScreen() {
       day: 'numeric',
       month: 'short',
     });
+    const registro = obtenerMiAsistenciaEnJornada(jornada.id);
+    const completo = registro?.estado === 'presente' &&
+      (!jornada.control_horas || Boolean(registro.hora_entrada && registro.hora_salida));
+    const detalleDisponible = esResponsable || jornada.modalidad_asistencia !== 'qr' || Boolean(registro);
     const esAhoraConQR =
       !esResponsable &&
       estado === 'en_curso' &&
       jornada.modalidad_asistencia === 'qr' &&
-      !jornada.cancelada;
+      !completo;
 
     return (
-      <Pressable
-        key={jornada.id}
-        accessibilityRole="button"
-        onPress={() => {
-          if (esResponsable) {
-            router.push({
-              pathname: '/grupos/[grupoId]/jornadas/[jornadaId]',
-              params: { grupoId: grupo.id, jornadaId: jornada.id },
-            });
-          } else {
-            router.push({
-              pathname: '/grupos/[grupoId]/jornadas/[jornadaId]/mi-registro',
-              params: { grupoId: grupo.id, jornadaId: jornada.id },
-            });
-          }
-        }}
-        style={({ pressed }) => [
-          styles.tarjetaJornada,
-          esAhoraConQR && styles.tarjetaDestacada,
-          pressed && styles.tarjetaPresionada,
-        ]}
-      >
+      <View key={jornada.id} style={[styles.tarjetaJornada, esAhoraConQR && styles.tarjetaDestacada]}>
         <View style={styles.filaSuperior}>
           <Text style={styles.tituloJornada}>{jornada.titulo}</Text>
           <Estado etiqueta={metaEstado.etiqueta} tono={metaEstado.tono} />
@@ -179,6 +162,16 @@ export default function GrupoDetalleScreen() {
           <Text style={styles.notaCancelada}>Sus registros no cuentan en los totales.</Text>
         ) : null}
 
+        {detalleDisponible ? (
+          <Boton
+            onPress={() => router.push({
+              pathname: esResponsable ? '/grupos/[grupoId]/jornadas/[jornadaId]' : '/grupos/[grupoId]/jornadas/[jornadaId]/mi-registro',
+              params: { grupoId: grupo.id, jornadaId: jornada.id },
+            })}
+            titulo={esResponsable ? 'Ver jornada' : 'Detalle del registro'}
+            variante="secundario"
+          />
+        ) : null}
         {esAhoraConQR ? (
           <View style={styles.pieDestacado}>
             <Boton
@@ -190,11 +183,11 @@ export default function GrupoDetalleScreen() {
                 })
               }
               tamano="sm"
-              titulo="Escanear QR"
+              titulo={registro?.hora_entrada ? 'Escanear salida' : 'Escanear QR'}
             />
           </View>
         ) : null}
-      </Pressable>
+      </View>
     );
   };
 

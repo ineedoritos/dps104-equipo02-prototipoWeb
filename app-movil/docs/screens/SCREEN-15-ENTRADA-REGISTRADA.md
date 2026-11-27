@@ -11,7 +11,7 @@
   - **Con control de horas (1er escaneo — Entrada):** *"Entrada registrada · HH:MM"* + aviso *"Al irte, escanea otra vez para registrar tu salida y calcular tus horas"*.
   - **Con control de horas (2do escaneo — Salida):** *"Salida registrada · HH:MM"* + duración calculada (*ej. "3 h 05 min registradas"*).
   - **Marca repetida / ya completa:** mensaje informativo neutro (*"Tu registro para esta jornada ya estaba completo"*) sin alarma ni duplicado.
-- Botón principal: **Ver mi historial** → `SCREEN-16`.
+- Botón principal: **Ver mi registro** → `SCREEN-17`.
 - Botón secundario: **Volver al grupo** → `SCREEN-13`.
 
 ## Estados obligatorios (`RNF04`)

@@ -141,26 +141,22 @@ export default function GrupoPestanasLayout() {
         titulo={grupo.nombre}
       />
 
+      {esResponsable ? (
       <View style={styles.pestanas} accessibilityRole="tablist">
         {pestana('jornadas', 'Jornadas', 'calendario', () =>
           router.replace({ pathname: '/grupos/[grupoId]', params: { grupoId: grupo.id } }),
         )}
-        {esResponsable
-          ? pestana('integrantes', 'Integrantes', 'gente', () =>
+        {pestana('integrantes', 'Integrantes', 'gente', () =>
               router.replace({
                 pathname: '/grupos/[grupoId]/integrantes',
                 params: { grupoId: grupo.id },
               }),
-            )
-          : pestana('historial', 'Mi historial', 'reloj', () =>
-              router.push({ pathname: '/(tabs)/historial', params: { grupoId: grupo.id } }),
             )}
-        {esResponsable
-          ? pestana('reportes', 'Reportes', 'reportes', () =>
+        {pestana('reportes', 'Reportes', 'reportes', () =>
               router.replace({ pathname: '/grupos/[grupoId]/reportes', params: { grupoId: grupo.id } }),
-            )
-          : null}
+            )}
       </View>
+      ) : null}
 
       <View style={styles.contenido}>
         <Slot />

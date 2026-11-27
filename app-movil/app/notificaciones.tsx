@@ -1,5 +1,5 @@
-import { useFocusEffect, useNavigation, useRouter } from 'expo-router';
-import { useCallback, useLayoutEffect, useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Aviso } from '@/components/ui/Aviso';
 import { Boton } from '@/components/ui/Boton';
+import { Encabezado } from '@/components/ui/Encabezado';
 import { EstadoVacio } from '@/components/ui/EstadoVacio';
 import { HojaAcciones } from '@/components/ui/HojaAcciones';
 import { Icono, type NombreIcono } from '@/components/ui/Icono';
@@ -73,7 +74,6 @@ const ESTILO_EVENTO: Record<
 
 export default function NotificacionesScreen() {
   const router = useRouter();
-  const navigation = useNavigation();
 
   const [notificaciones, setNotificaciones] = useState<Notificacion[]>(() =>
     obtenerMisNotificaciones(),
@@ -106,28 +106,6 @@ export default function NotificacionesScreen() {
   );
 
   const sesion = obtenerSesionActual();
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerRight:
-        sesion && noLeidas > 0
-          ? () => (
-              <Pressable
-                accessibilityLabel="Marcar todas como leídas"
-                accessibilityRole="button"
-                hitSlop={8}
-                onPress={marcarTodasLeidas}
-                style={({ pressed }) => [
-                  styles.botonMarcarTodas,
-                  pressed && styles.presionado,
-                ]}
-              >
-                <Text style={styles.textoMarcarTodas}>Marcar todas como leídas</Text>
-              </Pressable>
-            )
-          : undefined,
-    });
-  }, [navigation, noLeidas, sesion]);
 
   const manejarRefresh = () => {
     setRefrescando(true);
@@ -167,7 +145,7 @@ export default function NotificacionesScreen() {
       router.push({
         pathname: esResponsable
           ? '/grupos/[grupoId]/jornadas/[jornadaId]/revisiones'
-          : '/grupos/[grupoId]/jornadas/[jornadaId]',
+          : '/grupos/[grupoId]/jornadas/[jornadaId]/mi-registro',
         params: { grupoId: jornada.grupo_id, jornadaId: jornada.id },
       });
       return;
@@ -181,7 +159,8 @@ export default function NotificacionesScreen() {
 
   if (!sesion) {
     return (
-      <SafeAreaView edges={[]} style={styles.pantalla}>
+      <SafeAreaView edges={['bottom']} style={styles.pantalla}>
+      <Encabezado titulo="Notificaciones" onVolver={() => router.canGoBack() ? router.back() : router.replace('/(tabs)')} />
         <View style={styles.contenidoVacioSesion}>
           <Aviso
             accion={
@@ -290,7 +269,8 @@ export default function NotificacionesScreen() {
   const listaVisible = estadoVista === 'normal' ? notificaciones : [];
 
   return (
-    <SafeAreaView edges={[]} style={styles.pantalla}>
+    <SafeAreaView edges={['bottom']} style={styles.pantalla}>
+      <Encabezado titulo="Notificaciones" onVolver={() => router.canGoBack() ? router.back() : router.replace('/(tabs)')} />
       <FlatList
         ListEmptyComponent={
           estadoVista === 'normal' ? (
@@ -304,7 +284,7 @@ export default function NotificacionesScreen() {
         ListHeaderComponent={cabeceraLista}
         contentContainerStyle={styles.contenido}
         data={listaVisible}
-        ItemSeparatorComponent={() => <View style={styles.separador} />}
+        ListFooterComponent={noLeidas > 0 ? <Boton titulo="Marcar todas como leídas" variante="secundario" onPress={marcarTodasLeidas} /> : undefined}
         keyExtractor={(item) => item.id}
         refreshControl={
           <RefreshControl

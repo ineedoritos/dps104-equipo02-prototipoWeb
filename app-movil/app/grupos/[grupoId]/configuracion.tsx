@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -15,6 +15,7 @@ import {
   obtenerMiRolEnGrupo,
   obtenerSesionActual,
   salirDelGrupo,
+  suscribirStore,
 } from '@/lib/gruposStore';
 import { colores, espaciados, fuentes, interletrado, radios, tipografia } from '@/lib/tema';
 import { ErrorDominio, type ModalidadAsistencia, type ModoFotos } from '@/types/dominio';
@@ -54,57 +55,30 @@ export default function ConfiguracionGrupoScreen() {
   const router = useRouter();
   const { grupoId } = useLocalSearchParams<{ grupoId: string }>();
 
-  const grupo = grupoId ? obtenerGrupoPorId(grupoId) : undefined;
+  const leerGrupo = () => obtenerGrupoPorId(grupoId);
+  const grupo = useSyncExternalStore(suscribirStore, leerGrupo, leerGrupo);
   const rol = grupoId ? obtenerMiRolEnGrupo(grupoId) : null;
 
-  const [modalidad, setModalidad] = useState<ModalidadAsistencia>(
-    grupo?.modalidad_asistencia ?? 'manual',
-  );
-  const [controlHoras, setControlHoras] = useState<boolean>(grupo?.control_horas ?? false);
-  const [gpsHabilitado, setGpsHabilitado] = useState<boolean>(grupo?.gps_habilitado ?? false);
-  const [modoFotos, setModoFotos] = useState<ModoFotos>(grupo?.modo_fotos ?? 'no_permitidas');
-  const [requiereValidacion, setRequiereValidacion] = useState<boolean>(
-    grupo?.requiere_validacion ?? false,
-  );
-  const [guardando, setGuardando] = useState(false);
-  const [error, setError] = useState('');
+  type Cambio = Partial<Parameters<typeof actualizarConfiguracionGrupo>[1]>;
+  const [fallo, setFallo] = useState<{ mensaje: string; cambio: Cambio } | null>(null);
   const [sucesorId, setSucesorId] = useState<string | null>(null);
   const [errorSalida, setErrorSalida] = useState('');
 
-  const cambiarModalidad = (nueva: ModalidadAsistencia) => {
-    setModalidad(nueva);
-    if (nueva === 'manual') {
-      setGpsHabilitado(false);
-    }
-  };
+  const guardarCambio = (cambio: Cambio) => {
+    const actual = leerGrupo();
+    if (!actual) return;
 
-  const manejarGuardar = () => {
-    if (!grupoId) {
-      return;
+    try {
+      actualizarConfiguracionGrupo(grupoId, { ...actual, ...cambio });
+      setFallo(null);
+    } catch (err) {
+      setFallo({
+        cambio,
+        mensaje: err instanceof ErrorDominio
+          ? err.message
+          : 'No pudimos guardar el cambio. Intenta de nuevo.',
+      });
     }
-    setError('');
-    setGuardando(true);
-
-    setTimeout(() => {
-      try {
-        actualizarConfiguracionGrupo(grupoId, {
-          modalidad_asistencia: modalidad,
-          control_horas: controlHoras,
-          gps_habilitado: modalidad === 'qr' ? gpsHabilitado : false,
-          modo_fotos: modoFotos,
-          requiere_validacion: requiereValidacion,
-        });
-        setGuardando(false);
-        router.back();
-      } catch (err) {
-        setGuardando(false);
-        if (err instanceof ErrorDominio) {
-          setError(err.message);
-        } else {
-          setError('No pudimos guardar los cambios. Intenta de nuevo.');
-        }
-      }
-    }, 200);
   };
 
   if (!grupo || rol !== 'responsable') {
@@ -128,6 +102,14 @@ export default function ConfiguracionGrupoScreen() {
       </SafeAreaView>
     );
   }
+
+  const {
+    modalidad_asistencia: modalidad,
+    control_horas: controlHoras,
+    gps_habilitado: gpsHabilitado,
+    modo_fotos: modoFotos,
+    requiere_validacion: requiereValidacion,
+  } = grupo;
 
   const sesion = obtenerSesionActual();
   const otrosIntegrantes = obtenerIntegrantesActivos(grupo.id).filter(
@@ -171,10 +153,10 @@ export default function ConfiguracionGrupoScreen() {
       <Encabezado onVolver={() => router.back()} titulo="Configuración" />
 
       <ScrollView contentContainerStyle={styles.contenido}>
-        {error ? (
+        {fallo ? (
           <Aviso
-            accion={<Boton onPress={manejarGuardar} tamano="sm" titulo="Reintentar" variante="secundario" />}
-            texto={error}
+            accion={<Boton onPress={() => guardarCambio(fallo.cambio)} tamano="sm" titulo="Reintentar" variante="secundario" />}
+            texto={fallo.mensaje}
             tipo="error"
           />
         ) : null}
@@ -183,8 +165,7 @@ export default function ConfiguracionGrupoScreen() {
           <Text style={styles.tituloBloque}>¿Cómo se registra la asistencia?</Text>
           <SelectorSegmentado
             accessibilityLabel="Cómo se registra la asistencia"
-            deshabilitado={guardando}
-            onChange={cambiarModalidad}
+            onChange={(valor) => guardarCambio({ modalidad_asistencia: valor })}
             opciones={OPCIONES_MODALIDAD}
             valor={modalidad}
           />
@@ -199,8 +180,7 @@ export default function ConfiguracionGrupoScreen() {
               </Text>
             </View>
             <Switch
-              disabled={guardando}
-              onValueChange={setControlHoras}
+              onValueChange={(valor) => guardarCambio({ control_horas: valor })}
               thumbColor={colores.superficie}
               trackColor={{ false: colores.bordeFuerte, true: colores.acento }}
               value={controlHoras}
@@ -212,8 +192,7 @@ export default function ConfiguracionGrupoScreen() {
           <Text style={styles.tituloBloque}>Modo de fotografías</Text>
           <SelectorSegmentado
             accessibilityLabel="Modo de fotografías"
-            deshabilitado={guardando}
-            onChange={setModoFotos}
+            onChange={(valor) => guardarCambio({ modo_fotos: valor })}
             opciones={OPCIONES_MODO_FOTOS}
             valor={modoFotos}
           />
@@ -225,10 +204,10 @@ export default function ConfiguracionGrupoScreen() {
             accessibilityRole="switch"
             accessibilityState={{
               checked: modalidad === 'qr' ? gpsHabilitado : false,
-              disabled: guardando || modalidad === 'manual',
+              disabled: modalidad === 'manual',
             }}
-            disabled={guardando || modalidad === 'manual'}
-            onPress={() => setGpsHabilitado((prev) => !prev)}
+            disabled={modalidad === 'manual'}
+            onPress={() => guardarCambio({ gps_habilitado: !gpsHabilitado })}
             style={styles.filaSwitch}
           >
             <View style={styles.opcionTexto}>
@@ -240,8 +219,8 @@ export default function ConfiguracionGrupoScreen() {
               </Text>
             </View>
             <Switch
-              disabled={guardando || modalidad === 'manual'}
-              onValueChange={setGpsHabilitado}
+              disabled={modalidad === 'manual'}
+              onValueChange={(valor) => guardarCambio({ gps_habilitado: valor })}
               thumbColor={colores.superficie}
               trackColor={{ false: colores.bordeFuerte, true: colores.acento }}
               value={modalidad === 'qr' ? gpsHabilitado : false}
@@ -253,9 +232,8 @@ export default function ConfiguracionGrupoScreen() {
           <Pressable
             accessibilityLabel="Exigir validación"
             accessibilityRole="switch"
-            accessibilityState={{ checked: requiereValidacion, disabled: guardando }}
-            disabled={guardando}
-            onPress={() => setRequiereValidacion((prev) => !prev)}
+            accessibilityState={{ checked: requiereValidacion }}
+            onPress={() => guardarCambio({ requiere_validacion: !requiereValidacion })}
             style={styles.filaSwitch}
           >
             <View style={styles.opcionTexto}>
@@ -265,8 +243,7 @@ export default function ConfiguracionGrupoScreen() {
               </Text>
             </View>
             <Switch
-              disabled={guardando}
-              onValueChange={setRequiereValidacion}
+              onValueChange={(valor) => guardarCambio({ requiere_validacion: valor })}
               thumbColor={colores.superficie}
               trackColor={{ false: colores.bordeFuerte, true: colores.acento }}
               value={requiereValidacion}
@@ -295,7 +272,6 @@ export default function ConfiguracionGrupoScreen() {
           Los cambios aplican a jornadas nuevas. Los registros anteriores no cambian.
         </Text>
 
-        <Boton cargando={guardando} onPress={manejarGuardar} titulo="Guardar cambios" />
 
         <View style={styles.tarjeta}>
           <Text style={styles.tituloBloque}>Salir del grupo</Text>

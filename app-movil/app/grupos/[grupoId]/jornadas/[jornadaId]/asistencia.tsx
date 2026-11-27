@@ -1,3 +1,4 @@
+import { Encabezado } from '@/components/ui/Encabezado';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import {
@@ -10,12 +11,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { GaleriaFotos } from '@/components/ui/GaleriaFotos';
+import { obtenerFotosDeJornada, retirarFoto, suscribirFotos } from '@/lib/fotosStore';
 import { Aviso } from '@/components/ui/Aviso';
 import { Boton } from '@/components/ui/Boton';
 import { CampoTexto } from '@/components/ui/CampoTexto';
 import { Estado } from '@/components/ui/Estado';
 import { EstadoVacio } from '@/components/ui/EstadoVacio';
-import { Icono } from '@/components/ui/Icono';
 import { horaEnZona } from '@/lib/fecha';
 import {
   aprobarAsistencia,
@@ -64,6 +66,12 @@ export default function AsistenciaManualScreen() {
   const [borradores, setBorradores] = useState<Record<string, BorradorFila>>({});
   const [registrosMapa, setRegistrosMapa] = useState<Record<string, Asistencia>>({});
   const [estadoVista, setEstadoVista] = useState<EstadoVista>('normal');
+  const [fotos, setFotos] = useState(() => obtenerFotosDeJornada(jornadaId));
+  useFocusEffect(useCallback(() => {
+    const actualizar = () => setFotos(obtenerFotosDeJornada(jornadaId));
+    actualizar();
+    return suscribirFotos(actualizar);
+  }, [jornadaId]));
   const [errorGuardar, setErrorGuardar] = useState('');
   const [avisoValidacion, setAvisoValidacion] = useState('');
   const [guardando, setGuardando] = useState(false);
@@ -128,19 +136,8 @@ export default function AsistenciaManualScreen() {
 
   if (!grupo || !jornada || rol !== 'responsable') {
     return (
-      <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
-        <View style={styles.barraSuperior}>
-          <Pressable
-            accessibilityLabel="Volver"
-            accessibilityRole="button"
-            onPress={() => router.back()}
-            style={styles.botonIcono}
-          >
-            <Icono color={colores.tinta} nombre="volver" tamano={22} />
-          </Pressable>
-          <Text style={styles.tituloBarra}>Asistencia</Text>
-          <View style={styles.espacioDerecha} />
-        </View>
+      <SafeAreaView edges={['bottom']} style={styles.pantalla}>
+        <Encabezado onVolver={() => router.back()} titulo="Asistencia" />
         <View style={styles.contenido}>
           <Aviso
             accion={
@@ -301,21 +298,8 @@ export default function AsistenciaManualScreen() {
   };
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
-      <View style={styles.barraSuperior}>
-        <Pressable
-          accessibilityLabel="Volver al detalle de jornada"
-          accessibilityRole="button"
-          onPress={() => router.back()}
-          style={styles.botonIcono}
-        >
-          <Icono color={colores.tinta} nombre="volver" tamano={22} />
-        </Pressable>
-        <Text numberOfLines={1} style={styles.tituloBarra}>
-          Asistencia y correcciones
-        </Text>
-        <View style={styles.espacioDerecha} />
-      </View>
+    <SafeAreaView edges={['bottom']} style={styles.pantalla}>
+      <Encabezado onVolver={() => router.back()} titulo="Asistencia y correcciones" />
 
       <ScrollView contentContainerStyle={styles.contenido} showsVerticalScrollIndicator={false}>
         <View style={styles.cabecera}>
@@ -394,6 +378,7 @@ export default function AsistenciaManualScreen() {
                 teniaHorasRegistradas: false,
                 resumenHoras: null,
               };
+              const evidencias = fotos.filter((foto) => foto.autor_id === integrante.usuario_id);
               const mostraraLimpiezaHoras =
                 borrador.teniaHorasRegistradas &&
                 (borrador.estado === 'ausente' || borrador.estado === 'justificada');
@@ -443,6 +428,16 @@ export default function AsistenciaManualScreen() {
                       })}
                     </View>
                   </View>
+
+                  {jornada.modo_fotos !== 'no_permitidas' && evidencias.length > 0 ? (
+                    <GaleriaFotos fotos={evidencias} esResponsable puedeAgregar={false} onRetirarFoto={(id) => {
+                      try {
+                        retirarFoto(id);
+                      } catch (error) {
+                        setErrorGuardar(error instanceof ErrorDominio ? error.message : 'No pudimos retirar la foto.');
+                      }
+                    }} />
+                  ) : null}
 
                   {borrador.estado === 'justificada' ? (
                     <CampoTexto

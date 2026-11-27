@@ -1,12 +1,12 @@
+import { Encabezado } from '@/components/ui/Encabezado';
 import { type Href, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Aviso } from '@/components/ui/Aviso';
 import { Boton } from '@/components/ui/Boton';
 import { CampoTexto } from '@/components/ui/CampoTexto';
-import { Icono } from '@/components/ui/Icono';
 import { crearGrupo } from '@/lib/gruposStore';
 import { colores, espaciados, fuentes, interletrado, radios, tipografia } from '@/lib/tema';
 import { ErrorDominio } from '@/types/dominio';
@@ -51,25 +51,12 @@ export default function CrearGrupoScreen() {
   };
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
+    <SafeAreaView edges={['bottom']} style={styles.pantalla}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.pantalla}
       >
-        <View style={styles.barraSuperior}>
-          <Pressable
-            accessibilityLabel="Volver"
-            accessibilityRole="button"
-            onPress={() => router.back()}
-            style={styles.botonVolver}
-          >
-            <Icono color={colores.tinta} nombre="volver" tamano={22} />
-          </Pressable>
-          <Text accessibilityRole="header" style={styles.tituloBarra}>
-            Crear grupo
-          </Text>
-          <View style={styles.espacioDerecha} />
-        </View>
+        <Encabezado onVolver={() => router.back()} titulo="Crear grupo" />
 
         <ScrollView contentContainerStyle={styles.contenido} keyboardShouldPersistTaps="handled">
           {errorGeneral ? (

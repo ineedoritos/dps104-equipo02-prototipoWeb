@@ -1,10 +1,26 @@
-import { Tabs } from 'expo-router';
+import { Tabs, useRouter } from 'expo-router';
 
+import { useSyncExternalStore } from 'react';
+import { contarNoLeidas, suscribirNotificaciones } from '@/lib/notificacionesStore';
+import { suscribirStore } from '@/lib/gruposStore';
+import { Pressable, View } from 'react-native';
+import { Icono } from '@/components/ui/Icono';
 import { BarraTabs } from '@/components/ui/BarraTabs';
 import { Encabezado } from '@/components/ui/Encabezado';
 import { colores, fuentes, interletrado, tipografia } from '@/lib/tema';
 
+function suscribirContador(actualizar: () => void) {
+  const cancelarAvisos = suscribirNotificaciones(actualizar);
+  const cancelarSesion = suscribirStore(actualizar);
+  return () => {
+    cancelarAvisos();
+    cancelarSesion();
+  };
+}
+
 export default function TabsLayout() {
+  const sinLeer = useSyncExternalStore(suscribirContador, contarNoLeidas, contarNoLeidas);
+  const router = useRouter();
   return (
     <Tabs
       screenOptions={{
@@ -20,7 +36,10 @@ export default function TabsLayout() {
         // Encabezado unico de la app (mismo que el del grupo y los formularios).
         header: ({ options }) => (
           <Encabezado
-            derecha={options.headerRight?.({ canGoBack: false, tintColor: colores.tinta })}
+            derecha={<Pressable accessibilityRole="button" accessibilityLabel={sinLeer ? `Notificaciones, ${sinLeer} sin leer` : 'Notificaciones'} style={{ padding: 12 }} onPress={() => router.push('/notificaciones')}>
+              <Icono nombre="notificaciones" color={colores.tinta} tamano={22} />
+              {sinLeer > 0 ? <View style={{ position: 'absolute', right: 8, top: 8, backgroundColor: colores.ausente, width: 8, height: 8, borderRadius: 4 }} /> : null}
+            </Pressable>}
             titulo={options.title ?? ''}
           />
         ),
@@ -31,7 +50,6 @@ export default function TabsLayout() {
     >
       <Tabs.Screen name="index" options={{ title: 'Mis grupos' }} />
       <Tabs.Screen name="historial" options={{ title: 'Mi historial' }} />
-      <Tabs.Screen name="notificaciones" options={{ title: 'Notificaciones' }} />
       <Tabs.Screen name="cuenta" options={{ title: 'Cuenta' }} />
     </Tabs>
   );

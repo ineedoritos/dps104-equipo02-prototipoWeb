@@ -2,6 +2,7 @@ import solicitudesJson from '@/data/solicitudesRevision.json';
 import usuariosJson from '@/data/usuarios.json';
 import { aISOConOffset } from '@/lib/fecha';
 import {
+  obtenerAsistenciasDeJornada,
   obtenerIntegrantesActivos,
   obtenerJornadaPorId,
   obtenerMiRolEnGrupo,
@@ -18,6 +19,20 @@ let solicitudes: SolicitudRevision[] = (solicitudesJson as SolicitudRevision[]).
   ...s,
 }));
 const usuarios = usuariosJson as UsuarioCuenta[];
+
+function valoresRegistro(solicitud: SolicitudRevision): string {
+  const registro = obtenerAsistenciasDeJornada(solicitud.jornada_id).find(
+    (item) => item.participante_id === solicitud.participante_id,
+  );
+  return JSON.stringify(registro && [registro.estado, registro.motivo_ausencia,
+    registro.hora_entrada, registro.hora_salida, registro.minutos_reconocidos]) ?? '';
+}
+
+const originales = new Map(solicitudes.map((s) => [s.id, valoresRegistro(s)]));
+
+export function hayCorreccion(solicitud: SolicitudRevision): boolean {
+  return originales.get(solicitud.id) !== valoresRegistro(solicitud);
+}
 
 type Listener = () => void;
 const listeners = new Set<Listener>();
@@ -116,6 +131,7 @@ export function crearSolicitudRevision(jornadaId: string, motivo: string): Solic
     resuelta_en: null,
   };
 
+  originales.set(nueva.id, valoresRegistro(nueva));
   solicitudes = [nueva, ...solicitudes];
 
   const responsables = obtenerIntegrantesActivos(jornada.grupo_id).filter(
@@ -199,6 +215,10 @@ export function resolverSolicitud(
       'ERR_VALIDACION',
       'El motivo de la resolución no puede superar los 500 caracteres.',
     );
+  }
+
+  if (estado === 'resuelta' && !hayCorreccion(existente)) {
+    throw new ErrorDominio('ERR_VALIDACION', 'Corrige la asistencia o las horas antes de resolver la solicitud.');
   }
 
   const actualizada: SolicitudRevision = {

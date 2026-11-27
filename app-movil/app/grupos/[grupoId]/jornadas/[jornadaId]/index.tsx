@@ -2,7 +2,6 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
-  Linking,
   Modal,
   Pressable,
   ScrollView,
@@ -16,17 +15,9 @@ import { Aviso } from '@/components/ui/Aviso';
 import { Boton } from '@/components/ui/Boton';
 import { Encabezado } from '@/components/ui/Encabezado';
 import { Estado, type TonoEstado } from '@/components/ui/Estado';
-import { GaleriaFotos } from '@/components/ui/GaleriaFotos';
 import { HojaAcciones } from '@/components/ui/HojaAcciones';
 import { Icono } from '@/components/ui/Icono';
-import { Seccion } from '@/components/ui/Seccion';
 import { formatearDia, horaEnZona } from '@/lib/fecha';
-import {
-  agregarFotoSimulada,
-  obtenerFotosDeJornada,
-  retirarFoto,
-  suscribirFotos,
-} from '@/lib/fotosStore';
 import {
   cancelarJornada,
   contarPendientesValidacion,
@@ -54,9 +45,7 @@ import {
   tipografia,
 } from '@/lib/tema';
 import {
-  ErrorDominio,
   type EstadoJornada,
-  type FotoJornada,
   type Jornada,
 } from '@/types/dominio';
 
@@ -93,13 +82,6 @@ export default function DetalleJornadaScreen() {
   const [pendientesRevision, setPendientesRevision] = useState(() =>
     jornadaId ? contarPendientes(jornadaId) : 0,
   );
-  const [fotos, setFotos] = useState<FotoJornada[]>(() =>
-    jornadaId ? obtenerFotosDeJornada(jornadaId) : [],
-  );
-  const [hojaCamaraAbierta, setHojaCamaraAbierta] = useState(false);
-  const [errorFoto, setErrorFoto] = useState<'permiso' | 'subida' | null>(null);
-  const [mensajeFoto, setMensajeFoto] = useState('');
-
   const grupo = grupoId ? obtenerGrupoPorId(grupoId) : undefined;
   const rol = grupoId ? obtenerMiRolEnGrupo(grupoId) : null;
 
@@ -111,7 +93,6 @@ export default function DetalleJornadaScreen() {
     setResumen(obtenerResumenAsistenciaJornada(jornadaId));
     setTotalSolicitudes(obtenerSolicitudesDeJornada(jornadaId).length);
     setPendientesRevision(contarPendientes(jornadaId));
-    setFotos(obtenerFotosDeJornada(jornadaId));
   }, [jornadaId]);
 
   useFocusEffect(
@@ -119,11 +100,9 @@ export default function DetalleJornadaScreen() {
       recargar();
       const desuscribirStore = suscribirStore(recargar);
       const desuscribirRev = suscribirRevisiones(recargar);
-      const desuscribirFotos = suscribirFotos(recargar);
       return () => {
         desuscribirStore();
         desuscribirRev();
-        desuscribirFotos();
       };
     }, [recargar]),
   );
@@ -176,59 +155,6 @@ export default function DetalleJornadaScreen() {
     cancelarJornada(jornada.id);
     setModalCancelar(false);
     recargar();
-  };
-
-  const puedeAgregarFoto = !jornada.cancelada && estado !== 'programada';
-  const motivoBloqueoFoto = jornada.cancelada
-    ? 'Las jornadas canceladas no admiten nuevas fotos.'
-    : estado === 'programada'
-      ? 'Podrás agregar fotos cuando la jornada inicie.'
-      : undefined;
-
-  const tomarFoto = () => {
-    setErrorFoto(null);
-    setMensajeFoto('');
-    try {
-      agregarFotoSimulada(jornada.id);
-      recargar();
-    } catch (error) {
-      setErrorFoto('subida');
-      setMensajeFoto(
-        error instanceof ErrorDominio
-          ? error.message
-          : 'No pudimos guardar la foto. Intenta de nuevo.',
-      );
-    }
-  };
-
-  const solicitarAgregarFoto = () => {
-    if (__DEV__) {
-      setHojaCamaraAbierta(true);
-    } else {
-      tomarFoto();
-    }
-  };
-
-  const manejarRetirarFoto = (fotoId: string) => {
-    setErrorFoto(null);
-    setMensajeFoto('');
-    try {
-      retirarFoto(fotoId);
-      recargar();
-    } catch (error) {
-      setErrorFoto('subida');
-      setMensajeFoto(
-        error instanceof ErrorDominio
-          ? error.message
-          : 'No pudimos retirar la foto. Intenta de nuevo.',
-      );
-    }
-  };
-
-  const manejarAbrirAjustes = () => {
-    Linking.openSettings().catch(() => {
-      setMensajeFoto('Abre los ajustes del teléfono para conceder el permiso de cámara.');
-    });
   };
 
   return (
@@ -454,94 +380,10 @@ export default function DetalleJornadaScreen() {
 
             </View>
 
-            {jornada.modo_fotos !== 'no_permitidas' ? (
-              <Seccion titulo="Fotos de la jornada">
-                {errorFoto === 'permiso' ? (
-                  <Aviso
-                    accion={
-                      <View style={styles.filaBotonesFoto}>
-                        <Boton
-                          onPress={solicitarAgregarFoto}
-                          tamano="sm"
-                          titulo="Reintentar"
-                          variante="secundario"
-                        />
-                        <Boton
-                          onPress={manejarAbrirAjustes}
-                          tamano="sm"
-                          titulo="Abrir ajustes"
-                          variante="fantasma"
-                        />
-                      </View>
-                    }
-                    texto={
-                      mensajeFoto ||
-                      'Necesitamos acceso a tu cámara para agregar fotos de la jornada.'
-                    }
-                    tipo="error"
-                  />
-                ) : null}
-
-                {errorFoto === 'subida' ? (
-                  <Aviso
-                    accion={
-                      <Boton
-                        onPress={solicitarAgregarFoto}
-                        tamano="sm"
-                        titulo="Reintentar"
-                        variante="secundario"
-                      />
-                    }
-                    texto={mensajeFoto || 'No pudimos subir la foto. Intenta de nuevo.'}
-                    tipo="error"
-                  />
-                ) : null}
-
-                <GaleriaFotos
-                  esResponsable
-                  fotos={fotos}
-                  motivoBloqueoAgregar={motivoBloqueoFoto}
-                  onAgregarFoto={solicitarAgregarFoto}
-                  onRetirarFoto={manejarRetirarFoto}
-                  puedeAgregar={puedeAgregarFoto}
-                />
-              </Seccion>
-            ) : null}
           </>
         ) : null}
       </ScrollView>
 
-      <HojaAcciones
-        acciones={[
-          {
-            etiqueta: 'Tomar foto',
-            icono: 'camara',
-            onPress: tomarFoto,
-          },
-          {
-            etiqueta: 'Permiso denegado',
-            icono: 'alerta',
-            peligro: true,
-            onPress: () => {
-              setErrorFoto('permiso');
-              setMensajeFoto(
-                'Necesitamos acceso a tu cámara para agregar fotos de la jornada.',
-              );
-            },
-          },
-          {
-            etiqueta: 'Error al subir',
-            icono: 'cerrar',
-            peligro: true,
-            onPress: () => {
-              setErrorFoto('subida');
-              setMensajeFoto('No pudimos subir la foto. Revisa tu conexión e intenta de nuevo.');
-            },
-          },
-        ]}
-        onCerrar={() => setHojaCamaraAbierta(false)}
-        visible={hojaCamaraAbierta}
-      />
 
       <HojaAcciones
         acciones={[

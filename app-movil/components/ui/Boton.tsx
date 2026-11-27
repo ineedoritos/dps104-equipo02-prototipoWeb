@@ -21,7 +21,7 @@ export interface BotonProps {
 
 const COLORES_VARIANTE: Record<VarianteBoton, { fondo: string; texto: string; borde: string }> = {
   primario: { fondo: forma.action, texto: forma.onAction, borde: forma.action },
-  secundario: { fondo: forma.fill, texto: forma.ink, borde: forma.fill },
+  secundario: { fondo: forma.fill, texto: forma.ink, borde: forma.muted },
   fantasma: { fondo: 'transparent', texto: forma.ink, borde: 'transparent' },
   peligro: { fondo: forma.rose, texto: forma.roseInk, borde: forma.rose },
 };

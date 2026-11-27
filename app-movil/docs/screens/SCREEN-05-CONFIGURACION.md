@@ -24,7 +24,7 @@
   - `Notificaciones` (`notificaciones_habilitadas`).
   - *(Los switches aún sin flujo completo muestran claramente `Próximamente` hasta habilitar su historia.)*
 - Nota al pie: *"Los cambios aplican a jornadas nuevas. Los registros anteriores no cambian."*
-- Botón principal: **Guardar cambios** → actualiza `grupos` y vuelve a `SCREEN-04`.
+- Cada cambio de configuración se guarda al seleccionar la opción. La pantalla permanece abierta.
 - Bloque **Salir del grupo** (al final, separado de la configuración):
   - Si hay otro responsable activo: botón **Salir del grupo** con confirmación.
   - Si soy el **último responsable**: elijo entre los demás integrantes quién queda a cargo; el botón **Salir y dejar a {nombre}** asciende a esa persona a `responsable` y me retira en un solo paso. El grupo nunca queda sin responsable (`HU03 CA02`, `ERR_ULTIMO_RESPONSABLE`).

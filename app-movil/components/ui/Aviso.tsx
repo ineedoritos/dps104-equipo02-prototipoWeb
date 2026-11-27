@@ -46,30 +46,30 @@ export function Aviso({ tipo, texto, accion }: AvisoProps) {
         { backgroundColor: configuracion.fondo, borderColor: configuracion.borde },
       ]}
     >
-      <Icono color={configuracion.texto} nombre={configuracion.icono} tamano={21} />
-      <View style={styles.cuerpo}>
+      <View style={styles.cabecera}>
+        <Icono color={configuracion.texto} nombre={configuracion.icono} tamano={21} />
+
         <Text style={[styles.texto, { color: configuracion.texto }]}>{texto}</Text>
-        {accion}
       </View>
+      {accion}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   contenedor: {
-    alignItems: 'flex-start',
     // Superficie tonal de Forma: el borde toma el tono del fondo, sin sombra.
     borderRadius: radios.superficie,
     borderWidth: 1,
-    flexDirection: 'row',
     gap: espaciados.md,
     padding: espaciados.tonal,
   },
-  cuerpo: {
-    flex: 1,
+  cabecera: {
+    flexDirection: 'row',
     gap: espaciados.xs,
   },
   texto: {
+    flex: 1,
     fontSize: tipografia.cuerpoSm,
     fontFamily: fuentes.medio,
     lineHeight: 20,

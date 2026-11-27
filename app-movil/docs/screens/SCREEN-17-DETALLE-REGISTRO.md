@@ -12,7 +12,7 @@
   - `Entrada` (`HH:MM`), `Salida` (`HH:MM`), `Duración registrada` y `Tiempo reconocido`.
   - Si hubo ajuste (`minutos_reconocidos < duracion_minutos`): tarjeta destacada **"Motivo del ajuste, escrito por el responsable"** mostrando `motivo_ajuste`.
 - Si `estado === 'justificada'`: tarjeta con `motivo_ausencia`.
-- **[Media · `HU10`]** Bloque **Fotos de la jornada** (si `modo_fotos !== 'no_permitidas'`): galería con autor y fecha, aviso informativo si `modo_fotos === 'obligatorias'` y el participante aún no sube foto, botón **Agregar foto** en jornadas iniciadas y no canceladas (con simulación de permiso denegado y error de subida con **Reintentar** / **Abrir ajustes**).
+- **[Media · `HU10`]** Bloque **Fotos de la jornada** (si `modo_fotos !== 'no_permitidas'`): galería de fotos propias con autor y fecha, aviso informativo si `modo_fotos === 'obligatorias'` y el participante aún no sube foto, botón **Agregar foto** en jornadas iniciadas y no canceladas (con simulación de permiso denegado y error de subida con **Reintentar** / **Abrir ajustes**).
 - Bloque **"Revisión"**:
   - Visible para participantes activos aunque no tengan registro de asistencia, siempre que la jornada no esté cancelada (`HU13 CA01`).
   - Si no existe solicitud o la más reciente ya fue resuelta/rechazada: muestra botón **Solicitar revisión** que abre modal con campo `motivo_solicitud` obligatorio (10 a 500 caracteres).

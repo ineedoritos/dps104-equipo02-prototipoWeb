@@ -1,3 +1,4 @@
+import { Encabezado } from '@/components/ui/Encabezado';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -51,19 +52,8 @@ export default function EscanearQRScreen() {
 
   if (!grupo || !jornada || !rol) {
     return (
-      <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
-        <View style={styles.barraSuperior}>
-          <Pressable
-            accessibilityLabel="Volver"
-            accessibilityRole="button"
-            onPress={() => router.back()}
-            style={styles.botonIcono}
-          >
-            <Icono color={colores.tinta} nombre="volver" tamano={22} />
-          </Pressable>
-          <Text style={styles.tituloBarra}>Escanear código QR</Text>
-          <View style={styles.espacioDerecha} />
-        </View>
+      <SafeAreaView edges={['bottom']} style={styles.pantalla}>
+        <Encabezado onVolver={() => router.back()} titulo="Escanear código QR" />
         <View style={styles.contenido}>
           <Aviso
             accion={
@@ -179,26 +169,8 @@ export default function EscanearQRScreen() {
   };
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={styles.pantalla}>
-      <View style={styles.barraSuperior}>
-        <Pressable
-          accessibilityLabel="Volver al grupo"
-          accessibilityRole="button"
-          onPress={() => router.back()}
-          style={styles.botonIcono}
-        >
-          <Icono color={colores.tinta} nombre="volver" tamano={22} />
-        </Pressable>
-        <View style={styles.centroBarra}>
-          <Text numberOfLines={1} style={styles.tituloBarra}>
-            Escanear código QR
-          </Text>
-          <Text numberOfLines={1} style={styles.subtituloBarra}>
-            {jornada.titulo}
-          </Text>
-        </View>
-        <View style={styles.espacioDerecha} />
-      </View>
+    <SafeAreaView edges={['bottom']} style={styles.pantalla}>
+      <Encabezado onVolver={() => router.back()} titulo="Escanear código QR" />
 
       <ScrollView contentContainerStyle={styles.contenido} showsVerticalScrollIndicator={false}>
         {!puedeEscanear ? (

@@ -6,6 +6,7 @@ import {
   KeyboardAvoidingView,
   Modal,
   Platform,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -30,6 +31,7 @@ import {
   obtenerNombreUsuarioSolicitud,
   obtenerSolicitudesDeJornada,
   resolverSolicitud,
+  hayCorreccion,
   suscribirRevisiones,
 } from '@/lib/revisionesStore';
 import {
@@ -233,6 +235,7 @@ export default function RevisionesJornadaScreen() {
                 <Boton
                   onPress={() => abrirResolucion(item, 'resuelta')}
                   tamano="sm"
+                  deshabilitado={!hayCorreccion(item)}
                   titulo="Resolver"
                   variante="secundario"
                 />
@@ -263,7 +266,7 @@ export default function RevisionesJornadaScreen() {
             <View style={styles.tarjetaJornada}>
               <Text style={styles.tituloJornada}>{jornada.titulo}</Text>
               <Text style={styles.subtituloJornada}>
-                Si corresponde un cambio, corrige la asistencia o las horas y luego marca la
+                Para resolver una solicitud, corrige la asistencia o las horas y luego marca la
                 solicitud como resuelta.
               </Text>
             </View>
@@ -318,7 +321,7 @@ export default function RevisionesJornadaScreen() {
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.veloModal}
         >
-          <View style={styles.tarjetaModal}>
+          <ScrollView style={styles.marcoModal} contentContainerStyle={styles.tarjetaModal} keyboardShouldPersistTaps="handled">
             <Text style={styles.tituloModal}>
               {accionModal === 'resuelta' ? 'Resolver solicitud' : 'Rechazar solicitud'}
             </Text>
@@ -360,7 +363,7 @@ export default function RevisionesJornadaScreen() {
                 />
               </View>
             </View>
-          </View>
+          </ScrollView>
         </KeyboardAvoidingView>
       </Modal>
     </SafeAreaView>
@@ -486,6 +489,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: espaciados.lg,
+  },
+  marcoModal: {
+    width: '100%',
+    flexGrow: 0,
+    maxHeight: '100%',
   },
   tarjetaModal: {
     backgroundColor: forma.paper,

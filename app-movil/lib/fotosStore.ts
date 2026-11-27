@@ -58,10 +58,10 @@ export function agregarFotoSimulada(jornadaId: string): FotoJornada {
   }
 
   const jornada = obtenerJornadaPorId(jornadaId);
-  if (!jornada || obtenerMiRolEnGrupo(jornada.grupo_id) === null) {
+  if (!jornada || obtenerMiRolEnGrupo(jornada.grupo_id) !== 'participante') {
     throw new ErrorDominio(
       'ERR_NO_AUTORIZADO',
-      'Solo integrantes activos del grupo pueden agregar fotos.',
+      'Solo los participantes activos del grupo pueden agregar fotos.',
     );
   }
 

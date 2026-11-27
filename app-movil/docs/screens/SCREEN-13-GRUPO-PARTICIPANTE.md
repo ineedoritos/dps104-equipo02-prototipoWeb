@@ -8,11 +8,9 @@
 
 ## Contenido y acciones
 - Encabezado con nombre del grupo, chip `Participante` y configuración resumida (*ej. "Asistencia por QR · con horas"*). *(Sin acceso a Configuración, Integrantes ni Reportes.)*
-- Navegación interna de secciones:
-  - **Jornadas** *(vista activa)*
-  - **Mi historial** → `SCREEN-16` *(filtrado a este grupo)*
 - Secciones de jornadas:
-  - **Ahora (`En curso`):** tarjeta destacada con horario. Si la jornada tiene `modalidad_asistencia === 'qr'` y no está cancelada, muestra botón principal **Escanear QR** → `SCREEN-14`.
+  - **Ahora (`En curso`):** tarjeta destacada con horario. Si la jornada tiene `modalidad_asistencia === 'qr'` y no está cancelada, mientras falte una marca muestra el botón **Escanear QR** → `SCREEN-14`.
+  - Tras la primera marca se habilita **Detalle del registro**. Con control de horas, **Escanear salida** sigue disponible hasta completar la salida.
   - **Próximas (`Programada`)** y **Anteriores / Canceladas** (las canceladas marcadas claramente).
   - Tocar una jornada pasada con registro propio → `SCREEN-17` (`Detalle del registro`).
 

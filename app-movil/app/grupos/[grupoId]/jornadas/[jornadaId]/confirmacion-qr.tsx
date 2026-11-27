@@ -105,11 +105,11 @@ export default function ConfirmacionQRScreen() {
             icono="reloj"
             onPress={() =>
               router.replace({
-                pathname: '/(tabs)/historial',
-                params: { grupoId: grupo.id },
+                pathname: '/grupos/[grupoId]/jornadas/[jornadaId]/mi-registro',
+                params: { grupoId: grupo.id, jornadaId: jornada.id },
               })
             }
-            titulo="Ver mi historial"
+            titulo="Ver mi registro"
           />
           <Boton
             onPress={() =>
