@@ -18,6 +18,8 @@ Explorar el historial de jornadas del grupo y auditar el registro de asistencias
 - Resumen rápido: total presentes, ausentes, justificadas y total de horas reconocidas (si aplica).
 - Tabla de asistencias (solo lectura): participante, estado, origen (`Manual`/`QR`), hora entrada, hora salida, duración, tiempo reconocido y motivos (`motivo_ausencia` / `motivo_ajuste`).
 
+Las rutas de listado y detalle conservan el grupo y los filtros de fecha y estado. El detalle exige que la jornada pertenezca al grupo seleccionado y que la persona sea responsable de ese grupo.
+
 ## Estados obligatorios (`RNF04`)
 - **Cargando:** skeletons de listado y tabla.
 - **Vacío:** sin jornadas en el filtro o jornada sin asistencias registradas.

@@ -2,6 +2,8 @@
 
 import { use, useMemo, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { rutaPortal, useContextoPortal } from "@/components/layout/contexto-portal";
 import { ArrowLeft, Clock, QrCode, UserCheck } from "lucide-react";
 
 import {
@@ -12,7 +14,7 @@ import {
 } from "@/components/reportes/estados-vista";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -46,10 +48,20 @@ export default function DetalleJornadaPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+  const { contextoActivo } = useContextoPortal();
+  const parametros = useSearchParams();
+  const filtros = Object.fromEntries(
+    [...parametros].filter(([clave]) => ["desde", "hasta", "estado", "periodo"].includes(clave)),
+  );
+  const volverAJornadas = rutaPortal("/jornadas", contextoActivo?.id, filtros);
   const [estadoForzado, setEstadoForzado] =
     useState<EstadoVistaForzado>("normal");
 
-  const detalle = useMemo(() => obtenerDetalleJornada(id), [id]);
+  const detalle = useMemo(() => {
+    if (contextoActivo?.rol !== "responsable") return null;
+    const resultado = obtenerDetalleJornada(id);
+    return resultado?.jornada.grupo_id === contextoActivo.id ? resultado : null;
+  }, [contextoActivo, id]);
 
   const resumen = useMemo(() => {
     if (!detalle) {
@@ -80,13 +92,13 @@ export default function DetalleJornadaPage({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <Button
           nativeButton={false}
-          render={<Link href="/jornadas" />}
+          render={<Link href={contextoActivo?.rol === "responsable" ? volverAJornadas : rutaPortal("/grupos", contextoActivo?.id)} />}
           variant="ghost"
           size="sm"
           className="gap-1.5 self-start -ml-2"
         >
           <ArrowLeft className="h-4 w-4" />
-          <span>Volver a jornadas</span>
+          <span>{contextoActivo?.rol === "responsable" ? "Volver a jornadas" : "Elegir grupo"}</span>
         </Button>
 
         <ControlEstadoVista
@@ -122,9 +134,9 @@ export default function DetalleJornadaPage({
           <Card>
             <CardHeader className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
-                <CardTitle className="text-xl">
+                <h1 className="text-2xl font-semibold tracking-tight text-forma-ink">
                   {detalle.jornada.titulo}
-                </CardTitle>
+                </h1>
                 {detalle.jornada.cancelada ? (
                   <Badge variant="destructive">
                     Cancelada · excluida de totales
@@ -220,8 +232,8 @@ export default function DetalleJornadaPage({
             />
           ) : (
             <Card>
-              <CardContent className="p-0 overflow-x-auto">
-                <Table>
+              <CardContent className="p-0">
+                <Table aria-label="Asistencia por participante">
                   <TableHeader>
                     <TableRow>
                       <TableHead>Participante</TableHead>

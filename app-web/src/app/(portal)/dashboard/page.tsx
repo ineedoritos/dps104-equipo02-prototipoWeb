@@ -2,19 +2,19 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, CalendarDays, ClipboardList } from "lucide-react";
+import { ArrowRight, CalendarDays, ClipboardList, Clock3, HeartPulse, Users } from "lucide-react";
 
 import { GraficosDashboard } from "@/components/charts/graficos-dashboard";
-import { useContextoPortal } from "@/components/layout/contexto-portal";
+import { rutaPortal, useContextoPortal } from "@/components/layout/contexto-portal";
 import {
   ControlEstadoVista,
   EstadoErrorVista,
   EstadoVacioVista,
   type EstadoVistaForzado,
 } from "@/components/reportes/estados-vista";
+import { Metrica } from "@/components/reportes/metrica";
 import { FiltroPeriodo } from "@/components/reportes/filtro-periodo";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatearDuracion } from "@/lib/fecha";
 import {
@@ -44,7 +44,7 @@ export default function DashboardPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="text-balance text-3xl font-semibold tracking-tight text-forma-ink">
             Resumen del grupo
           </h1>
           <p className="text-sm text-muted-foreground">
@@ -57,12 +57,12 @@ export default function DashboardPage() {
           descripcion="Puedes elegir otro grupo desde el selector o consultar tu historial personal en Mi reporte."
           accion={
             <div className="flex flex-wrap justify-center gap-2">
-              <Button nativeButton={false} render={<Link href="/grupos" />} size="sm">
+              <Button nativeButton={false} render={<Link href={rutaPortal("/grupos", contextoActivo?.id)} />} size="sm">
                 Ir a Grupos
               </Button>
               <Button
                 nativeButton={false}
-                render={<Link href="/mi-reporte" />}
+                render={<Link href={rutaPortal("/mi-reporte", contextoActivo?.id)} />}
                 variant="outline"
                 size="sm"
               >
@@ -84,48 +84,21 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Resumen de {contextoActivo?.nombre}
+          <h1 className="text-balance text-3xl font-semibold tracking-tight text-forma-ink">
+            Resumen
           </h1>
           <p className="text-sm text-muted-foreground">
-            Indicadores generales de asistencia, jornadas y tendencia por
-            período.
+            Asistencia, jornadas y horas del período seleccionado.
           </p>
         </div>
 
-        <ControlEstadoVista
-          estado={estadoForzado}
-          alCambiar={setEstadoForzado}
-        />
       </div>
 
       {/* Barra de filtros de periodo */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-xl border border-border bg-card p-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-2xl bg-forma-paper p-4 sm:p-5">
         <FiltroPeriodo valor={filtro} alCambiar={setFiltro} />
 
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            nativeButton={false}
-            render={<Link href="/reportes" />}
-            variant="outline"
-            size="sm"
-            className="gap-1.5"
-          >
-            <ClipboardList className="h-3.5 w-3.5" />
-            <span>Ver reporte detallado</span>
-            <ArrowRight className="h-3.5 w-3.5" />
-          </Button>
-          <Button
-            nativeButton={false}
-            render={<Link href="/jornadas" />}
-            variant="outline"
-            size="sm"
-            className="gap-1.5"
-          >
-            <CalendarDays className="h-3.5 w-3.5" />
-            <span>Explorar jornadas</span>
-          </Button>
-        </div>
+
       </div>
 
       {estadoForzado === "error" ? (
@@ -153,76 +126,22 @@ export default function DashboardPage() {
       ) : (
         <>
           {/* Grid de tarjetas KPI */}
-          <div
-            className={
-              resumen.mostrarHoras
-                ? "grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
-                : "grid gap-4 sm:grid-cols-3"
-            }
-          >
-            <Card>
-              <CardContent className="p-4">
-                <p className="text-xs text-muted-foreground">
-                  Tasa de asistencia
-                </p>
-                <p className="text-2xl font-semibold tabular-nums mt-1">
-                  {formatearTasa(resumen.tasaAsistencia)}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Sobre {resumen.totalPresentes + resumen.totalAusencias}{" "}
-                  registros válidos
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-4">
-                <p className="text-xs text-muted-foreground">
-                  Presentes vs Ausencias
-                </p>
-                <p className="text-2xl font-semibold tabular-nums mt-1">
-                  {resumen.totalPresentes} / {resumen.totalAusencias}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {resumen.totalAusentesSinMotivo} sin motivo ·{" "}
-                  {resumen.totalJustificadas} justificadas
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-4">
-                <p className="text-xs text-muted-foreground">
-                  Jornadas contabilizadas
-                </p>
-                <p className="text-2xl font-semibold tabular-nums mt-1">
-                  {resumen.jornadasContabilizadas}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {resumen.jornadasCanceladas === 0
-                    ? "Sin jornadas canceladas"
-                    : `${resumen.jornadasCanceladas} cancelada(s) excluida(s)`}
-                </p>
-              </CardContent>
-            </Card>
-
+          <dl aria-label="Indicadores del período" className="grid gap-2 rounded-[28px] bg-forma-paper p-3 sm:grid-cols-2">
+            <Metrica icono={HeartPulse} tono="blue" etiqueta="Tasa de asistencia"
+              valor={formatearTasa(resumen.tasaAsistencia)}
+              detalle={`${resumen.totalPresentes + resumen.totalAusencias} registros válidos`} />
+            <Metrica icono={Users} tono="mint" etiqueta="Presentes / ausencias"
+              valor={`${resumen.totalPresentes} / ${resumen.totalAusencias}`}
+              detalle={`${resumen.totalAusentesSinMotivo} sin motivo · ${resumen.totalJustificadas} justificadas`} />
+            <Metrica icono={CalendarDays} tono="peach" etiqueta="Jornadas contabilizadas"
+              valor={resumen.jornadasContabilizadas}
+              detalle={resumen.jornadasCanceladas ? `${resumen.jornadasCanceladas} canceladas excluidas` : "Sin jornadas canceladas"} />
             {resumen.mostrarHoras && (
-              <Card>
-                <CardContent className="p-4">
-                  <p className="text-xs text-muted-foreground">
-                    Horas reconocidas / registradas
-                  </p>
-                  <p className="text-2xl font-semibold tabular-nums mt-1">
-                    {formatearDuracion(resumen.minutosReconocidos)}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    De {formatearDuracion(resumen.minutosRegistrados)}{" "}
-                    registradas
-                  </p>
-                </CardContent>
-              </Card>
+              <Metrica icono={Clock3} tono="lilac" etiqueta="Horas reconocidas"
+                valor={formatearDuracion(resumen.minutosReconocidos)}
+                detalle={`De ${formatearDuracion(resumen.minutosRegistrados)} registradas`} />
             )}
-          </div>
+          </dl>
 
           <GraficosDashboard
             presentes={resumen.totalPresentes}
@@ -232,6 +151,30 @@ export default function DashboardPage() {
           />
         </>
       )}
+      <div className="flex flex-wrap items-center gap-2">
+          <Button
+            nativeButton={false}
+            render={<Link href={rutaPortal("/reportes", contextoActivo?.id)} />}
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+          >
+            <ClipboardList className="h-3.5 w-3.5" />
+            <span>Ver reporte detallado</span>
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Button>
+          <Button
+            nativeButton={false}
+            render={<Link href={rutaPortal("/jornadas", contextoActivo?.id)} />}
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+          >
+            <CalendarDays className="h-3.5 w-3.5" />
+            <span>Explorar jornadas</span>
+          </Button>
+        </div>
+      <ControlEstadoVista estado={estadoForzado} alCambiar={setEstadoForzado} />
     </div>
   );
 }

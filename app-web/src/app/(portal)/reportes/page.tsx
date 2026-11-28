@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowUpDown, Download, Eye, Search } from "lucide-react";
 
-import { useContextoPortal } from "@/components/layout/contexto-portal";
+import { rutaPortal, useContextoPortal } from "@/components/layout/contexto-portal";
 import {
   ControlEstadoVista,
   EstadoErrorVista,
@@ -60,6 +60,7 @@ export default function ReportesPage() {
   const [direccionOrden, setDireccionOrden] = useState<"asc" | "desc">("asc");
   const [estadoForzado, setEstadoForzado] =
     useState<EstadoVistaForzado>("normal");
+  const botonDetalle = useRef<HTMLButtonElement | null>(null);
   const [integranteDetalle, setIntegranteDetalle] =
     useState<FilaReporteGrupo | null>(null);
   const [avisoExportacion, setAvisoExportacion] = useState<string | null>(null);
@@ -125,6 +126,11 @@ export default function ReportesPage() {
     };
   }, [filasFiltradas]);
 
+  function estadoOrden(columna: ColumnaOrden) {
+    if (columna !== columnaOrden) return undefined;
+    return direccionOrden === "asc" ? "ascending" : "descending";
+  }
+
   function alternarOrden(columna: ColumnaOrden) {
     if (columnaOrden === columna) {
       setDireccionOrden((prev) => (prev === "asc" ? "desc" : "asc"));
@@ -144,7 +150,7 @@ export default function ReportesPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="text-balance text-3xl font-semibold tracking-tight text-forma-ink">
             Reporte de participación
           </h1>
           <p className="text-sm text-muted-foreground">
@@ -156,12 +162,12 @@ export default function ReportesPage() {
           descripcion="Cambia de grupo para ver el reporte completo o consulta tu historial personal en Mi reporte."
           accion={
             <div className="flex flex-wrap justify-center gap-2">
-              <Button nativeButton={false} render={<Link href="/grupos" />} size="sm">
+              <Button nativeButton={false} render={<Link href={rutaPortal("/grupos", contextoActivo?.id)} />} size="sm">
                 Ir a Grupos
               </Button>
               <Button
                 nativeButton={false}
-                render={<Link href="/mi-reporte" />}
+                render={<Link href={rutaPortal("/mi-reporte", contextoActivo?.id)} />}
                 variant="outline"
                 size="sm"
               >
@@ -187,23 +193,18 @@ export default function ReportesPage() {
     <div className="space-y-6">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="text-balance text-3xl font-semibold tracking-tight text-forma-ink">
             Reporte de participación
           </h1>
           <p className="text-sm text-muted-foreground">
-            Desglose por integrante de {contextoActivo?.nombre}. Haz clic en una
-            fila para revisar motivos de ausencia y ajustes de horas.
+            Desglose por integrante de {contextoActivo?.nombre}. Abre Motivos para consultar las observaciones de cada integrante.
           </p>
         </div>
 
-        <ControlEstadoVista
-          estado={estadoForzado}
-          alCambiar={setEstadoForzado}
-        />
       </div>
 
       {/* Barra superior de herramientas */}
-      <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4">
+      <div className="flex flex-col gap-3 rounded-2xl bg-forma-paper p-4 sm:p-5">
         <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3">
           <FiltroPeriodo valor={filtro} alCambiar={setFiltro} />
 
@@ -288,11 +289,11 @@ export default function ReportesPage() {
         />
       ) : (
         <Card>
-          <CardContent className="p-0 overflow-x-auto">
-            <Table>
+          <CardContent className="p-0">
+            <Table aria-label="Participación por integrante">
               <TableHeader>
                 <TableRow>
-                  <TableHead>
+                  <TableHead aria-sort={estadoOrden("nombre")}>
                     <Button
                       type="button"
                       variant="ghost"
@@ -304,7 +305,7 @@ export default function ReportesPage() {
                       <ArrowUpDown className="h-3.5 w-3.5" />
                     </Button>
                   </TableHead>
-                  <TableHead className="text-right">
+                  <TableHead className="text-right" aria-sort={estadoOrden("presentes")}>
                     <Button
                       type="button"
                       variant="ghost"
@@ -316,7 +317,7 @@ export default function ReportesPage() {
                       <ArrowUpDown className="h-3.5 w-3.5" />
                     </Button>
                   </TableHead>
-                  <TableHead className="text-right">
+                  <TableHead className="text-right" aria-sort={estadoOrden("ausencias")}>
                     <Button
                       type="button"
                       variant="ghost"
@@ -329,7 +330,7 @@ export default function ReportesPage() {
                     </Button>
                   </TableHead>
                   <TableHead className="text-right">Justificadas</TableHead>
-                  <TableHead className="text-right">
+                  <TableHead className="text-right" aria-sort={estadoOrden("tasa")}>
                     <Button
                       type="button"
                       variant="ghost"
@@ -346,7 +347,7 @@ export default function ReportesPage() {
                       <TableHead className="text-right">
                         Horas registradas
                       </TableHead>
-                      <TableHead className="text-right">
+                      <TableHead className="text-right" aria-sort={estadoOrden("minutos_reconocidos")}>
                         <Button
                           type="button"
                           variant="ghost"
@@ -367,8 +368,6 @@ export default function ReportesPage() {
                 {filasFiltradas.map((fila) => (
                   <TableRow
                     key={fila.usuario_id}
-                    className="cursor-pointer hover:bg-muted/50"
-                    onClick={() => setIntegranteDetalle(fila)}
                   >
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2">
@@ -407,10 +406,11 @@ export default function ReportesPage() {
                         type="button"
                         variant="ghost"
                         size="xs"
-                        onClick={(e) => {
-                          e.stopPropagation();
+                        onClick={(event) => {
+                          botonDetalle.current = event.currentTarget;
                           setIntegranteDetalle(fila);
                         }}
+                        aria-label={`Ver motivos de ${fila.nombre}`}
                         className="gap-1"
                       >
                         <Eye className="h-3.5 w-3.5" />
@@ -467,7 +467,7 @@ export default function ReportesPage() {
           if (!abierto) setIntegranteDetalle(null);
         }}
       >
-        <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
+        <SheetContent side="right" finalFocus={botonDetalle} className="w-full rounded-l-3xl sm:max-w-md">
           {integranteDetalle && (
             <>
               <SheetHeader>
@@ -562,6 +562,7 @@ export default function ReportesPage() {
           )}
         </SheetContent>
       </Sheet>
+      <ControlEstadoVista estado={estadoForzado} alCambiar={setEstadoForzado} />
     </div>
   );
 }

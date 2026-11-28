@@ -94,14 +94,14 @@ export default function LoginPage() {
                   disabled={cargando}
                   value={contrasena}
                   onChange={(e) => setContrasena(e.target.value)}
-                  className="pr-10"
+                  className="pr-12"
                 />
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon-sm"
                   onClick={() => setMostrarContrasena((prev) => !prev)}
-                  className="absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  className="absolute inset-y-0 right-1 my-auto text-muted-foreground"
                   aria-label={
                     mostrarContrasena
                       ? "Ocultar contraseña"
