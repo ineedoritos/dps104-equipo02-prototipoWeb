@@ -3,7 +3,7 @@ import type { StyleProp, ViewStyle } from 'react-native';
 
 import { Icono } from '@/components/ui/Icono';
 import type { NombreIcono } from '@/components/ui/Icono';
-import { espaciados, forma, fuentes, radios, tamanos, tipografia } from '@/lib/tema';
+import { espaciados, forma, fuentes, interlineado, radios, tamanos, tipografia } from '@/lib/tema';
 
 export type VarianteBoton = 'primario' | 'secundario' | 'fantasma' | 'peligro';
 
@@ -46,6 +46,7 @@ export function Boton({
       accessibilityRole="button"
       accessibilityState={{ busy: cargando, disabled: inactivo }}
       disabled={inactivo}
+      hitSlop={tamano === 'sm' ? 4 : undefined}
       onPress={onPress}
       style={({ pressed }) => [
         styles.base,
@@ -102,11 +103,11 @@ const styles = StyleSheet.create({
   },
   textoMd: {
     fontSize: tipografia.cuerpoSm,
-    lineHeight: 18,
+    lineHeight: interlineado.error,
   },
   textoSm: {
     fontSize: 13,
-    lineHeight: 18,
+    lineHeight: interlineado.error,
   },
   presionado: {
     transform: [{ scale: 0.98 }],

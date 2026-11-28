@@ -16,6 +16,7 @@ import { Aviso } from '@/components/ui/Aviso';
 import { Boton } from '@/components/ui/Boton';
 import { CampoTexto } from '@/components/ui/CampoTexto';
 import { HoraPickerField } from '@/components/ui/HoraPickerField';
+import { PieAccion } from '@/components/ui/PieAccion';
 import { fechaEnZona, fechaHoraEnZona, horaEnZona } from '@/lib/fecha';
 import {
   ajustarHorasAsistencia,
@@ -279,11 +280,15 @@ export default function AjustarHorasScreen() {
                 texto={`${participante.usuario.nombre} verá este motivo en su historial. Así evitamos reclamos semanas después.`}
                 tipo="info"
               />
-
-              <Boton cargando={guardando} onPress={manejarGuardar} titulo="Guardar horas" />
             </>
           ) : null}
         </ScrollView>
+
+        {estadoVista === 'normal' ? (
+          <PieAccion>
+            <Boton cargando={guardando} onPress={manejarGuardar} titulo="Guardar horas" />
+          </PieAccion>
+        ) : null}
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

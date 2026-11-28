@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Icono, TRAZO_ICONO } from '@/components/ui/Icono';
 import type { NombreIcono } from '@/components/ui/Icono';
-import { espaciados, forma, fuentes, radios } from '@/lib/tema';
+import { espaciados, forma, fuentes, interlineado, radios, tamanos, tipografia } from '@/lib/tema';
 
 /** Icono de cada destino, por nombre de ruta. */
 const ICONO_RUTA: Record<string, NombreIcono> = {
@@ -60,7 +60,7 @@ export function BarraTabs({ state, descriptors, emitter, navigateToTab, insets }
                 <Icono
                   color={color}
                   nombre={ICONO_RUTA[ruta.name] ?? 'inicio'}
-                  tamano={20}
+                  tamano={tamanos.icono}
                   trazo={activo ? TRAZO_ICONO.activo : TRAZO_ICONO.normal}
                 />
               </View>
@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
     borderRadius: radios.pill,
     flex: 1,
     gap: 2,
-    height: 56,
+    height: tamanos.barraPestanas,
     justifyContent: 'center',
     minWidth: 64,
     paddingHorizontal: espaciados.xs,
@@ -135,8 +135,8 @@ const styles = StyleSheet.create({
   },
   etiqueta: {
     fontFamily: fuentes.medio,
-    fontSize: 12,
-    lineHeight: 16,
+    fontSize: tipografia.micro,
+    lineHeight: interlineado.micro,
   },
   etiquetaActiva: {
     fontFamily: fuentes.fuerte,

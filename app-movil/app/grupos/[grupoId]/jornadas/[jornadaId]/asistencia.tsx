@@ -18,6 +18,7 @@ import { Boton } from '@/components/ui/Boton';
 import { CampoTexto } from '@/components/ui/CampoTexto';
 import { Estado } from '@/components/ui/Estado';
 import { EstadoVacio } from '@/components/ui/EstadoVacio';
+import { PieAccion } from '@/components/ui/PieAccion';
 import { horaEnZona } from '@/lib/fecha';
 import {
   aprobarAsistencia,
@@ -32,7 +33,7 @@ import {
   suscribirStore,
   tieneHorasIncompletas,
 } from '@/lib/gruposStore';
-import { cifrasTabulares, colores, espaciados, forma, fuentes, interletrado, radios, tipografia } from '@/lib/tema';
+import { cifrasTabulares, colores, espaciados, forma, fuentes, interlineado, interletrado, radios, tamanos, tipografia } from '@/lib/tema';
 import { ErrorDominio, type Asistencia, type EstadoAsistencia, type IntegranteConUsuario } from '@/types/dominio';
 
 type EstadoVista = 'normal' | 'cargando' | 'vacio' | 'error';
@@ -405,6 +406,7 @@ export default function AsistenciaManualScreen() {
                             key={item.codigo}
                             accessibilityLabel={`${item.codigo} para ${integrante.usuario.nombre}`}
                             accessibilityRole="button"
+                            hitSlop={4}
                             onPress={() => seleccionarEstado(integrante.usuario_id, item.estado)}
                             style={[
                               styles.botonLetra,
@@ -514,7 +516,7 @@ export default function AsistenciaManualScreen() {
       </ScrollView>
 
       {estadoVista === 'normal' && listaVisible.length > 0 ? (
-        <View style={styles.pie}>
+        <PieAccion>
           <Text style={[styles.resumenPie, cifrasTabulares]}>
             {resumenVivo.presentes} presentes · {resumenVivo.ausentes} ausentes ·{' '}
             {resumenVivo.justificadas} justificadas
@@ -525,7 +527,7 @@ export default function AsistenciaManualScreen() {
             onPress={manejarGuardar}
             titulo="Guardar cambios"
           />
-        </View>
+        </PieAccion>
       ) : null}
     </SafeAreaView>
   );
@@ -638,9 +640,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: colores.papel,
     borderRadius: radios.campo,
-    height: 40,
+    height: tamanos.controlCompacto,
     justifyContent: 'center',
-    width: 40,
+    width: tamanos.controlCompacto,
   },
   botonPresente: {
     backgroundColor: colores.presenteSuave,
@@ -672,7 +674,7 @@ const styles = StyleSheet.create({
     color: colores.justificada,
     fontFamily: fuentes.normal,
     fontSize: tipografia.micro,
-    lineHeight: 16,
+    lineHeight: interlineado.micro,
   },
   filaHoras: {
     alignItems: 'center',

@@ -5,7 +5,7 @@ import { Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native
 
 import { Boton } from '@/components/ui/Boton';
 import { Icono } from '@/components/ui/Icono';
-import { cifrasTabulares, colores, espaciados, fuentes, interletrado, radios, tipografia } from '@/lib/tema';
+import { cifrasTabulares, colores, espaciados, fuentes, interlineado, interletrado, radios, tamanos, tipografia } from '@/lib/tema';
 
 interface DatePickerFieldProps {
   label: string;
@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     borderRadius: radios.campo,
     borderWidth: 1,
     flexDirection: 'row',
-    minHeight: 48,
+    minHeight: tamanos.control,
   },
   campoConError: {
     borderColor: colores.ausente,
@@ -158,15 +158,15 @@ const styles = StyleSheet.create({
   },
   botonLimpiar: {
     alignItems: 'center',
-    height: 44,
+    height: tamanos.objetivo,
     justifyContent: 'center',
-    width: 44,
+    width: tamanos.objetivo,
   },
   textoError: {
     color: colores.ausente,
     fontFamily: fuentes.normal,
     fontSize: tipografia.micro,
-    lineHeight: 15,
+    lineHeight: interlineado.micro,
   },
   overlay: {
     alignItems: 'center',

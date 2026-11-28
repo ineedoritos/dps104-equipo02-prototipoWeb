@@ -140,12 +140,29 @@ export const radios = {
   xl: 28,
 } as const;
 
-/** Alturas de Forma. */
+/**
+ * Escala de tamanos y areas tactiles (Forma + minimo Android Material de 48 dp):
+ * - toque: 48 dp (area tactil minima; si el dibujo es menor, agregar `hitSlop`)
+ * - control: 48 dp (altura estandar de botones, campos y selectores)
+ * - controlCompacto: 40 dp (controles en fila como P/A/J; combinar con `hitSlop={4}`)
+ * - objetivo: 44 dp (dibujo de iconos circulares o `Boton tamano="sm"`; usar `hitSlop={4}`)
+ * - fila: 64 dp (altura minima de filas en listas)
+ * - indicador: 26 dp (pastillas e indicadores)
+ * - iconoSm / icono / iconoLg: 16 / 20 / 24 dp
+ * - barraSuperior / barraPestanas: 56 dp
+ */
 export const tamanos = {
+  toque: 48,
   control: 48,
+  controlCompacto: 40,
   objetivo: 44,
   fila: 64,
   indicador: 26,
+  iconoSm: 16,
+  icono: 20,
+  iconoLg: 24,
+  barraSuperior: 56,
+  barraPestanas: 56,
 } as const;
 
 /**
@@ -168,6 +185,7 @@ export const tipografia = {
 
 export const interlineado = {
   micro: 16,
+  error: 18,
   cuerpoSm: 20,
   cuerpo: 24,
   tituloSm: 22,
