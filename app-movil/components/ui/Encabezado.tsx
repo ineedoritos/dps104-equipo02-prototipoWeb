@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Icono } from '@/components/ui/Icono';
-import { colores, espaciados, forma, fuentes, interletrado, tipografia } from '@/lib/tema';
+import { colores, espaciados, forma, fuentes, interletrado, tamanos, tipografia } from '@/lib/tema';
 
 export interface EncabezadoProps {
   titulo: string;
@@ -58,9 +58,9 @@ const styles = StyleSheet.create({
   },
   lateral: {
     alignItems: 'center',
-    height: 44,
+    height: tamanos.objetivo,
     justifyContent: 'center',
-    minWidth: 44,
+    minWidth: tamanos.objetivo,
   },
   centro: {
     alignItems: 'center',

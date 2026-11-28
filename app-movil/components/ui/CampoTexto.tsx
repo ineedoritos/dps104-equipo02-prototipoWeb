@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { AccessibilityInfo, Animated, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { StyleProp, TextInputProps, ViewStyle } from 'react-native';
 
-import { colores, espaciados, forma, fuentes, radios, tamanos, tipografia } from '@/lib/tema';
+import { colores, espaciados, forma, fuentes, interlineado, radios, tamanos, tipografia } from '@/lib/tema';
 
 export interface CampoTextoProps extends Omit<TextInputProps, 'style'> {
   etiqueta: string;
@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
     color: colores.tinta,
     fontSize: tipografia.cuerpoSm,
     fontFamily: fuentes.fuerte,
-    lineHeight: 18,
+    lineHeight: interlineado.error,
   },
   // Relleno tonal sin borde; el foco solo agrega el anillo.
   campoContenedor: {
@@ -128,6 +128,6 @@ const styles = StyleSheet.create({
     color: forma.roseInk,
     fontFamily: fuentes.normal,
     fontSize: 13,
-    lineHeight: 18,
+    lineHeight: interlineado.error,
   },
 });

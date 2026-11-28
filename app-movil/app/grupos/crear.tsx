@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Aviso } from '@/components/ui/Aviso';
 import { Boton } from '@/components/ui/Boton';
 import { CampoTexto } from '@/components/ui/CampoTexto';
+import { PieAccion } from '@/components/ui/PieAccion';
 import { crearGrupo } from '@/lib/gruposStore';
 import { colores, espaciados, fuentes, interletrado, radios, tipografia } from '@/lib/tema';
 import { ErrorDominio } from '@/types/dominio';
@@ -93,9 +94,11 @@ export default function CrearGrupoScreen() {
             texto="Quedarás como responsable. Después podrás agregar integrantes y elegir cómo se registra la asistencia."
             tipo="info"
           />
-
-          <Boton cargando={cargando} onPress={manejarCrear} titulo="Crear grupo" />
         </ScrollView>
+
+        <PieAccion>
+          <Boton cargando={cargando} onPress={manejarCrear} titulo="Crear grupo" />
+        </PieAccion>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

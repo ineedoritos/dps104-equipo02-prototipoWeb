@@ -20,6 +20,7 @@ import { DatePickerField } from '@/components/ui/DatePickerField';
 import { HojaAcciones } from '@/components/ui/HojaAcciones';
 import { HoraPickerField } from '@/components/ui/HoraPickerField';
 import { Icono } from '@/components/ui/Icono';
+import { PieAccion } from '@/components/ui/PieAccion';
 import { aISOConOffset, fechaEnZona, horaEnZona } from '@/lib/fecha';
 import {
   crearJornada,
@@ -356,16 +357,20 @@ export default function CrearOEditarJornadaScreen() {
                   />
                 </View>
               ) : null}
-
-              <Boton
-                cargando={enviando}
-                onPress={manejarGuardar}
-                titulo={esEdicion ? 'Guardar cambios' : 'Crear jornada'}
-              />
               </View>
             </>
           ) : null}
         </ScrollView>
+
+        {estadoVista === 'normal' ? (
+          <PieAccion>
+            <Boton
+              cargando={enviando}
+              onPress={manejarGuardar}
+              titulo={esEdicion ? 'Guardar cambios' : 'Crear jornada'}
+            />
+          </PieAccion>
+        ) : null}
       </KeyboardAvoidingView>
 
       <HojaAcciones
