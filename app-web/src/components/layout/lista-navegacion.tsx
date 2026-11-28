@@ -63,11 +63,12 @@ export function ListaNavegacion({
   inferior = false,
 }: ListaNavegacionProps) {
   const { contextoActivo } = useContextoPortal();
-  const esResponsable = contextoActivo?.rol === "responsable";
   const pathname = usePathname();
+  const enGrupos = pathname === "/grupos";
+  const mostrarOpcionesGrupo = contextoActivo?.rol === "responsable" && !enGrupos;
   const items = ITEMS_NAVEGACION.filter(
-    (item) => (!item.soloResponsable || esResponsable) &&
-      !(inferior && esResponsable && item.href === "/grupos"),
+    (item) => (!item.soloResponsable || mostrarOpcionesGrupo) &&
+      !(inferior && mostrarOpcionesGrupo && item.href === "/grupos"),
   );
 
   return (
@@ -85,7 +86,7 @@ export function ListaNavegacion({
         const enlace = (
           <Link
             key={item.href}
-            href={rutaPortal(item.href, contextoActivo?.id)}
+            href={item.href === "/grupos" ? "/grupos" : rutaPortal(item.href, contextoActivo?.id)}
             aria-label={colapsado ? item.etiqueta : undefined}
             aria-current={paginaActual ? "page" : activo ? "location" : undefined}
             className={cn(

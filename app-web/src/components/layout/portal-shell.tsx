@@ -11,7 +11,7 @@ import {
   User,
 } from "lucide-react";
 
-import { rutaPortal, useContextoPortal } from "@/components/layout/contexto-portal";
+import { useContextoPortal } from "@/components/layout/contexto-portal";
 import { ListaNavegacion } from "@/components/layout/lista-navegacion";
 import { Button } from "@/components/ui/button";
 import {
@@ -53,7 +53,7 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
         >
           {!colapsado && (
             <Link
-              href={rutaPortal("/grupos", contextoActivo?.id)}
+              href="/grupos"
               className="min-w-0 truncate rounded-sm text-sm font-semibold tracking-tight text-foreground focus-visible:outline-2 focus-visible:outline-ring"
             >
               Registro de actividades
@@ -83,7 +83,7 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="mx-4 mt-3 grid min-h-16 grid-cols-[44px_minmax(0,1fr)_44px] items-center gap-2 rounded-[28px] bg-forma-paper px-2.5 py-2 sm:mx-6 md:mt-5 md:grid-cols-[minmax(0,1fr)_auto] md:px-5">
           <Link
-            href={rutaPortal("/grupos", contextoActivo?.id)}
+            href="/grupos"
             aria-label={contextoActivo ? "Cambiar grupo" : "Elegir grupo"}
             className="grid size-11 place-items-center rounded-full bg-forma-fill text-forma-ink hover:bg-forma-canvas focus-visible:outline-2 focus-visible:outline-ring md:hidden"
           >
@@ -102,7 +102,7 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
             </div>
             {!enGrupos && (
               <Link
-                href={rutaPortal("/grupos", contextoActivo?.id)}
+                href="/grupos"
                 className="hidden min-h-11 shrink-0 items-center rounded-full bg-forma-fill px-4 text-sm font-semibold text-forma-ink hover:bg-forma-canvas focus-visible:outline-2 focus-visible:outline-ring md:inline-flex"
               >
                 {contextoActivo ? "Cambiar grupo" : "Elegir grupo"}
